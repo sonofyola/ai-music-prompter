@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "user-app",
-    "slug": "user-app",
+    "name": "You are a ...",
+    "slug": "user-app-f9ba5f44",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -14,10 +14,11 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "dev.kiki.userapp.f9ba5f44"
     },
     "android": {
-      "package": "com.appacella.userapp",
+      "package": "dev.kiki.userapp.pjlkfpee",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -32,7 +33,7 @@
       [
         "expo-router",
         {
-          "origin": "https://${SUBDOMAIN}.dev.kiki.dev"
+          "origin": "https://pool-ecs-fargate-mvp-ssh-task-84234f37.dev.kiki.dev"
         }
       ],
       [
