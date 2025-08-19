@@ -1,13 +1,56 @@
 export const PRIMARY_GENRES = [
-  'House', 'Techno', 'Trance', 'Dubstep', 'Drum & Bass', 'Ambient', 'Hip Hop', 
-  'Pop', 'Rock', 'Jazz', 'Classical', 'Folk', 'R&B', 'Reggae', 'Country', 
-  'Blues', 'Funk', 'Disco', 'Punk', 'Metal'
+  'House', 'Techno', 'Trance', 'Drum & Bass', 'Dubstep', 'Breaks', 'Electro', 
+  'Downtempo', 'Hardcore', 'Ambient', 'Hip Hop', 'Pop', 'Rock', 'Jazz', 
+  'Classical', 'Folk', 'R&B', 'Reggae', 'Country', 'Blues', 'Funk', 'Disco', 
+  'Punk', 'Metal', 'Indie', 'Alternative'
 ];
 
 export const ELECTRONIC_GENRES = [
-  'Deep House', 'Tech House', 'Progressive House', 'Acid House', 'Minimal Techno',
-  'Industrial Techno', 'Psytrance', 'Uplifting Trance', 'Future Bass', 'Trap',
-  'Liquid DnB', 'Neurofunk', 'Breakbeat', 'IDM', 'Synthwave', 'Vaporwave'
+  // House variants
+  'Deep House', 'Tech House', 'Progressive House', 'Electro House', 'Bass House', 
+  'G-House', 'Chicago House', 'Detroit House', 'Melodic House', 'Organic House', 
+  'Minimal House', 'Acid House', 'Funky House', 'Tribal House', 'Afro House',
+  
+  // Techno variants
+  'Hard Techno', 'Peak-Time Techno', 'Minimal Techno', 'Dub Techno', 'Acid Techno', 
+  'Industrial Techno', 'Schranz', 'Detroit Techno', 'Berlin Techno', 'Melodic Techno',
+  
+  // Trance variants
+  'Progressive Trance', 'Psytrance', 'Full-On Psytrance', 'Forest Psytrance', 
+  'Dark Psytrance', 'Uplifting Trance', 'Tech Trance', 'Vocal Trance', 'Goa Trance',
+  
+  // Drum & Bass variants
+  'Liquid DnB', 'Neurofunk', 'Jungle', 'Rollers', 'Atmospheric DnB', 'Jump-Up', 
+  'Darkstep', 'Techstep', 'Ragga Jungle', 'Intelligent DnB',
+  
+  // Breaks & UK variants
+  'Breakbeat', 'Big Beat', 'UK Garage', '2-Step', 'Speed Garage', 'Bassline', 
+  'UK Funky', 'Grime', 'Dubstep', 'Future Garage',
+  
+  // Dubstep variants
+  'Classic Dubstep', 'Brostep', 'Riddim', 'Melodic Dubstep', 'Chillstep', 
+  'Deathstep', 'Trapstep',
+  
+  // Bass music
+  'Future Bass', 'EDM Trap', 'Wave', 'Jersey Club', 'Footwork', 'Juke', 
+  'Bass Music', 'Halftime', 'Experimental Bass',
+  
+  // Electro variants
+  'Electro', 'Electroclash', 'Synthwave', 'Darksynth', 'Retrowave', 'Outrun', 
+  'Cyberpunk', 'New Wave', 'Italo Disco', 'Hi-NRG', 'Space Disco',
+  
+  // Downtempo & Chill
+  'Trip-Hop', 'Chillout', 'Lounge', 'Ambient House', 'Dub', 'Chillwave', 
+  'Vaporwave', 'Lo-Fi House', 'Balearic',
+  
+  // Hardcore & Hard Dance
+  'Hardcore', 'Gabber', 'Happy Hardcore', 'Hardstyle', 'Rawstyle', 'Frenchcore',
+  
+  // Experimental & IDM
+  'IDM', 'Glitch', 'Breakcore', 'Digital Hardcore', 'Drill & Bass', 'Ambient Techno',
+  
+  // Commercial & Festival
+  'Big Room', 'Festival Progressive', 'Mainstage', 'Commercial House', 'Slap House'
 ];
 
 export const MOODS = [
