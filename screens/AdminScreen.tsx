@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
@@ -151,23 +151,40 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       }).join('\n');
       
       const csvData = csvHeader + csvContent;
-
-      // Create file
       const defaultFilename = `email_export_${new Date().toISOString().split('T')[0]}.csv`;
-      const fileUri = FileSystem.documentDirectory + (filename || defaultFilename);
-      
-      await FileSystem.writeAsStringAsync(fileUri, csvData, {
-        encoding: FileSystem.EncodingType.UTF8,
-      });
+      const finalFilename = filename || defaultFilename;
 
-      // Share the file
-      if (await Sharing.isAvailableAsync()) {
-        await Sharing.shareAsync(fileUri, {
-          mimeType: 'text/csv',
-          dialogTitle: 'Export Email List',
-        });
+      if (Platform.OS === 'web') {
+        // Web-specific export using download
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', finalFilename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        Alert.alert('Success', `CSV file "${finalFilename}" has been downloaded!`);
       } else {
-        Alert.alert('Success', `CSV exported to: ${fileUri}`);
+        // Mobile export using FileSystem and Sharing
+        const fileUri = FileSystem.documentDirectory + finalFilename;
+        
+        await FileSystem.writeAsStringAsync(fileUri, csvData, {
+          encoding: FileSystem.EncodingType.UTF8,
+        });
+
+        // Share the file
+        if (await Sharing.isAvailableAsync()) {
+          await Sharing.shareAsync(fileUri, {
+            mimeType: 'text/csv',
+            dialogTitle: 'Export Email List',
+          });
+        } else {
+          Alert.alert('Success', `CSV exported to: ${fileUri}`);
+        }
       }
 
     } catch (error) {
