@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
-import { useUsage } from '../contexts/UsageContext';
+import * as Clipboard from 'expo-clipboard';
+import * as Haptics from 'expo-haptics';
+
 import FormField from '../components/FormField';
 import PickerField from '../components/PickerField';
 import MultiSelectField from '../components/MultiSelectField';
@@ -11,21 +12,26 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
-import AudioAnalyzer, { AudioAnalysisResult } from '../components/AudioAnalyzer';
-import AdminScreen from './AdminScreen';
-import { MusicPromptData } from '../types';
+import EmailCapture from '../components/EmailCapture';
+
+import { useTheme } from '../contexts/ThemeContext';
+import { useUsage } from '../contexts/UsageContext';
 import { formatMusicPrompt } from '../utils/promptFormatter';
-import {
-  PRIMARY_GENRES,
-  ELECTRONIC_GENRES,
-  MOODS,
-  VOCAL_GENDERS,
-  VOCAL_DELIVERIES,
-  ENERGY_LEVELS,
-  GROOVE_SWINGS,
-  TIME_SIGNATURES,
-  COMMON_KEYS,
+import { 
+  primaryGenres, 
+  electronicGenres, 
+  moodOptions, 
+  energyOptions, 
+  beatOptions, 
+  bassOptions, 
+  vocalGenderOptions, 
+  vocalDeliveryOptions, 
+  arrangementOptions, 
+  spaceOptions, 
+  eraOptions, 
+  lengthOptions 
 } from '../utils/musicData';
+import { MusicPromptData } from '../types';
 
 interface PromptFormScreenProps {
   onUpgradePress: () => void;
@@ -33,39 +39,36 @@ interface PromptFormScreenProps {
   onCloseUpgradeModal: () => void;
 }
 
-export default function PromptFormScreen({ 
-  onUpgradePress, 
-  showUpgradeModal, 
-  onCloseUpgradeModal 
-}: PromptFormScreenProps) {
+export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { canGenerate, incrementGeneration, isUnlimited } = useUsage();
-  
+  const { canGenerate, incrementUsage, isUnlimited } = useUsage();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+
   const [formData, setFormData] = useState<MusicPromptData>({
+    subject: '',
     genres_primary: [],
     genres_electronic: [],
-    subject: '',
-    vocal_gender: '',
-    vocal_delivery: '',
     mood: [],
     tempo_bpm: '',
     key_scale: '',
     time_signature: '',
     energy: '',
-    bass: '',
-    beat: '',
+    beat: [],
+    bass: [],
     groove_swing: '',
     sound_palette: '',
+    vocal_gender: '',
+    vocal_delivery: '',
     arrangement: '',
     fx_processing: '',
     space: '',
     references: '',
+    era: '',
     mix_notes: '',
     master_notes: '',
-    era: '',
     length: '',
-    general_freeform: '',
-    audio_analysis: undefined,
+    general_freeform: ''
   });
 
   const [showPrompt, setShowPrompt] = useState(false);
@@ -116,70 +119,36 @@ export default function PromptFormScreen({
     setShowPrompt(true);
     
     // Increment usage count
-    await incrementGeneration();
+    await incrementUsage();
   };
 
   const clearForm = () => {
     setFormData({
+      subject: '',
       genres_primary: [],
       genres_electronic: [],
-      subject: '',
-      vocal_gender: '',
-      vocal_delivery: '',
       mood: [],
       tempo_bpm: '',
       key_scale: '',
       time_signature: '',
       energy: '',
-      bass: '',
-      beat: '',
+      beat: [],
+      bass: [],
       groove_swing: '',
       sound_palette: '',
+      vocal_gender: '',
+      vocal_delivery: '',
       arrangement: '',
       fx_processing: '',
       space: '',
       references: '',
+      era: '',
       mix_notes: '',
       master_notes: '',
-      era: '',
       length: '',
-      general_freeform: '',
-      audio_analysis: undefined,
+      general_freeform: ''
     });
     setShowPrompt(false);
-  };
-
-  const handleAudioAnalysis = (analysis: AudioAnalysisResult) => {
-    console.log('Audio analysis received in form:', analysis);
-    
-    // Store the analysis
-    const audioAnalysisData = {
-      detected_genres: analysis.genres,
-      detected_mood: analysis.mood,
-      detected_tempo: analysis.tempo,
-      detected_energy: analysis.energy,
-      detected_style: analysis.style,
-      detected_instruments: analysis.instruments,
-      detected_vibe: analysis.vibe,
-    };
-
-    console.log('Updating form data with analysis:', audioAnalysisData);
-
-    setFormData(prev => ({
-      ...prev,
-      audio_analysis: audioAnalysisData,
-      // Auto-populate relevant fields if they're empty
-      genres_electronic: prev.genres_electronic.length === 0 ? analysis.genres.slice(0, 2) : prev.genres_electronic,
-      mood: prev.mood.length === 0 ? analysis.mood.slice(0, 2) : prev.mood,
-      tempo_bpm: prev.tempo_bpm === '' ? analysis.tempo : prev.tempo_bpm,
-      energy: prev.energy === '' ? analysis.energy as any : prev.energy,
-      sound_palette: prev.sound_palette === '' ? analysis.instruments : prev.sound_palette,
-      general_freeform: prev.general_freeform === '' 
-        ? `Audio analysis detected: ${analysis.style}. ${analysis.vibe}` 
-        : prev.general_freeform,
-    }));
-    
-    console.log('Form data updated successfully');
   };
 
   const styles = createStyles(colors);
@@ -188,85 +157,46 @@ export default function PromptFormScreen({
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.8}>
-              <Text style={styles.title}>AI Music Prompt Generator</Text>
-            </TouchableOpacity>
-            <ThemeToggle />
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>AI Music Prompt Generator</Text>
+            <Text style={styles.subtitle}>Create detailed prompts for AI music tools</Text>
           </View>
-          <Text style={styles.subtitle}>
-            Create optimized prompts for AI music tools like Suno, Riffusion, and MusicGen
-          </Text>
+          <ThemeToggle />
         </View>
 
-        <UsageIndicator onUpgradePress={onUpgradePress} />
+        <UsageIndicator />
 
-        <View style={styles.section}>
-          <AudioAnalyzer onAnalysisComplete={handleAudioAnalysis} />
-          
-          {formData.audio_analysis && (
-            <View style={styles.analysisResults}>
-              <View style={styles.analysisHeader}>
-                <MaterialIcons name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.analysisTitle}>Audio Analysis Applied</Text>
-              </View>
-              <Text style={styles.analysisText}>
-                Detected: {formData.audio_analysis.detected_genres.join(', ')} • {formData.audio_analysis.detected_mood.join(', ')} • {formData.audio_analysis.detected_tempo}
-              </Text>
-              <TouchableOpacity 
-                style={styles.clearAnalysisButton}
-                onPress={() => setFormData(prev => ({ ...prev, audio_analysis: undefined }))}
-              >
-                <MaterialIcons name="clear" size={16} color={colors.textSecondary} />
-                <Text style={styles.clearAnalysisText}>Clear Analysis</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-        </View>
+        <View style={styles.form}>
+          <FormField
+            label="Subject/Theme"
+            value={formData.subject}
+            onChangeText={(text) => setFormData(prev => ({ ...prev, subject: text }))}
+            placeholder="e.g., summer vibes, heartbreak, celebration"
+          />
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎵 Genres</Text>
           <MultiSelectField
             label="Primary Genres"
             values={formData.genres_primary}
             onValuesChange={(values) => updateField('genres_primary', values)}
-            options={PRIMARY_GENRES}
+            options={primaryGenres}
             placeholder="Select primary genres..."
           />
+
           <MultiSelectField
             label="Electronic Subgenres"
             values={formData.genres_electronic}
             onValuesChange={(values) => updateField('genres_electronic', values)}
-            options={ELECTRONIC_GENRES}
+            options={electronicGenres}
             placeholder="Select electronic subgenres..."
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎭 Theme & Mood</Text>
-          <FormField
-            label="Subject/Theme"
-            value={formData.subject}
-            onChangeText={(text) => updateField('subject', text)}
-            placeholder="e.g., summer vibes, late night drive, celebration..."
-          />
-          <MultiSelectField
-            label="Mood"
-            values={formData.mood}
-            onValuesChange={(values) => updateField('mood', values)}
-            options={MOODS}
-            placeholder="Select moods..."
-          />
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎼 Technical Specs</Text>
           <FormField
             label="Tempo (BPM)"
             value={formData.tempo_bpm}
             onChangeText={(text) => updateField('tempo_bpm', text)}
             placeholder="e.g., 128, 120-130, slow..."
           />
+
           <PickerField
             label="Key/Scale"
             value={formData.key_scale}
@@ -276,6 +206,7 @@ export default function PromptFormScreen({
               ...COMMON_KEYS.map(key => ({ label: key, value: key }))
             ]}
           />
+
           <PickerField
             label="Time Signature"
             value={formData.time_signature}
@@ -285,6 +216,7 @@ export default function PromptFormScreen({
               ...TIME_SIGNATURES.map(sig => ({ label: sig, value: sig }))
             ]}
           />
+
           <PickerField
             label="Energy Level"
             value={formData.energy}
@@ -294,22 +226,21 @@ export default function PromptFormScreen({
               ...ENERGY_LEVELS
             ]}
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🥁 Rhythm & Bass</Text>
           <FormField
             label="Beat Style"
             value={formData.beat}
             onChangeText={(text) => updateField('beat', text)}
             placeholder="e.g., four-on-the-floor, broken beat, rolling DnB..."
           />
+
           <FormField
             label="Bass Character"
             value={formData.bass}
             onChangeText={(text) => updateField('bass', text)}
             placeholder="e.g., sub-heavy, rubbery 303, warm analog..."
           />
+
           <PickerField
             label="Groove/Swing"
             value={formData.groove_swing}
@@ -319,26 +250,21 @@ export default function PromptFormScreen({
               ...GROOVE_SWINGS
             ]}
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎤 Vocals</Text>
           <PickerField
             label="Vocal Gender"
             value={formData.vocal_gender}
             onValueChange={(value) => updateField('vocal_gender', value as any)}
             options={VOCAL_GENDERS}
           />
+
           <PickerField
             label="Vocal Delivery"
             value={formData.vocal_delivery}
             onValueChange={(value) => updateField('vocal_delivery', value as any)}
             options={VOCAL_DELIVERIES}
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎹 Sound & Production</Text>
           <FormField
             label="Sound Palette"
             value={formData.sound_palette}
@@ -347,66 +273,63 @@ export default function PromptFormScreen({
             multiline
             numberOfLines={2}
           />
+
           <FormField
             label="Arrangement"
             value={formData.arrangement}
             onChangeText={(text) => updateField('arrangement', text)}
             placeholder="e.g., intro-verse-chorus-drop-breakdown-outro..."
           />
+
           <FormField
             label="FX Processing"
             value={formData.fx_processing}
             onChangeText={(text) => updateField('fx_processing', text)}
             placeholder="e.g., sidechain, tape saturation, bitcrush fills..."
           />
+
           <FormField
             label="Space/Ambience"
             value={formData.space}
             onChangeText={(text) => updateField('space', text)}
             placeholder="e.g., intimate dry booth, club, cavernous hall..."
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎯 References & Style</Text>
           <FormField
             label="References"
             value={formData.references}
             onChangeText={(text) => updateField('references', text)}
             placeholder="Artists, tracks, or labels for inspiration..."
           />
+
           <FormField
             label="Era/Style"
             value={formData.era}
             onChangeText={(text) => updateField('era', text)}
             placeholder="e.g., 1993 warehouse, Y2K bloghouse, modern 2025..."
           />
+
           <FormField
             label="Length"
             value={formData.length}
             onChangeText={(text) => updateField('length', text)}
             placeholder="e.g., 2:30 radio edit, loopable 1:00, club 5:30..."
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🎚️ Mix & Master</Text>
           <FormField
             label="Mix Notes"
             value={formData.mix_notes}
             onChangeText={(text) => updateField('mix_notes', text)}
             placeholder="e.g., -10 to -8 LUFS, kick-bass separation..."
           />
+
           <FormField
             label="Master Notes"
             value={formData.master_notes}
             onChangeText={(text) => updateField('master_notes', text)}
             placeholder="e.g., gentle glue comp, airy top, no brickwall..."
           />
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📝 Additional Notes</Text>
           <FormField
             label="General Freeform"
             value={formData.general_freeform}
@@ -467,7 +390,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
-  headerTop: {
+  titleContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -484,7 +407,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     lineHeight: 22,
   },
-  section: {
+  form: {
     backgroundColor: colors.surface,
     marginTop: 12,
     padding: 16,
@@ -534,40 +457,5 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   footer: {
     height: 20,
-  },
-  analysisResults: {
-    backgroundColor: colors.success + '10',
-    borderRadius: 12,
-    padding: 16,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: colors.success + '30',
-  },
-  analysisHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  analysisTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.success,
-  },
-  analysisText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 12,
-  },
-  clearAnalysisButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    alignSelf: 'flex-start',
-  },
-  clearAnalysisText: {
-    fontSize: 12,
-    color: colors.textSecondary,
   },
 });
