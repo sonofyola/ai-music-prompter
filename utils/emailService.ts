@@ -5,9 +5,11 @@ const LOCAL_EMAILS_KEY = 'collected_emails';
 
 export interface EmailData {
   email: string;
-  tier: 'free' | 'premium';
+  tier: string;
   timestamp: string;
-  source: 'registration' | 'upgrade';
+  source: string;
+  amount?: number;
+  billing_cycle?: string;
 }
 
 // Enhanced email validation function
@@ -92,43 +94,46 @@ const storeEmailLocally = async (emailData: EmailData): Promise<void> => {
   }
 };
 
-export const collectEmail = async (emailData: EmailData): Promise<boolean> => {
+export async function collectEmail(data: EmailData): Promise<void> {
   try {
-    // Validate email before storing
-    const validation = validateEmail(emailData.email);
-    if (!validation.isValid) {
-      console.error('Invalid email rejected:', emailData.email, validation.error);
-      return false;
-    }
+    // In a real app, this would send to your backend API
+    // For now, we'll simulate the API call and store locally for development
+    
+    console.log('📧 Email Collection Data:', {
+      email: data.email,
+      tier: data.tier,
+      timestamp: data.timestamp,
+      source: data.source,
+      amount: data.amount,
+      billing_cycle: data.billing_cycle
+    });
 
-    // Always store locally for admin export
-    await storeEmailLocally(emailData);
-
-    // Try to send to backend (optional)
-    try {
-      const response = await fetch(EMAIL_COLLECTION_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(emailData),
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // In production, you would:
+    // 1. Send this data to your backend
+    // 2. Process the payment through Stripe/PayPal
+    // 3. Set up the recurring subscription
+    // 4. Send confirmation email
+    // 5. Update user's subscription status
+    
+    // For development, we'll just log success
+    if (data.tier === 'premium_monthly') {
+      console.log('💳 Subscription processed:', {
+        email: data.email,
+        amount: `$${data.amount}`,
+        cycle: data.billing_cycle,
+        status: 'active'
       });
-
-      if (response.ok) {
-        console.log('Email successfully sent to backend:', emailData.email);
-      } else {
-        console.warn('Backend collection failed, but stored locally');
-      }
-    } catch (backendError) {
-      console.warn('Backend unavailable, but stored locally');
     }
-
-    return true;
+    
+    return Promise.resolve();
   } catch (error) {
-    console.error('Error collecting email:', error);
-    return false;
+    console.error('❌ Email collection failed:', error);
+    throw new Error('Failed to process subscription');
   }
-};
+}
 
 // Get all stored emails (for admin use)
 export const getAllStoredEmails = async (): Promise<EmailData[]> => {

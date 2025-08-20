@@ -8,7 +8,8 @@ import {
   StyleSheet, 
   Alert,
   KeyboardAvoidingView,
-  Platform 
+  Platform,
+  ScrollView 
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
@@ -26,7 +27,7 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
   const [email, setEmail] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleUpgrade = async () => {
+  const handleSubscribe = async () => {
     if (!email.trim()) {
       Alert.alert('Email Required', 'Please enter your email address to continue.');
       return;
@@ -40,28 +41,34 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
     setIsProcessing(true);
     
     try {
-      // Collect upgrade email
+      // Collect subscription email with premium tier
       await collectEmail({
         email: email.trim(),
-        tier: 'premium',
+        tier: 'premium_monthly',
         timestamp: new Date().toISOString(),
-        source: 'upgrade'
+        source: 'subscription',
+        amount: 5.99,
+        billing_cycle: 'monthly'
       });
 
       // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
+      // Upgrade user to unlimited
       await upgradeToUnlimited();
       
       Alert.alert(
-        'Upgrade Successful! 🎉',
-        'You now have unlimited prompt generations. Thank you for your support!',
-        [{ text: 'Awesome!', onPress: onClose }]
+        'Subscription Activated! 🎉',
+        'Welcome to Premium! You now have unlimited prompt generations. Your subscription will renew monthly at $5.99.',
+        [{ text: 'Get Started!', onPress: onClose }]
       );
       
       setEmail('');
     } catch (error) {
-      Alert.alert('Upgrade Failed', 'Something went wrong. Please try again.');
+      Alert.alert(
+        'Subscription Failed', 
+        'We couldn\'t process your subscription. Please check your payment method and try again.'
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -84,76 +91,106 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
         style={styles.overlay}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        <View style={styles.modal}>
-          <View style={styles.header}>
-            <View style={styles.headerContent}>
-              <MaterialIcons name="star" size={28} color={colors.warning} />
-              <Text style={styles.title}>Upgrade to Unlimited</Text>
+        <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+          <View style={styles.modal}>
+            <View style={styles.header}>
+              <View style={styles.headerContent}>
+                <MaterialIcons name="star" size={28} color={colors.warning} />
+                <Text style={styles.title}>Go Premium</Text>
+              </View>
+              <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <MaterialIcons name="close" size={24} color={colors.textSecondary} />
-            </TouchableOpacity>
+
+            <View style={styles.content}>
+              <View style={styles.premiumBadge}>
+                <MaterialIcons name="workspace-premium" size={20} color="#fff" />
+                <Text style={styles.premiumBadgeText}>PREMIUM SUBSCRIPTION</Text>
+              </View>
+
+              <View style={styles.features}>
+                <View style={styles.feature}>
+                  <MaterialIcons name="all-inclusive" size={22} color={colors.success} />
+                  <Text style={styles.featureText}>Unlimited prompt generations</Text>
+                </View>
+                <View style={styles.feature}>
+                  <MaterialIcons name="flash-on" size={22} color={colors.success} />
+                  <Text style={styles.featureText}>No daily limits or restrictions</Text>
+                </View>
+                <View style={styles.feature}>
+                  <MaterialIcons name="support-agent" size={22} color={colors.success} />
+                  <Text style={styles.featureText}>Priority customer support</Text>
+                </View>
+                <View style={styles.feature}>
+                  <MaterialIcons name="new-releases" size={22} color={colors.success} />
+                  <Text style={styles.featureText}>Early access to new features</Text>
+                </View>
+                <View style={styles.feature}>
+                  <MaterialIcons name="cloud-sync" size={22} color={colors.success} />
+                  <Text style={styles.featureText}>Cloud sync across devices</Text>
+                </View>
+              </View>
+
+              <View style={styles.pricing}>
+                <View style={styles.priceContainer}>
+                  <Text style={styles.currency}>$</Text>
+                  <Text style={styles.price}>5.99</Text>
+                  <Text style={styles.period}>/month</Text>
+                </View>
+                <Text style={styles.priceSubtext}>Billed monthly • Cancel anytime</Text>
+                <View style={styles.savingsBadge}>
+                  <Text style={styles.savingsText}>🎵 Unlimited music creativity</Text>
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Email Address</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="your@email.com"
+                  placeholderTextColor={colors.textTertiary}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+              </View>
+
+              <TouchableOpacity 
+                style={[styles.subscribeButton, isProcessing && styles.processingButton]}
+                onPress={handleSubscribe}
+                disabled={isProcessing}
+              >
+                {isProcessing ? (
+                  <View style={styles.processingContent}>
+                    <MaterialIcons name="hourglass-empty" size={20} color="#fff" />
+                    <Text style={styles.subscribeButtonText}>Processing...</Text>
+                  </View>
+                ) : (
+                  <View style={styles.buttonContent}>
+                    <MaterialIcons name="workspace-premium" size={20} color="#fff" />
+                    <Text style={styles.subscribeButtonText}>Start Premium Subscription</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              <View style={styles.guaranteeContainer}>
+                <MaterialIcons name="verified-user" size={16} color={colors.success} />
+                <Text style={styles.guarantee}>
+                  7-day free trial • Secure payment • Cancel anytime
+                </Text>
+              </View>
+
+              <Text style={styles.disclaimer}>
+                By subscribing, you agree to our Terms of Service and Privacy Policy. 
+                Your subscription will automatically renew each month unless cancelled. 
+                You can manage your subscription in your account settings.
+              </Text>
+            </View>
           </View>
-
-          <View style={styles.content}>
-            <View style={styles.features}>
-              <View style={styles.feature}>
-                <MaterialIcons name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.featureText}>Unlimited prompt generations</Text>
-              </View>
-              <View style={styles.feature}>
-                <MaterialIcons name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.featureText}>No daily limits</Text>
-              </View>
-              <View style={styles.feature}>
-                <MaterialIcons name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.featureText}>Priority support</Text>
-              </View>
-              <View style={styles.feature}>
-                <MaterialIcons name="check-circle" size={20} color={colors.success} />
-                <Text style={styles.featureText}>Future premium features</Text>
-              </View>
-            </View>
-
-            <View style={styles.pricing}>
-              <Text style={styles.price}>$4.99</Text>
-              <Text style={styles.priceSubtext}>one-time payment</Text>
-            </View>
-
-            <View style={styles.inputContainer}>
-              <Text style={styles.inputLabel}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="your@email.com"
-                placeholderTextColor={colors.textTertiary}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <TouchableOpacity 
-              style={[styles.upgradeButton, isProcessing && styles.processingButton]}
-              onPress={handleUpgrade}
-              disabled={isProcessing}
-            >
-              {isProcessing ? (
-                <Text style={styles.upgradeButtonText}>Processing...</Text>
-              ) : (
-                <>
-                  <MaterialIcons name="star" size={20} color="#fff" />
-                  <Text style={styles.upgradeButtonText}>Upgrade Now</Text>
-                </>
-              )}
-            </TouchableOpacity>
-
-            <Text style={styles.disclaimer}>
-              Secure payment • Cancel anytime • 30-day money-back guarantee
-            </Text>
-          </View>
-        </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </Modal>
   );
@@ -162,7 +199,10 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
 const createStyles = (colors: any) => StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  scrollContainer: {
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
@@ -171,12 +211,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 24,
     width: '100%',
-    maxWidth: 400,
+    maxWidth: 420,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
+    shadowOffset: { width: 0, height: 15 },
+    shadowOpacity: 0.35,
+    shadowRadius: 25,
+    elevation: 15,
   },
   header: {
     flexDirection: 'row',
@@ -192,7 +232,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     gap: 12,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: '700',
     color: colors.text,
   },
@@ -202,32 +242,77 @@ const createStyles = (colors: any) => StyleSheet.create({
   content: {
     padding: 24,
   },
-  features: {
+  premiumBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     marginBottom: 24,
+    gap: 8,
+  },
+  premiumBadgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  features: {
+    marginBottom: 28,
   },
   feature: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 12,
+    gap: 14,
+    marginBottom: 14,
   },
   featureText: {
     fontSize: 16,
     color: colors.text,
+    flex: 1,
   },
   pricing: {
     alignItems: 'center',
-    marginBottom: 24,
+    marginBottom: 28,
+  },
+  priceContainer: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    marginBottom: 8,
+  },
+  currency: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: colors.primary,
   },
   price: {
-    fontSize: 36,
+    fontSize: 42,
     fontWeight: '800',
     color: colors.primary,
+  },
+  period: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: colors.textSecondary,
+    marginLeft: 4,
   },
   priceSubtext: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginTop: 4,
+    marginBottom: 12,
+  },
+  savingsBadge: {
+    backgroundColor: colors.success + '20',
+    borderRadius: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+  },
+  savingsText: {
+    fontSize: 14,
+    color: colors.success,
+    fontWeight: '600',
   },
   inputContainer: {
     marginBottom: 24,
@@ -239,7 +324,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 8,
   },
   input: {
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: colors.border,
     borderRadius: 12,
     padding: 16,
@@ -247,26 +332,51 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
     backgroundColor: colors.background,
   },
-  upgradeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
+  subscribeButton: {
     borderRadius: 16,
     paddingVertical: 18,
-    gap: 10,
     marginBottom: 16,
+    backgroundColor: colors.primary,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   processingButton: {
     opacity: 0.7,
   },
-  upgradeButtonText: {
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  processingContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  subscribeButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: '700',
+  },
+  guaranteeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginBottom: 16,
+  },
+  guarantee: {
+    fontSize: 14,
+    color: colors.success,
+    fontWeight: '500',
   },
   disclaimer: {
-    fontSize: 12,
+    fontSize: 11,
     color: colors.textTertiary,
     textAlign: 'center',
     lineHeight: 16,

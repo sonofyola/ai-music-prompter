@@ -7,6 +7,8 @@ interface UsageContextType {
   canGenerate: boolean;
   userEmail: string | null;
   isEmailCaptured: boolean;
+  subscriptionStatus: 'free' | 'premium' | 'trial';
+  subscriptionExpiry: string | null;
   incrementGeneration: () => Promise<void>;
   upgradeToUnlimited: () => Promise<void>;
   resetDailyCount: () => Promise<void>;
@@ -16,6 +18,7 @@ interface UsageContextType {
 const DAILY_LIMIT = 3;
 const USAGE_KEY = 'usage_data';
 const EMAIL_KEY = 'user_email';
+const SUBSCRIPTION_KEY = 'subscription_data';
 
 // Developer emails that get unlimited access automatically
 const DEVELOPER_EMAILS = [
@@ -30,6 +33,13 @@ interface UsageData {
   isUnlimited: boolean;
 }
 
+interface SubscriptionData {
+  status: 'free' | 'premium' | 'trial';
+  expiry: string | null;
+  amount: number | null;
+  billing_cycle: string | null;
+}
+
 const UsageContext = createContext<UsageContextType | undefined>(undefined);
 
 export function UsageProvider({ children }: { children: React.ReactNode }) {
@@ -37,15 +47,66 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
   const [isUnlimited, setIsUnlimited] = useState(false);
   const [userEmail, setUserEmailState] = useState<string | null>(null);
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'trial'>('free');
+  const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsageData();
     loadUserEmail();
+    loadSubscriptionData();
   }, []);
 
   // Check if user is a developer/admin
   const isDeveloperEmail = (email: string): boolean => {
     return DEVELOPER_EMAILS.includes(email.toLowerCase().trim());
+  };
+
+  const loadSubscriptionData = async () => {
+    try {
+      const data = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
+      if (data) {
+        const subscriptionData: SubscriptionData = JSON.parse(data);
+        setSubscriptionStatus(subscriptionData.status);
+        setSubscriptionExpiry(subscriptionData.expiry);
+        
+        // Check if subscription is still valid
+        if (subscriptionData.status === 'premium' && subscriptionData.expiry) {
+          const expiryDate = new Date(subscriptionData.expiry);
+          const now = new Date();
+          
+          if (now > expiryDate) {
+            // Subscription expired, revert to free
+            setSubscriptionStatus('free');
+            setIsUnlimited(false);
+            await saveSubscriptionData('free', null, null, null);
+          } else {
+            // Subscription is active
+            setIsUnlimited(true);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error loading subscription data:', error);
+    }
+  };
+
+  const saveSubscriptionData = async (
+    status: 'free' | 'premium' | 'trial',
+    expiry: string | null,
+    amount: number | null,
+    billing_cycle: string | null
+  ) => {
+    try {
+      const subscriptionData: SubscriptionData = {
+        status,
+        expiry,
+        amount,
+        billing_cycle,
+      };
+      await AsyncStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscriptionData));
+    } catch (error) {
+      console.error('Error saving subscription data:', error);
+    }
   };
 
   const loadUserEmail = async () => {
@@ -138,7 +199,17 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
 
   const upgradeToUnlimited = async () => {
     setIsUnlimited(true);
+    setSubscriptionStatus('premium');
+    
+    // Set expiry to 1 month from now
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 1);
+    const expiryString = expiryDate.toISOString();
+    
+    setSubscriptionExpiry(expiryString);
+    
     await saveUsageData(generationsToday, new Date().toDateString(), true);
+    await saveSubscriptionData('premium', expiryString, 5.99, 'monthly');
   };
 
   const resetDailyCount = async () => {
@@ -155,6 +226,8 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       canGenerate,
       userEmail,
       isEmailCaptured,
+      subscriptionStatus,
+      subscriptionExpiry,
       incrementGeneration,
       upgradeToUnlimited,
       resetDailyCount,
