@@ -150,6 +150,8 @@ export default function PromptFormScreen({
   };
 
   const handleAudioAnalysis = (analysis: AudioAnalysisResult) => {
+    console.log('Audio analysis received in form:', analysis);
+    
     // Store the analysis
     const audioAnalysisData = {
       detected_genres: analysis.genres,
@@ -160,6 +162,8 @@ export default function PromptFormScreen({
       detected_instruments: analysis.instruments,
       detected_vibe: analysis.vibe,
     };
+
+    console.log('Updating form data with analysis:', audioAnalysisData);
 
     setFormData(prev => ({
       ...prev,
@@ -174,6 +178,8 @@ export default function PromptFormScreen({
         ? `Audio analysis detected: ${analysis.style}. ${analysis.vibe}` 
         : prev.general_freeform,
     }));
+    
+    console.log('Form data updated successfully');
   };
 
   const styles = createStyles(colors);

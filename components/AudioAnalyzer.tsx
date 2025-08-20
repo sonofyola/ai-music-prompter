@@ -30,6 +30,22 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
   const pickAudioFile = async () => {
     try {
+      // Request audio permissions first
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Audio permissions are needed to play audio files.');
+        return;
+      }
+
+      // Set audio mode for playback
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+
       const result = await DocumentPicker.getDocumentAsync({
         type: 'audio/*',
         copyToCacheDirectory: true,
@@ -37,6 +53,8 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
       if (!result.canceled && result.assets[0]) {
         const asset = result.assets[0];
+        
+        console.log('Audio file selected:', asset.name, 'Size:', asset.size);
         
         // Check file size (limit to ~15MB for 10-15 second clips)
         if (asset.size && asset.size > 15 * 1024 * 1024) {
@@ -49,18 +67,28 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
         setAudioUri(asset.uri);
         
-        // Load audio for playback preview
-        const { sound: audioSound } = await Audio.loadAsync({ uri: asset.uri });
-        setSound(audioSound);
-        
-        Alert.alert(
-          'Audio Loaded',
-          `Ready to analyze: ${asset.name}`,
-          [
-            { text: 'Preview', onPress: () => playPreview() },
-            { text: 'Analyze', onPress: () => analyzeAudio(asset.uri) }
-          ]
-        );
+        try {
+          // Load audio for playback preview
+          const { sound: audioSound } = await Audio.Sound.createAsync(
+            { uri: asset.uri },
+            { shouldPlay: false }
+          );
+          setSound(audioSound);
+          console.log('Audio loaded successfully');
+          
+          Alert.alert(
+            'Audio Loaded ✅',
+            `Ready to analyze: ${asset.name}`,
+            [
+              { text: 'Preview', onPress: () => playPreview() },
+              { text: 'Analyze', onPress: () => analyzeAudio(asset.uri) }
+            ]
+          );
+        } catch (audioError) {
+          console.error('Error loading audio:', audioError);
+          Alert.alert('Audio Error', 'Could not load audio file for preview, but analysis can still proceed.');
+          // Still allow analysis even if preview fails
+        }
       }
     } catch (error) {
       console.error('Error picking audio file:', error);
@@ -69,37 +97,62 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
   };
 
   const playPreview = async () => {
+    console.log('Attempting to play preview...');
     if (sound) {
       try {
-        await sound.playAsync();
-        // Stop after 10 seconds
-        setTimeout(async () => {
+        // Check if sound is already playing
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded && status.isPlaying) {
           await sound.stopAsync();
           await sound.setPositionAsync(0);
+        }
+        
+        console.log('Starting playback...');
+        await sound.playAsync();
+        
+        // Stop after 10 seconds
+        setTimeout(async () => {
+          try {
+            const currentStatus = await sound.getStatusAsync();
+            if (currentStatus.isLoaded && currentStatus.isPlaying) {
+              await sound.stopAsync();
+              await sound.setPositionAsync(0);
+              console.log('Preview stopped after 10 seconds');
+            }
+          } catch (stopError) {
+            console.error('Error stopping audio:', stopError);
+          }
         }, 10000);
+        
+        Alert.alert('Playing Preview', 'Audio will play for 10 seconds');
       } catch (error) {
         console.error('Error playing audio:', error);
+        Alert.alert('Playback Error', 'Could not play audio file. The file may be corrupted or in an unsupported format.');
       }
+    } else {
+      Alert.alert('No Audio', 'No audio file loaded for preview.');
     }
   };
 
   const analyzeAudio = async (uri: string) => {
+    console.log('Starting audio analysis for:', uri);
     setIsAnalyzing(true);
     
     try {
       const analysis = await analyzeAudioWithAI(uri);
+      console.log('Analysis completed:', analysis);
       onAnalysisComplete(analysis);
       
       Alert.alert(
         'Analysis Complete! 🎵',
-        'Audio characteristics have been extracted and added to your prompt.',
+        `Detected: ${analysis.genres.join(', ')} • ${analysis.mood.join(', ')} • ${analysis.tempo}`,
         [{ text: 'Great!', style: 'default' }]
       );
     } catch (error) {
       console.error('Error analyzing audio:', error);
       Alert.alert(
         'Analysis Failed',
-        'Could not analyze the audio file. Please try with a different file or check your connection.'
+        `Error: ${error.message || 'Could not analyze the audio file. Please try with a different file or check your connection.'}`
       );
     } finally {
       setIsAnalyzing(false);
