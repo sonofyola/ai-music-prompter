@@ -20,7 +20,6 @@ import {
   ELECTRONIC_GENRES as electronicGenres, 
   MOODS as moodOptions, 
   COMMON_KEYS,
-  TIME_SIGNATURES,
   ENERGY_LEVELS,
   GROOVE_SWINGS,
   VOCAL_GENDERS,
@@ -40,20 +39,13 @@ export default function PromptFormScreen() {
     mood: [],
     tempo_bpm: '',
     key_scale: '',
-    time_signature: '',
     energy: '',
     beat: [],
     bass: [],
     groove_swing: '',
-    sound_palette: '',
     vocal_gender: '',
     vocal_delivery: '',
-    arrangement: '',
-    fx_processing: '',
-    space: '',
-    references: '',
     era: '',
-    mix_notes: '',
     master_notes: '',
     length: '',
     general_freeform: ''
@@ -126,20 +118,13 @@ export default function PromptFormScreen() {
       mood: [],
       tempo_bpm: '',
       key_scale: '',
-      time_signature: '',
       energy: '',
       beat: [],
       bass: [],
       groove_swing: '',
-      sound_palette: '',
       vocal_gender: '',
       vocal_delivery: '',
-      arrangement: '',
-      fx_processing: '',
-      space: '',
-      references: '',
       era: '',
-      mix_notes: '',
       master_notes: '',
       length: '',
       general_freeform: ''
@@ -214,16 +199,6 @@ export default function PromptFormScreen() {
           />
 
           <PickerField
-            label="Time Signature"
-            value={formData.time_signature}
-            onValueChange={(value) => updateField('time_signature', value)}
-            options={[
-              { label: 'No preference', value: '' },
-              ...TIME_SIGNATURES.map(sig => ({ label: sig, value: sig }))
-            ]}
-          />
-
-          <PickerField
             label="Energy Level"
             value={formData.energy}
             onValueChange={(value) => updateField('energy', value)}
@@ -280,43 +255,6 @@ export default function PromptFormScreen() {
           />
 
           <FormField
-            label="Sound Palette"
-            value={formData.sound_palette}
-            onChangeText={(text) => updateField('sound_palette', text)}
-            placeholder="e.g., Juno pads, DX7 keys, 909 drums, modular blips..."
-            multiline
-            numberOfLines={2}
-          />
-
-          <FormField
-            label="Arrangement"
-            value={formData.arrangement}
-            onChangeText={(text) => updateField('arrangement', text)}
-            placeholder="e.g., intro-verse-chorus-drop-breakdown-outro..."
-          />
-
-          <FormField
-            label="FX Processing"
-            value={formData.fx_processing}
-            onChangeText={(text) => updateField('fx_processing', text)}
-            placeholder="e.g., sidechain, tape saturation, bitcrush fills..."
-          />
-
-          <FormField
-            label="Space/Ambience"
-            value={formData.space}
-            onChangeText={(text) => updateField('space', text)}
-            placeholder="e.g., intimate dry booth, club, cavernous hall..."
-          />
-
-          <FormField
-            label="References"
-            value={formData.references}
-            onChangeText={(text) => updateField('references', text)}
-            placeholder="Artists, tracks, or labels for inspiration..."
-          />
-
-          <FormField
             label="Era/Style"
             value={formData.era}
             onChangeText={(text) => updateField('era', text)}
@@ -328,13 +266,6 @@ export default function PromptFormScreen() {
             value={formData.length}
             onChangeText={(text) => updateField('length', text)}
             placeholder="e.g., 2:30 radio edit, loopable 1:00, club 5:30..."
-          />
-
-          <FormField
-            label="Mix Notes"
-            value={formData.mix_notes}
-            onChangeText={(text) => updateField('mix_notes', text)}
-            placeholder="e.g., -10 to -8 LUFS, kick-bass separation..."
           />
 
           <FormField

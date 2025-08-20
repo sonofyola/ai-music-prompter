@@ -37,9 +37,6 @@ export function formatMusicPrompt(data: MusicPromptData): string {
   if (data.key_scale.trim()) {
     techSpecs.push(`compose it in ${data.key_scale}`);
   }
-  if (data.time_signature.trim()) {
-    techSpecs.push(`use a ${data.time_signature} time signature`);
-  }
   if (data.energy) {
     techSpecs.push(`maintain ${data.energy} energy levels throughout`);
   }
@@ -64,11 +61,6 @@ export function formatMusicPrompt(data: MusicPromptData): string {
     sections.push(`${rhythmParts.join(' ')}, providing a solid rhythmic foundation that makes people want to move.`);
   }
 
-  // Sound palette and instrumentation
-  if (data.sound_palette.trim()) {
-    sections.push(`For the sound palette, utilize ${data.sound_palette}, carefully layering these elements to create a rich and textured sonic landscape.`);
-  }
-
   // Vocal specifications
   if (data.vocal_gender && data.vocal_gender !== 'none') {
     let vocalDescription = `Include ${data.vocal_gender} vocals`;
@@ -78,45 +70,14 @@ export function formatMusicPrompt(data: MusicPromptData): string {
     sections.push(`${vocalDescription}, ensuring the vocal performance complements and enhances the instrumental arrangement.`);
   }
 
-  // Arrangement and structure
-  if (data.arrangement.trim()) {
-    sections.push(`Structure the track with ${data.arrangement}, ensuring each section flows naturally into the next while maintaining listener engagement throughout.`);
-  }
-
-  // Production and effects
-  const productionParts: string[] = [];
-  if (data.fx_processing.trim()) {
-    productionParts.push(`Apply ${data.fx_processing} for processing`);
-  }
-  if (data.space.trim()) {
-    productionParts.push(`create ${data.space} spatial characteristics`);
-  }
-  
-  if (productionParts.length > 0) {
-    sections.push(`${productionParts.join(' and ')}, adding depth and dimension to the overall sound.`);
-  }
-
-  // References and inspiration
-  if (data.references.trim()) {
-    sections.push(`Draw inspiration from ${data.references}, capturing their essence while creating something fresh and original.`);
-  }
-
   // Era and stylistic context
   if (data.era.trim()) {
     sections.push(`The track should evoke the ${data.era} era, incorporating period-appropriate production techniques and aesthetic choices.`);
   }
 
-  // Mix and master specifications
-  const audioSpecs: string[] = [];
-  if (data.mix_notes.trim()) {
-    audioSpecs.push(`For mixing: ${data.mix_notes}`);
-  }
+  // Master specifications
   if (data.master_notes.trim()) {
-    audioSpecs.push(`For mastering: ${data.master_notes}`);
-  }
-  
-  if (audioSpecs.length > 0) {
-    sections.push(`${audioSpecs.join('. ')}, ensuring professional audio quality that translates well across all playback systems.`);
+    sections.push(`For mastering: ${data.master_notes}, ensuring professional audio quality that translates well across all playback systems.`);
   }
 
   // Length and format
