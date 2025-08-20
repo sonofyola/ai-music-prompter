@@ -86,7 +86,7 @@ export default function PromptFormScreen({
   };
 
   if (showAdmin) {
-    return <AdminScreen />;
+    return <AdminScreen onBackToApp={() => setShowAdmin(false)} />;
   }
 
   const updateField = <K extends keyof MusicPromptData>(

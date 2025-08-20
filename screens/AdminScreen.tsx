@@ -21,7 +21,11 @@ interface ValidationResult {
   duplicates: EmailRecord[];
 }
 
-export default function AdminScreen() {
+interface AdminScreenProps {
+  onBackToApp: () => void;
+}
+
+export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { isUnlimited, upgradeToUnlimited, generationsToday, userEmail } = useUsage();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
@@ -239,6 +243,13 @@ export default function AdminScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView}>
         <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity onPress={onBackToApp} style={styles.backButton}>
+              <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
+              <Text style={styles.backButtonText}>Back to App</Text>
+            </TouchableOpacity>
+          </View>
+          
           <MaterialIcons name="admin-panel-settings" size={32} color={colors.primary} />
           <Text style={styles.title}>Email Export Admin</Text>
           
@@ -457,6 +468,21 @@ const createStyles = (colors: any) => StyleSheet.create({
     alignItems: 'center',
     padding: 24,
     backgroundColor: colors.surface,
+  },
+  headerTop: {
+    width: '100%',
+    marginBottom: 16,
+  },
+  backButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: colors.primary,
+    fontWeight: '600',
   },
   title: {
     fontSize: 24,
