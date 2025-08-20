@@ -112,7 +112,10 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
               <View style={styles.features}>
                 <View style={styles.feature}>
                   <MaterialIcons name="all-inclusive" size={22} color={colors.success} />
-                  <Text style={styles.featureText}>Unlimited prompt generations</Text>
+                  <View style={styles.featureTextContainer}>
+                    <Text style={styles.featureText}>Unlimited prompt generations</Text>
+                    <Text style={styles.featureSubtext}>vs. 3 per day on free plan</Text>
+                  </View>
                 </View>
                 <View style={styles.feature}>
                   <MaterialIcons name="flash-on" size={22} color={colors.success} />
@@ -179,7 +182,7 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
               <View style={styles.guaranteeContainer}>
                 <MaterialIcons name="verified-user" size={16} color={colors.success} />
                 <Text style={styles.guarantee}>
-                  7-day free trial • Secure payment • Cancel anytime
+                  Secure payment • Cancel anytime • 30-day money-back guarantee
                 </Text>
               </View>
 
@@ -268,10 +271,19 @@ const createStyles = (colors: any) => StyleSheet.create({
     gap: 14,
     marginBottom: 14,
   },
+  featureTextContainer: {
+    flex: 1,
+  },
   featureText: {
     fontSize: 16,
     color: colors.text,
     flex: 1,
+  },
+  featureSubtext: {
+    fontSize: 13,
+    color: colors.textSecondary,
+    fontStyle: 'italic',
+    marginTop: 2,
   },
   pricing: {
     alignItems: 'center',
