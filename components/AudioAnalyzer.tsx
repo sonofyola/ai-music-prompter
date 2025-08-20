@@ -30,22 +30,6 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
   const pickAudioFile = async () => {
     try {
-      // Request audio permissions first
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Audio permissions are needed to play audio files.');
-        return;
-      }
-
-      // Set audio mode for playback
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-
       const result = await DocumentPicker.getDocumentAsync({
         type: 'audio/*',
         copyToCacheDirectory: true,
@@ -68,7 +52,7 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
         setAudioUri(asset.uri);
         
         try {
-          // Load audio for playback preview
+          // Load audio for playback preview (don't request permissions yet)
           const { sound: audioSound } = await Audio.Sound.createAsync(
             { uri: asset.uri },
             { shouldPlay: false }
@@ -98,6 +82,29 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
   const playPreview = async () => {
     console.log('Attempting to play preview...');
+    
+    // Request audio permissions only when user wants to play
+    try {
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permission Required', 'Audio permissions are needed to play audio files.');
+        return;
+      }
+
+      // Set audio mode for playback
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: false,
+        staysActiveInBackground: false,
+        playsInSilentModeIOS: true,
+        shouldDuckAndroid: true,
+        playThroughEarpieceAndroid: false,
+      });
+    } catch (permError) {
+      console.error('Error setting up audio:', permError);
+      Alert.alert('Audio Setup Error', 'Could not set up audio playback.');
+      return;
+    }
+
     if (sound) {
       try {
         // Check if sound is already playing
