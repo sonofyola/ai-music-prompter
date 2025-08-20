@@ -83,15 +83,8 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
   const playPreview = async () => {
     console.log('Attempting to play preview...');
     
-    // Request audio permissions only when user wants to play
+    // Set audio mode for playback (no permissions needed for playback)
     try {
-      const { status } = await Audio.requestPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permission Required', 'Audio permissions are needed to play audio files.');
-        return;
-      }
-
-      // Set audio mode for playback
       await Audio.setAudioModeAsync({
         allowsRecordingIOS: false,
         staysActiveInBackground: false,
@@ -99,10 +92,9 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
         shouldDuckAndroid: true,
         playThroughEarpieceAndroid: false,
       });
-    } catch (permError) {
-      console.error('Error setting up audio:', permError);
-      Alert.alert('Audio Setup Error', 'Could not set up audio playback.');
-      return;
+    } catch (audioError) {
+      console.error('Error setting audio mode:', audioError);
+      // Continue anyway, might still work
     }
 
     if (sound) {
