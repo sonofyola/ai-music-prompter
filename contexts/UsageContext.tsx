@@ -5,13 +5,17 @@ interface UsageContextType {
   generationsToday: number;
   isUnlimited: boolean;
   canGenerate: boolean;
+  userEmail: string | null;
+  isEmailCaptured: boolean;
   incrementGeneration: () => Promise<void>;
   upgradeToUnlimited: () => Promise<void>;
   resetDailyCount: () => Promise<void>;
+  setUserEmail: (email: string) => Promise<void>;
 }
 
 const DAILY_LIMIT = 3;
 const USAGE_KEY = 'usage_data';
+const EMAIL_KEY = 'user_email';
 
 interface UsageData {
   generationsToday: number;
@@ -24,10 +28,35 @@ const UsageContext = createContext<UsageContextType | undefined>(undefined);
 export function UsageProvider({ children }: { children: React.ReactNode }) {
   const [generationsToday, setGenerationsToday] = useState(0);
   const [isUnlimited, setIsUnlimited] = useState(false);
+  const [userEmail, setUserEmailState] = useState<string | null>(null);
+  const [isEmailCaptured, setIsEmailCaptured] = useState(false);
 
   useEffect(() => {
     loadUsageData();
+    loadUserEmail();
   }, []);
+
+  const loadUserEmail = async () => {
+    try {
+      const email = await AsyncStorage.getItem(EMAIL_KEY);
+      if (email) {
+        setUserEmailState(email);
+        setIsEmailCaptured(true);
+      }
+    } catch (error) {
+      console.error('Error loading user email:', error);
+    }
+  };
+
+  const setUserEmail = async (email: string) => {
+    try {
+      await AsyncStorage.setItem(EMAIL_KEY, email);
+      setUserEmailState(email);
+      setIsEmailCaptured(true);
+    } catch (error) {
+      console.error('Error saving user email:', error);
+    }
+  };
 
   const loadUsageData = async () => {
     try {
@@ -88,9 +117,12 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       generationsToday,
       isUnlimited,
       canGenerate,
+      userEmail,
+      isEmailCaptured,
       incrementGeneration,
       upgradeToUnlimited,
       resetDailyCount,
+      setUserEmail,
     }}>
       {children}
     </UsageContext.Provider>

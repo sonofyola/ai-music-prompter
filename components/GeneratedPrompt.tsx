@@ -1,70 +1,58 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
+import { useTheme } from '../contexts/ThemeContext';
 
 interface GeneratedPromptProps {
   prompt: string;
 }
 
 export default function GeneratedPrompt({ prompt }: GeneratedPromptProps) {
+  const { colors } = useTheme();
+  const [copied, setCopied] = useState(false);
+
   const copyToClipboard = async () => {
     try {
       await Clipboard.setStringAsync(prompt);
-      Alert.alert('Copied!', 'Prompt copied to clipboard');
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (error) {
-      Alert.alert('Error', 'Failed to copy prompt');
+      Alert.alert('Error', 'Failed to copy to clipboard');
     }
   };
 
-  const characterCount = prompt.length;
-  const isOptimal = characterCount <= 1200;
+  const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Generated Prompt</Text>
-        <View style={styles.stats}>
-          <Text style={[styles.charCount, !isOptimal && styles.overLimit]}>
-            {characterCount}/1200 chars
+        <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
+          <MaterialIcons 
+            name={copied ? 'check' : 'content-copy'} 
+            size={20} 
+            color={copied ? colors.success : colors.primary} 
+          />
+          <Text style={[styles.copyText, copied && { color: colors.success }]}>
+            {copied ? 'Copied!' : 'Copy'}
           </Text>
-          {!isOptimal && (
-            <MaterialIcons name="warning" size={16} color="#ff6b6b" />
-          )}
-        </View>
+        </TouchableOpacity>
       </View>
-      
       <View style={styles.promptContainer}>
-        <Text style={styles.promptText} selectable>
-          {prompt}
-        </Text>
+        <Text style={styles.promptText}>{prompt}</Text>
       </View>
-
-      <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
-        <MaterialIcons name="content-copy" size={20} color="#fff" />
-        <Text style={styles.copyButtonText}>Copy to Clipboard</Text>
-      </TouchableOpacity>
-
-      {!isOptimal && (
-        <Text style={styles.warning}>
-          ⚠️ Prompt exceeds recommended 1200 character limit. Consider shortening some fields.
-        </Text>
-      )}
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: colors.surface,
+    marginTop: 12,
     padding: 16,
-    marginVertical: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   header: {
     flexDirection: 'row',
@@ -75,53 +63,32 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-  },
-  stats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  charCount: {
-    fontSize: 14,
-    color: '#666',
-  },
-  overLimit: {
-    color: '#ff6b6b',
-    fontWeight: '600',
-  },
-  promptContainer: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: '#007AFF',
-  },
-  promptText: {
-    fontSize: 16,
-    lineHeight: 24,
-    color: '#333',
+    color: colors.text,
   },
   copyButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#007AFF',
+    gap: 6,
+    backgroundColor: colors.primary + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderRadius: 8,
-    padding: 12,
-    gap: 8,
   },
-  copyButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  warning: {
-    marginTop: 12,
+  copyText: {
     fontSize: 14,
-    color: '#ff6b6b',
-    textAlign: 'center',
-    fontStyle: 'italic',
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  promptContainer: {
+    backgroundColor: colors.background,
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: colors.borderLight,
+  },
+  promptText: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: colors.text,
   },
 });

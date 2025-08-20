@@ -1,58 +1,48 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TextInputProps } from 'react-native';
+import { useTheme } from '../contexts/ThemeContext';
 
-interface FormFieldProps {
+interface FormFieldProps extends TextInputProps {
   label: string;
-  value: string;
-  onChangeText: (text: string) => void;
-  placeholder?: string;
-  multiline?: boolean;
-  numberOfLines?: number;
 }
 
-export default function FormField({ 
-  label, 
-  value, 
-  onChangeText, 
-  placeholder, 
-  multiline = false,
-  numberOfLines = 1 
-}: FormFieldProps) {
+export default function FormField({ label, ...props }: FormFieldProps) {
+  const { colors } = useTheme();
+  const styles = createStyles(colors);
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
-        style={[styles.input, multiline && styles.multilineInput]}
-        value={value}
-        onChangeText={onChangeText}
-        placeholder={placeholder}
-        multiline={multiline}
-        numberOfLines={numberOfLines}
-        textAlignVertical={multiline ? 'top' : 'center'}
+        style={[styles.input, props.multiline && styles.multilineInput]}
+        placeholderTextColor={colors.textTertiary}
+        {...props}
       />
     </View>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     marginBottom: 16,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
+    color: colors.text,
     marginBottom: 8,
-    color: '#333',
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    padding: 12,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
+    color: colors.text,
+    backgroundColor: colors.background,
   },
   multilineInput: {
     minHeight: 80,
+    textAlignVertical: 'top',
   },
 });

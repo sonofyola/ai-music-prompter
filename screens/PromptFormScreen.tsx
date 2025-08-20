@@ -1,11 +1,16 @@
 import React, { useState } from 'react';
-import { ScrollView, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useTheme } from '../contexts/ThemeContext';
+import { useUsage } from '../contexts/UsageContext';
 import FormField from '../components/FormField';
 import PickerField from '../components/PickerField';
 import MultiSelectField from '../components/MultiSelectField';
 import GeneratedPrompt from '../components/GeneratedPrompt';
+import ThemeToggle from '../components/ThemeToggle';
+import UsageIndicator from '../components/UsageIndicator';
+import UpgradeModal from '../components/UpgradeModal';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import {
@@ -20,7 +25,20 @@ import {
   COMMON_KEYS,
 } from '../utils/musicData';
 
-export default function PromptFormScreen() {
+interface PromptFormScreenProps {
+  onUpgradePress: () => void;
+  showUpgradeModal: boolean;
+  onCloseUpgradeModal: () => void;
+}
+
+export default function PromptFormScreen({ 
+  onUpgradePress, 
+  showUpgradeModal, 
+  onCloseUpgradeModal 
+}: PromptFormScreenProps) {
+  const { colors } = useTheme();
+  const { canGenerate, incrementGeneration, isUnlimited } = useUsage();
+  
   const [formData, setFormData] = useState<MusicPromptData>({
     genres_primary: [],
     genres_electronic: [],
@@ -57,10 +75,25 @@ export default function PromptFormScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generatePrompt = () => {
+  const generatePrompt = async () => {
+    if (!canGenerate) {
+      Alert.alert(
+        'Daily Limit Reached',
+        'You\'ve used all 3 free generations today. Upgrade to unlimited for just $4.99!',
+        [
+          { text: 'Maybe Later', style: 'cancel' },
+          { text: 'Upgrade Now', onPress: onUpgradePress }
+        ]
+      );
+      return;
+    }
+
     const prompt = formatMusicPrompt(formData);
     setGeneratedPrompt(prompt);
     setShowPrompt(true);
+    
+    // Increment usage count
+    await incrementGeneration();
   };
 
   const clearForm = () => {
@@ -92,15 +125,22 @@ export default function PromptFormScreen() {
     setShowPrompt(false);
   };
 
+  const styles = createStyles(colors);
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Music Prompt Generator</Text>
+          <View style={styles.headerTop}>
+            <Text style={styles.title}>AI Music Prompt Generator</Text>
+            <ThemeToggle />
+          </View>
           <Text style={styles.subtitle}>
             Create optimized prompts for AI music tools like Suno, Riffusion, and MusicGen
           </Text>
         </View>
+
+        <UsageIndicator onUpgradePress={onUpgradePress} />
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🎵 Genres</Text>
@@ -166,7 +206,7 @@ export default function PromptFormScreen() {
           <PickerField
             label="Energy Level"
             value={formData.energy}
-            onValueChange={(value) => updateField('energy', value)}
+            onValueChange={(value) => updateField('energy', value as any)}
             options={[
               { label: 'No preference', value: '' },
               ...ENERGY_LEVELS
@@ -191,7 +231,7 @@ export default function PromptFormScreen() {
           <PickerField
             label="Groove/Swing"
             value={formData.groove_swing}
-            onValueChange={(value) => updateField('groove_swing', value)}
+            onValueChange={(value) => updateField('groove_swing', value as any)}
             options={[
               { label: 'No preference', value: '' },
               ...GROOVE_SWINGS
@@ -204,13 +244,13 @@ export default function PromptFormScreen() {
           <PickerField
             label="Vocal Gender"
             value={formData.vocal_gender}
-            onValueChange={(value) => updateField('vocal_gender', value)}
+            onValueChange={(value) => updateField('vocal_gender', value as any)}
             options={VOCAL_GENDERS}
           />
           <PickerField
             label="Vocal Delivery"
             value={formData.vocal_delivery}
-            onValueChange={(value) => updateField('vocal_delivery', value)}
+            onValueChange={(value) => updateField('vocal_delivery', value as any)}
             options={VOCAL_DELIVERIES}
           />
         </View>
@@ -300,57 +340,77 @@ export default function PromptFormScreen() {
         )}
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity style={styles.generateButton} onPress={generatePrompt}>
+          <TouchableOpacity 
+            style={[
+              styles.generateButton, 
+              !canGenerate && styles.disabledButton
+            ]} 
+            onPress={generatePrompt}
+            disabled={!canGenerate}
+          >
             <MaterialIcons name="auto-awesome" size={20} color="#fff" />
-            <Text style={styles.generateButtonText}>Generate Prompt</Text>
+            <Text style={styles.generateButtonText}>
+              {canGenerate ? 'Generate Prompt' : 'Daily Limit Reached'}
+            </Text>
           </TouchableOpacity>
           
           <TouchableOpacity style={styles.clearButton} onPress={clearForm}>
-            <MaterialIcons name="clear" size={20} color="#666" />
+            <MaterialIcons name="clear" size={20} color={colors.textSecondary} />
             <Text style={styles.clearButtonText}>Clear Form</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <UpgradeModal 
+        visible={showUpgradeModal}
+        onClose={onCloseUpgradeModal}
+      />
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: colors.background,
   },
   scrollView: {
     flex: 1,
   },
   header: {
     padding: 20,
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    borderBottomColor: colors.border,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 8,
+    color: colors.text,
+    flex: 1,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: colors.textSecondary,
     lineHeight: 22,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     marginTop: 12,
     padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
+    color: colors.text,
     marginBottom: 16,
   },
   buttonContainer: {
@@ -361,10 +421,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#007AFF',
+    backgroundColor: colors.primary,
     borderRadius: 12,
     padding: 16,
     gap: 8,
+  },
+  disabledButton: {
+    backgroundColor: colors.textTertiary,
   },
   generateButtonText: {
     color: '#fff',
@@ -375,15 +438,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.surface,
     borderRadius: 12,
     padding: 16,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: colors.border,
   },
   clearButtonText: {
-    color: '#666',
+    color: colors.textSecondary,
     fontSize: 16,
     fontWeight: '600',
   },
