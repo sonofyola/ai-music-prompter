@@ -19,8 +19,9 @@ const EMAIL_KEY = 'user_email';
 
 // Developer emails that get unlimited access automatically
 const DEVELOPER_EMAILS = [
-  'your-email@example.com', // Replace with your actual email
-  'admin@yourdomain.com',   // Add any other admin emails
+  'test@admin.com',        // Test admin email for preview
+  'admin@example.com',     // Another test email
+  'developer@test.com',    // Add more as needed
 ];
 
 interface UsageData {
