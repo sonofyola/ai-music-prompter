@@ -6,15 +6,28 @@ const path = require('path');
 
 const config = getDefaultConfig(__dirname);
 
-// Add resolver alias for Platform utilities
+// Create the platform polyfill path
+const platformPolyfill = path.resolve(__dirname, 'polyfills/Platform.js');
+
+// Add comprehensive resolver aliases
 config.resolver.alias = {
   ...config.resolver.alias,
-  '../../Utilities/Platform': path.resolve(__dirname, 'polyfills/Platform.js'),
-  '../Utilities/Platform': path.resolve(__dirname, 'polyfills/Platform.js'),
-  'react-native/Libraries/Utilities/Platform': path.resolve(__dirname, 'polyfills/Platform.js'),
+  // Direct path resolutions
+  '../../Utilities/Platform': platformPolyfill,
+  '../Utilities/Platform': platformPolyfill,
+  './Utilities/Platform': platformPolyfill,
+  'Utilities/Platform': platformPolyfill,
+  // React Native specific paths
+  'react-native/Libraries/Utilities/Platform': platformPolyfill,
+  'react-native/Libraries/Utilities/Platform.js': platformPolyfill,
+  // Additional fallbacks
+  '@react-native/js-polyfills/Platform': platformPolyfill,
 };
 
-// Ensure web platform is supported
-config.resolver.platforms = ['ios', 'android', 'native', 'web'];
+// Ensure all platforms are supported
+config.resolver.platforms = ['web', 'ios', 'android', 'native'];
+
+// Add resolver extensions
+config.resolver.sourceExts = [...config.resolver.sourceExts, 'jsx', 'js', 'ts', 'tsx'];
 
 module.exports = wrapWithReanimatedMetroConfig(config);
