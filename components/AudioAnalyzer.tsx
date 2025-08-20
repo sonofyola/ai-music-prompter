@@ -25,6 +25,7 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [audioUri, setAudioUri] = useState<string | null>(null);
   const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   const styles = createStyles(colors);
 
@@ -81,51 +82,62 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
   };
 
   const playPreview = async () => {
-    console.log('Attempting to play preview...');
+    console.log('Attempting to play/stop preview...');
     
-    // Set audio mode for playback (no permissions needed for playback)
-    try {
-      await Audio.setAudioModeAsync({
-        allowsRecordingIOS: false,
-        staysActiveInBackground: false,
-        playsInSilentModeIOS: true,
-        shouldDuckAndroid: true,
-        playThroughEarpieceAndroid: false,
-      });
-    } catch (audioError) {
-      console.error('Error setting audio mode:', audioError);
-      // Continue anyway, might still work
-    }
-
     if (sound) {
       try {
-        // Check if sound is already playing
         const status = await sound.getStatusAsync();
+        
+        // If currently playing, stop it
         if (status.isLoaded && status.isPlaying) {
+          console.log('Stopping playback...');
           await sound.stopAsync();
           await sound.setPositionAsync(0);
+          setIsPlaying(false);
+          Alert.alert('Preview Stopped', 'Audio playback stopped');
+          return;
         }
         
+        // If not playing, start playback
         console.log('Starting playback...');
-        await sound.playAsync();
         
-        // Stop after 10 seconds
+        // Set audio mode for playback (no permissions needed for playback)
+        try {
+          await Audio.setAudioModeAsync({
+            allowsRecordingIOS: false,
+            staysActiveInBackground: false,
+            playsInSilentModeIOS: true,
+            shouldDuckAndroid: true,
+            playThroughEarpieceAndroid: false,
+          });
+        } catch (audioError) {
+          console.error('Error setting audio mode:', audioError);
+          // Continue anyway, might still work
+        }
+
+        await sound.playAsync();
+        setIsPlaying(true);
+        
+        // Auto-stop after 10 seconds
         setTimeout(async () => {
           try {
             const currentStatus = await sound.getStatusAsync();
             if (currentStatus.isLoaded && currentStatus.isPlaying) {
               await sound.stopAsync();
               await sound.setPositionAsync(0);
-              console.log('Preview stopped after 10 seconds');
+              setIsPlaying(false);
+              console.log('Preview auto-stopped after 10 seconds');
             }
           } catch (stopError) {
             console.error('Error stopping audio:', stopError);
           }
         }, 10000);
         
-        Alert.alert('Playing Preview', 'Audio will play for 10 seconds');
+        Alert.alert('Playing Preview', 'Audio will play for 10 seconds. Click Preview again to stop.');
+        
       } catch (error) {
-        console.error('Error playing audio:', error);
+        console.error('Error with audio playback:', error);
+        setIsPlaying(false);
         Alert.alert('Playback Error', 'Could not play audio file. The file may be corrupted or in an unsupported format.');
       }
     } else {
@@ -160,10 +172,21 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
 
   const clearAudio = async () => {
     if (sound) {
+      // Stop playback if currently playing
+      try {
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded && status.isPlaying) {
+          await sound.stopAsync();
+        }
+      } catch (error) {
+        console.error('Error stopping audio during clear:', error);
+      }
+      
       await sound.unloadAsync();
       setSound(null);
     }
     setAudioUri(null);
+    setIsPlaying(false);
   };
 
   return (
@@ -200,8 +223,14 @@ export default function AudioAnalyzer({ onAnalysisComplete }: AudioAnalyzerProps
               onPress={playPreview}
               disabled={isAnalyzing}
             >
-              <MaterialIcons name="play-arrow" size={20} color={colors.primary} />
-              <Text style={styles.previewButtonText}>Preview</Text>
+              <MaterialIcons 
+                name={isPlaying ? "stop" : "play-arrow"} 
+                size={20} 
+                color={colors.primary} 
+              />
+              <Text style={styles.previewButtonText}>
+                {isPlaying ? 'Stop' : 'Preview'}
+              </Text>
             </TouchableOpacity>
             
             <TouchableOpacity 
