@@ -13,6 +13,7 @@ import UpgradeModal from '../components/UpgradeModal';
 import AdminScreen from './AdminScreen';
 import SmartSuggestions from '../components/SmartSuggestions';
 import { getSmartSuggestions } from '../utils/smartSuggestions';
+import RandomTrackModal from '../components/RandomTrackModal';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
@@ -36,6 +37,7 @@ export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration } = useUsage();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showRandomTrackModal, setShowRandomTrackModal] = useState(false);
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -76,6 +78,14 @@ export default function PromptFormScreen() {
     
     // Reset counter after 3 seconds
     setTimeout(() => setAdminTapCount(0), 3000);
+  };
+
+  const handleRandomTrackPress = () => {
+    setShowRandomTrackModal(true);
+  };
+
+  const handleSelectRandomIdea = (subject: string) => {
+    setFormData(prev => ({ ...prev, subject }));
   };
 
   const onUpgradePress = () => {
@@ -164,6 +174,8 @@ export default function PromptFormScreen() {
             value={formData.subject}
             onChangeText={(text) => setFormData(prev => ({ ...prev, subject: text }))}
             placeholder="e.g., summer vibes, heartbreak, celebration"
+            showRandomGenerator={true}
+            onRandomPress={handleRandomTrackPress}
           />
 
           <MultiSelectField
@@ -383,6 +395,12 @@ export default function PromptFormScreen() {
           // Handle successful upgrade - could refresh usage context
           setShowUpgradeModal(false);
         }}
+      />
+
+      <RandomTrackModal
+        visible={showRandomTrackModal}
+        onClose={() => setShowRandomTrackModal(false)}
+        onSelectIdea={handleSelectRandomIdea}
       />
     </SafeAreaView>
   );
