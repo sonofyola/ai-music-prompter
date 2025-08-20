@@ -6,13 +6,11 @@ const { getDefaultConfig } = require('@expo/metro-config');
 /** @type {import('expo/metro-config').MetroConfig} */
 const config = getDefaultConfig(__dirname);
 
-// Disable package exports to avoid warnings
+// Basic configuration to avoid module resolution issues
 config.resolver.unstable_enablePackageExports = false;
-
-// Add resolver configuration to handle common warnings
 config.resolver.platforms = ['ios', 'android', 'native', 'web'];
 
-// Silence common warnings
+// Ensure proper module resolution
 config.resolver.resolverMainFields = ['react-native', 'browser', 'main'];
 
 module.exports = wrapWithReanimatedMetroConfig(config);
