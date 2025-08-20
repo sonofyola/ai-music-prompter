@@ -142,10 +142,10 @@ export function generateRandomTrackIdea(): TrackIdea {
     const params = [emotion, setting, concept, character, object, action, time];
     const param1 = getRandomElement(params);
     const param2 = getRandomElement(params.filter(p => p !== param1));
-    return template(param1, param2);
+    return (template as any)(param1, param2);
   } else if (template.length === 3) {
     // Three parameter template
-    return template(setting, character, action);
+    return (template as any)(setting, character, action);
   } else {
     // Fallback to simple emotion + setting
     return {

@@ -17,3 +17,22 @@ export interface MusicPromptData {
   weirdness_level: string;
   general_freeform: string;
 }
+
+export interface SavedPrompt {
+  id: string;
+  name: string;
+  formData: MusicPromptData;
+  generatedPrompt: string;
+  isFavorite: boolean;
+  createdAt: string;
+  lastUsed?: string;
+}
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  icon: string;
+  formData: Partial<MusicPromptData>;
+}

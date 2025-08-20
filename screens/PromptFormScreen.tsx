@@ -12,11 +12,14 @@ import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
 import AdminScreen from './AdminScreen';
 import SmartSuggestions from '../components/SmartSuggestions';
-import { getSmartSuggestions } from '../utils/smartSuggestions';
 import RandomTrackModal from '../components/RandomTrackModal';
+import TemplatesModal from '../components/TemplatesModal';
+import PromptHistoryModal from '../components/PromptHistoryModal';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
+import { usePromptHistory } from '../contexts/PromptHistoryContext';
+import { getSmartSuggestions } from '../utils/smartSuggestions';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import { 
   PRIMARY_GENRES as primaryGenres, 
@@ -36,8 +39,11 @@ import { MusicPromptData } from '../types';
 export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration } = useUsage();
+  const { savePrompt } = usePromptHistory();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showRandomTrackModal, setShowRandomTrackModal] = useState(false);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -86,6 +92,33 @@ export default function PromptFormScreen() {
 
   const handleSelectRandomIdea = (subject: string) => {
     setFormData(prev => ({ ...prev, subject }));
+  };
+
+  const handleSelectTemplate = (templateData: Partial<MusicPromptData>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...templateData,
+      // Ensure arrays are properly handled
+      genres_primary: templateData.genres_primary || [],
+      genres_electronic: templateData.genres_electronic || [],
+      mood: templateData.mood || [],
+      beat: templateData.beat || [],
+      bass: templateData.bass || [],
+    }));
+  };
+
+  const handleLoadPrompt = (promptData: MusicPromptData) => {
+    setFormData(promptData);
+    setShowPrompt(false); // Hide current generated prompt
+  };
+
+  const handleSaveCurrentPrompt = async (name: string) => {
+    if (generatedPrompt) {
+      await savePrompt(name, formData, generatedPrompt);
+      Alert.alert('Success', 'Prompt saved successfully!');
+    } else {
+      Alert.alert('No Prompt', 'Generate a prompt first before saving.');
+    }
   };
 
   const onUpgradePress = () => {
@@ -163,7 +196,21 @@ export default function PromptFormScreen() {
             </TouchableOpacity>
             <Text style={styles.subtitle}>Create detailed prompts for AI music tools</Text>
           </View>
-          <ThemeToggle />
+          <View style={styles.headerActions}>
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={() => setShowHistoryModal(true)}
+            >
+              <MaterialIcons name="history" size={24} color={colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.headerButton}
+              onPress={() => setShowTemplatesModal(true)}
+            >
+              <MaterialIcons name="dashboard" size={24} color={colors.primary} />
+            </TouchableOpacity>
+            <ThemeToggle />
+          </View>
         </View>
 
         <UsageIndicator onUpgradePress={onUpgradePress} />
@@ -402,6 +449,21 @@ export default function PromptFormScreen() {
         onClose={() => setShowRandomTrackModal(false)}
         onSelectIdea={handleSelectRandomIdea}
       />
+
+      <TemplatesModal
+        visible={showTemplatesModal}
+        onClose={() => setShowTemplatesModal(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
+
+      <PromptHistoryModal
+        visible={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        onLoadPrompt={handleLoadPrompt}
+        onSaveCurrentPrompt={handleSaveCurrentPrompt}
+        currentFormData={formData}
+        currentGeneratedPrompt={generatedPrompt}
+      />
     </SafeAreaView>
   );
 }
@@ -437,6 +499,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     color: colors.textSecondary,
     lineHeight: 22,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerButton: {
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   form: {
     backgroundColor: colors.surface,
