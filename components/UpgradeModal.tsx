@@ -13,6 +13,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
+import { collectEmail } from '../utils/emailService';
 
 interface UpgradeModalProps {
   visible: boolean;
@@ -39,11 +40,16 @@ export default function UpgradeModal({ visible, onClose }: UpgradeModalProps) {
     setIsProcessing(true);
     
     try {
+      // Collect upgrade email
+      await collectEmail({
+        email: email.trim(),
+        tier: 'premium',
+        timestamp: new Date().toISOString(),
+        source: 'upgrade'
+      });
+
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Save email for contact list
-      console.log('Email captured for upgrade:', email);
       
       await upgradeToUnlimited();
       

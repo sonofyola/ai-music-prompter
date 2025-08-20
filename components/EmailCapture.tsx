@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import { collectEmail } from '../utils/emailService';
 
 interface EmailCaptureProps {
   onEmailSubmitted: (email: string) => void;
@@ -35,15 +36,25 @@ export default function EmailCapture({ onEmailSubmitted }: EmailCaptureProps) {
     setIsSubmitting(true);
     
     try {
-      // Simulate API call to save email
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Log email for contact list
-      console.log('Email captured for free tier:', email);
-      
-      onEmailSubmitted(email);
+      // Collect email via API
+      const emailCollected = await collectEmail({
+        email: email.trim(),
+        tier: 'free',
+        timestamp: new Date().toISOString(),
+        source: 'registration'
+      });
+
+      if (emailCollected) {
+        onEmailSubmitted(email);
+      } else {
+        // Still allow user to continue even if email collection fails
+        console.warn('Email collection failed, but allowing user to continue');
+        onEmailSubmitted(email);
+      }
     } catch (error) {
-      Alert.alert('Error', 'Something went wrong. Please try again.');
+      console.error('Email submission error:', error);
+      // Don't block user if email collection fails
+      onEmailSubmitted(email);
     } finally {
       setIsSubmitting(false);
     }
