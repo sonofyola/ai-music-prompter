@@ -37,20 +37,15 @@ export default function EmailCapture({ onEmailSubmitted }: EmailCaptureProps) {
     
     try {
       // Collect email via API
-      const emailCollected = await collectEmail({
+      await collectEmail({
         email: email.trim(),
         tier: 'free',
         timestamp: new Date().toISOString(),
         source: 'registration'
       });
 
-      if (emailCollected) {
-        onEmailSubmitted(email);
-      } else {
-        // Still allow user to continue even if email collection fails
-        console.warn('Email collection failed, but allowing user to continue');
-        onEmailSubmitted(email);
-      }
+      // Email collection succeeded
+      onEmailSubmitted(email);
     } catch (error) {
       console.error('Email submission error:', error);
       // Don't block user if email collection fails

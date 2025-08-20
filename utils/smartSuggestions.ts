@@ -37,7 +37,7 @@ export function getBPMSuggestions(genres: string[]): string[] {
   }
   
   // Remove duplicates and return top 3
-  return [...new Set(suggestions)].slice(0, 3);
+  return Array.from(new Set(suggestions)).slice(0, 3);
 }
 
 // Key suggestions based on mood
@@ -68,7 +68,7 @@ export function getKeySuggestions(moods: string[]): string[] {
     }
   }
   
-  return [...new Set(suggestions)].slice(0, 3);
+  return Array.from(new Set(suggestions)).slice(0, 3);
 }
 
 // Beat suggestions based on genre
@@ -100,7 +100,7 @@ export function getBeatSuggestions(genres: string[]): string[] {
     }
   }
   
-  return [...new Set(suggestions)].slice(0, 3);
+  return Array.from(new Set(suggestions)).slice(0, 3);
 }
 
 // Bass suggestions based on genre
@@ -133,7 +133,7 @@ export function getBassSuggestions(genres: string[]): string[] {
     }
   }
   
-  return [...new Set(suggestions)].slice(0, 3);
+  return Array.from(new Set(suggestions)).slice(0, 3);
 }
 
 // Era suggestions based on genre
@@ -160,7 +160,7 @@ export function getEraSuggestions(genres: string[]): string[] {
     }
   }
   
-  return [...new Set(suggestions)].slice(0, 3);
+  return Array.from(new Set(suggestions)).slice(0, 3);
 }
 
 // Get all smart suggestions for current form state
