@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ScrollView, View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import * as Clipboard from 'expo-clipboard';
-import * as Haptics from 'expo-haptics';
 
 import FormField from '../components/FormField';
 import PickerField from '../components/PickerField';
@@ -12,38 +10,28 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
-import EmailCapture from '../components/EmailCapture';
+import AdminScreen from './AdminScreen';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import { 
-  primaryGenres, 
-  electronicGenres, 
-  moodOptions, 
-  energyOptions, 
-  beatOptions, 
-  bassOptions, 
-  vocalGenderOptions, 
-  vocalDeliveryOptions, 
-  arrangementOptions, 
-  spaceOptions, 
-  eraOptions, 
-  lengthOptions 
+  PRIMARY_GENRES as primaryGenres, 
+  ELECTRONIC_GENRES as electronicGenres, 
+  MOODS as moodOptions, 
+  COMMON_KEYS,
+  TIME_SIGNATURES,
+  ENERGY_LEVELS,
+  GROOVE_SWINGS,
+  VOCAL_GENDERS,
+  VOCAL_DELIVERIES
 } from '../utils/musicData';
 import { MusicPromptData } from '../types';
 
-interface PromptFormScreenProps {
-  onUpgradePress: () => void;
-  showUpgradeModal: boolean;
-  onCloseUpgradeModal: () => void;
-}
-
 export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { canGenerate, incrementUsage, isUnlimited } = useUsage();
+  const { canGenerate, incrementGeneration } = useUsage();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showEmailCapture, setShowEmailCapture] = useState(false);
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -90,6 +78,14 @@ export default function PromptFormScreen() {
     setTimeout(() => setAdminTapCount(0), 3000);
   };
 
+  const onUpgradePress = () => {
+    setShowUpgradeModal(true);
+  };
+
+  const onCloseUpgradeModal = () => {
+    setShowUpgradeModal(false);
+  };
+
   if (showAdmin) {
     return <AdminScreen onBackToApp={() => setShowAdmin(false)} />;
   }
@@ -119,7 +115,7 @@ export default function PromptFormScreen() {
     setShowPrompt(true);
     
     // Increment usage count
-    await incrementUsage();
+    await incrementGeneration();
   };
 
   const clearForm = () => {
@@ -158,13 +154,15 @@ export default function PromptFormScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>AI Music Prompt Generator</Text>
+            <TouchableOpacity onPress={handleTitlePress}>
+              <Text style={styles.title}>AI Music Prompt Generator</Text>
+            </TouchableOpacity>
             <Text style={styles.subtitle}>Create detailed prompts for AI music tools</Text>
           </View>
           <ThemeToggle />
         </View>
 
-        <UsageIndicator />
+        <UsageIndicator onUpgradePress={onUpgradePress} />
 
         <View style={styles.form}>
           <FormField
@@ -188,6 +186,14 @@ export default function PromptFormScreen() {
             onValuesChange={(values) => updateField('genres_electronic', values)}
             options={electronicGenres}
             placeholder="Select electronic subgenres..."
+          />
+
+          <MultiSelectField
+            label="Mood"
+            values={formData.mood}
+            onValuesChange={(values) => updateField('mood', values)}
+            options={moodOptions}
+            placeholder="Select moods..."
           />
 
           <FormField
@@ -220,31 +226,39 @@ export default function PromptFormScreen() {
           <PickerField
             label="Energy Level"
             value={formData.energy}
-            onValueChange={(value) => updateField('energy', value as any)}
+            onValueChange={(value) => updateField('energy', value)}
             options={[
               { label: 'No preference', value: '' },
               ...ENERGY_LEVELS
             ]}
           />
 
-          <FormField
+          <MultiSelectField
             label="Beat Style"
-            value={formData.beat}
-            onChangeText={(text) => updateField('beat', text)}
-            placeholder="e.g., four-on-the-floor, broken beat, rolling DnB..."
+            values={formData.beat}
+            onValuesChange={(values) => updateField('beat', values)}
+            options={[
+              'four-on-the-floor', 'broken beat', 'rolling DnB', 'trap hi-hats',
+              'breakbeat', 'shuffle', 'swing', 'straight', 'syncopated'
+            ]}
+            placeholder="Select beat styles..."
           />
 
-          <FormField
+          <MultiSelectField
             label="Bass Character"
-            value={formData.bass}
-            onChangeText={(text) => updateField('bass', text)}
-            placeholder="e.g., sub-heavy, rubbery 303, warm analog..."
+            values={formData.bass}
+            onValuesChange={(values) => updateField('bass', values)}
+            options={[
+              'sub-heavy', 'rubbery 303', 'warm analog', 'punchy', 'deep',
+              'distorted', 'filtered', 'wobbly', 'tight', 'boomy'
+            ]}
+            placeholder="Select bass characteristics..."
           />
 
           <PickerField
             label="Groove/Swing"
             value={formData.groove_swing}
-            onValueChange={(value) => updateField('groove_swing', value as any)}
+            onValueChange={(value) => updateField('groove_swing', value)}
             options={[
               { label: 'No preference', value: '' },
               ...GROOVE_SWINGS
@@ -254,14 +268,14 @@ export default function PromptFormScreen() {
           <PickerField
             label="Vocal Gender"
             value={formData.vocal_gender}
-            onValueChange={(value) => updateField('vocal_gender', value as any)}
+            onValueChange={(value) => updateField('vocal_gender', value)}
             options={VOCAL_GENDERS}
           />
 
           <PickerField
             label="Vocal Delivery"
             value={formData.vocal_delivery}
-            onValueChange={(value) => updateField('vocal_delivery', value as any)}
+            onValueChange={(value) => updateField('vocal_delivery', value)}
             options={VOCAL_DELIVERIES}
           />
 

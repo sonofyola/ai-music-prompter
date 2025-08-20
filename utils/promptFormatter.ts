@@ -50,11 +50,11 @@ export function formatMusicPrompt(data: MusicPromptData): string {
 
   // Rhythm and bass foundation
   const rhythmParts: string[] = [];
-  if (data.beat.trim()) {
-    rhythmParts.push(`The beat should feature ${data.beat}`);
+  if (data.beat.length > 0) {
+    rhythmParts.push(`The beat should feature ${data.beat.join(' and ')}`);
   }
-  if (data.bass.trim()) {
-    rhythmParts.push(`with ${data.bass} bass`);
+  if (data.bass.length > 0) {
+    rhythmParts.push(`with ${data.bass.join(' and ')} bass`);
   }
   if (data.groove_swing) {
     rhythmParts.push(`incorporating ${data.groove_swing} groove elements`);
