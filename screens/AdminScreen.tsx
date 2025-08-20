@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
@@ -33,6 +33,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
   const [showValidationDetails, setShowValidationDetails] = useState(false);
+  const [manualUpgradeEmail, setManualUpgradeEmail] = useState('');
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   useEffect(() => {
     loadEmails();
@@ -64,6 +66,64 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         }
       ]
     );
+  };
+
+  const handleManualUpgrade = async () => {
+    if (!manualUpgradeEmail.trim()) {
+      Alert.alert('Email Required', 'Please enter an email address to upgrade.');
+      return;
+    }
+
+    if (!isValidEmail(manualUpgradeEmail)) {
+      Alert.alert('Invalid Email', 'Please enter a valid email address.');
+      return;
+    }
+
+    setIsUpgrading(true);
+
+    try {
+      // Get current unlimited emails list
+      const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
+      const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
+      
+      const emailToAdd = manualUpgradeEmail.toLowerCase().trim();
+      
+      if (emailList.includes(emailToAdd)) {
+        Alert.alert('Already Unlimited', 'This email already has unlimited access.');
+        setManualUpgradeEmail('');
+        return;
+      }
+
+      // Add email to unlimited list
+      emailList.push(emailToAdd);
+      await AsyncStorage.setItem('unlimited_emails', JSON.stringify(emailList));
+
+      // Update the email record if it exists in collected emails
+      const storedEmails = await AsyncStorage.getItem('collected_emails');
+      if (storedEmails) {
+        const emailRecords: EmailRecord[] = JSON.parse(storedEmails);
+        const updatedRecords = emailRecords.map(record => {
+          if (record.email.toLowerCase() === emailToAdd) {
+            return { ...record, tier: 'premium' as const };
+          }
+          return record;
+        });
+        await AsyncStorage.setItem('collected_emails', JSON.stringify(updatedRecords));
+        setEmails(updatedRecords);
+      }
+
+      Alert.alert(
+        'Success! 🎉', 
+        `${manualUpgradeEmail} has been upgraded to unlimited access.`
+      );
+      setManualUpgradeEmail('');
+      
+    } catch (error) {
+      console.error('Error upgrading email:', error);
+      Alert.alert('Upgrade Failed', 'Could not upgrade email. Please try again.');
+    } finally {
+      setIsUpgrading(false);
+    }
   };
 
   // Enhanced email validation
@@ -326,14 +386,47 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         )}
 
         <View style={styles.actionsContainer}>
+          {/* Manual Email Upgrade Section */}
+          <View style={styles.manualUpgradeContainer}>
+            <Text style={styles.manualUpgradeTitle}>🔓 Manual Account Upgrade</Text>
+            <Text style={styles.manualUpgradeSubtitle}>
+              Enter any email address to grant unlimited access
+            </Text>
+            
+            <View style={styles.manualUpgradeInputContainer}>
+              <MaterialIcons name="email" size={20} color={colors.textSecondary} />
+              <TextInput
+                style={styles.manualUpgradeInput}
+                value={manualUpgradeEmail}
+                onChangeText={setManualUpgradeEmail}
+                placeholder="user@example.com"
+                placeholderTextColor={colors.textTertiary}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoCorrect={false}
+              />
+            </View>
+            
+            <TouchableOpacity 
+              style={[styles.manualUpgradeButton, isUpgrading && styles.disabledButton]}
+              onPress={handleManualUpgrade}
+              disabled={isUpgrading}
+            >
+              <MaterialIcons name="upgrade" size={20} color="#fff" />
+              <Text style={styles.buttonText}>
+                {isUpgrading ? 'Upgrading...' : 'Grant Unlimited Access'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
           {/* Admin Upgrade Button */}
           {!isUnlimited && (
             <TouchableOpacity 
-              style={styles.adminUpgradeButton}
+              style={styles.currentUserUpgradeButton}
               onPress={handleAdminUpgrade}
             >
               <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
-              <Text style={styles.buttonText}>Enable Unlimited (Admin)</Text>
+              <Text style={styles.buttonText}>Enable Unlimited (Current User)</Text>
             </TouchableOpacity>
           )}
 
@@ -603,7 +696,55 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 16,
     gap: 12,
   },
-  adminUpgradeButton: {
+  manualUpgradeContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: colors.success + '40',
+  },
+  manualUpgradeTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  manualUpgradeSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  manualUpgradeInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    marginBottom: 16,
+    backgroundColor: colors.background,
+  },
+  manualUpgradeInput: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+    paddingVertical: 12,
+    paddingLeft: 12,
+  },
+  manualUpgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.success,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+  },
+  currentUserUpgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

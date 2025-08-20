@@ -55,9 +55,14 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         setUserEmailState(email);
         setIsEmailCaptured(true);
         
-        // Auto-upgrade developers to unlimited
-        if (isDeveloperEmail(email)) {
-          console.log('Developer email detected, enabling unlimited access');
+        // Check if user is manually upgraded to unlimited
+        const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
+        const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
+        const isManuallyUpgraded = emailList.includes(email.toLowerCase().trim());
+        
+        // Auto-upgrade developers or manually upgraded users to unlimited
+        if (isDeveloperEmail(email) || isManuallyUpgraded) {
+          console.log('Unlimited access detected for:', email);
           setIsUnlimited(true);
           await saveUsageData(0, new Date().toDateString(), true);
         }
@@ -73,9 +78,14 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       setUserEmailState(email);
       setIsEmailCaptured(true);
       
-      // Auto-upgrade developers to unlimited
-      if (isDeveloperEmail(email)) {
-        console.log('Developer email detected, enabling unlimited access');
+      // Check if user is manually upgraded to unlimited
+      const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
+      const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
+      const isManuallyUpgraded = emailList.includes(email.toLowerCase().trim());
+      
+      // Auto-upgrade developers or manually upgraded users to unlimited
+      if (isDeveloperEmail(email) || isManuallyUpgraded) {
+        console.log('Unlimited access detected for:', email);
         setIsUnlimited(true);
         await saveUsageData(generationsToday, new Date().toDateString(), true);
       }
