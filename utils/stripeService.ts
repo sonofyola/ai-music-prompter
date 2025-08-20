@@ -29,9 +29,8 @@ export const createPaymentIntent = async (
   amount: number = 599 // $5.99 in cents
 ): Promise<PaymentIntentData> => {
   try {
-    // In a real app, this would call your backend API
-    // For now, we'll simulate the response structure
-    const response = await fetch('YOUR_BACKEND_URL/create-payment-intent', {
+    // Replace with your actual backend URL
+    const response = await fetch('https://your-backend-url.com/create-payment-intent', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -67,8 +66,8 @@ export const createSubscription = async (
   paymentMethodId: string
 ): Promise<{ subscriptionId: string; clientSecret?: string }> => {
   try {
-    // This would call your backend to create a Stripe subscription
-    const response = await fetch('YOUR_BACKEND_URL/create-subscription', {
+    // Replace with your actual backend URL
+    const response = await fetch('https://your-backend-url.com/create-subscription', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -76,7 +75,7 @@ export const createSubscription = async (
       body: JSON.stringify({
         email,
         payment_method_id: paymentMethodId,
-        price_id: 'price_YOUR_STRIPE_PRICE_ID', // Your Stripe price ID for $5.99/month
+        price_id: 'price_1234567890', // Replace with your actual Stripe Price ID
       }),
     });
 

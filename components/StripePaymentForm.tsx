@@ -53,8 +53,8 @@ export default function StripePaymentForm({
       }
 
       // Create subscription with the payment method
-      // In a real app, this would call your backend
-      const subscriptionResponse = await fetch('YOUR_BACKEND_URL/create-subscription', {
+      // Replace with your actual backend URL
+      const subscriptionResponse = await fetch('https://your-backend-url.com/create-subscription', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -62,7 +62,7 @@ export default function StripePaymentForm({
         body: JSON.stringify({
           email,
           payment_method_id: paymentMethod.id,
-          price_id: 'price_YOUR_STRIPE_PRICE_ID', // Your monthly price ID
+          price_id: 'price_1234567890', // Replace with your actual Stripe Price ID
         }),
       });
 
