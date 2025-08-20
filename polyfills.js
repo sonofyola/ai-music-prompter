@@ -1,7 +1,9 @@
-import { Platform } from 'react-native';
 import structuredClone from '@ungap/structured-clone';
 
-if (Platform.OS !== 'web') {
+// Check if we're on web platform
+const isWeb = typeof window !== 'undefined' && window.document;
+
+if (!isWeb) {
   const setupPolyfills = async () => {
     const { polyfillGlobal } = await import(
       'react-native/Libraries/Utilities/PolyfillFunctions'
