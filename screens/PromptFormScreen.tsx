@@ -399,22 +399,23 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     padding: 20,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
   },
   titleContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 8,
+    flex: 1,
+    marginRight: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    flex: 1,
+    marginBottom: 4,
   },
   subtitle: {
     fontSize: 16,
