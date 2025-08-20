@@ -1,23 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { UsageProvider } from './contexts/UsageContext';
+import PromptFormScreen from './screens/PromptFormScreen';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hello World - App is working!</Text>
-    </View>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <UsageProvider>
+          <PromptFormScreen />
+        </UsageProvider>
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0',
-  },
-  text: {
-    fontSize: 24,
-    color: '#333',
-  },
-});
