@@ -67,7 +67,7 @@ export const createSubscription = async (
 ): Promise<{ subscriptionId: string; clientSecret?: string }> => {
   try {
     // Replace with your actual backend URL
-    const response = await fetch('https://your-backend-url.com/create-subscription', {
+    const response = await fetch('https://YOUR-ACTUAL-BACKEND-URL.com/create-subscription', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ export const createSubscription = async (
       body: JSON.stringify({
         email,
         payment_method_id: paymentMethodId,
-        price_id: 'price_1234567890', // Replace with your actual Stripe Price ID
+        price_id: 'price_YOUR_ACTUAL_PRICE_ID_HERE', // Replace this with your Price ID
       }),
     });
 
