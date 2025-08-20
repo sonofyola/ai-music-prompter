@@ -27,7 +27,8 @@ import {
   VOCAL_GENDERS,
   VOCAL_DELIVERIES,
   BEAT_STYLES,
-  BASS_CHARACTERISTICS
+  BASS_CHARACTERISTICS,
+  WEIRDNESS_LEVELS
 } from '../utils/musicData';
 import { MusicPromptData } from '../types';
 
@@ -52,6 +53,7 @@ export default function PromptFormScreen() {
     era: '',
     master_notes: '',
     length: '',
+    weirdness_level: '',
     general_freeform: ''
   });
 
@@ -133,6 +135,7 @@ export default function PromptFormScreen() {
       era: '',
       master_notes: '',
       length: '',
+      weirdness_level: '',
       general_freeform: ''
     });
     setShowPrompt(false);
@@ -169,6 +172,7 @@ export default function PromptFormScreen() {
             onValuesChange={(values) => updateField('genres_primary', values)}
             options={primaryGenres}
             placeholder="Select primary genres..."
+            maxSelections={2}
           />
 
           <MultiSelectField
@@ -177,6 +181,7 @@ export default function PromptFormScreen() {
             onValuesChange={(values) => updateField('genres_electronic', values)}
             options={electronicGenres}
             placeholder="Select electronic subgenres..."
+            maxSelections={2}
           />
 
           <MultiSelectField
@@ -294,13 +299,23 @@ export default function PromptFormScreen() {
             options={VOCAL_DELIVERIES}
           />
 
+          <PickerField
+            label="Weirdness Level"
+            value={formData.weirdness_level}
+            onValueChange={(value) => updateField('weirdness_level', value)}
+            options={[
+              { label: 'No preference', value: '' },
+              ...WEIRDNESS_LEVELS
+            ]}
+          />
+
           <FormField
             label="Era/Style"
             value={formData.era}
             onChangeText={(text) => updateField('era', text)}
             placeholder="e.g., 1993 warehouse, Y2K bloghouse, modern 2025..."
           />
-          
+
           {smartSuggestions.era.length > 0 && (
             <SmartSuggestions
               title="Era suggestions for your genre"

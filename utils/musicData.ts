@@ -134,6 +134,14 @@ export const BASS_CHARACTERISTICS = [
   'side-chained', 'pumping', 'breathing', 'evolving', 'static'
 ];
 
+export const WEIRDNESS_LEVELS = [
+  { label: 'Conventional', value: 'conventional' },
+  { label: 'Slightly Experimental', value: 'slightly_experimental' },
+  { label: 'Moderately Weird', value: 'moderately_weird' },
+  { label: 'Very Experimental', value: 'very_experimental' },
+  { label: 'Completely Avant-garde', value: 'completely_avant_garde' }
+];
+
 export const ERA_SUGGESTIONS = [
   // Classic Electronic
   '1970s Kraftwerk', '1980s new wave', '1990s rave', '1993 warehouse',

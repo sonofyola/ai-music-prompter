@@ -300,9 +300,23 @@ function createProductionNotes(data: MusicPromptData, genres: string[]): string 
 function createProfessionalClosing(data: MusicPromptData, genres: string[]): string {
   const hasSpecificElements = data.subject.trim() || data.mood.length > 0 || genres.length > 0;
   
+  // Add weirdness level guidance
+  let weirdnessGuidance = '';
+  if (data.weirdness_level) {
+    const weirdnessDescriptions = {
+      'conventional': 'Stay within established genre conventions and familiar musical structures.',
+      'slightly_experimental': 'Incorporate subtle experimental elements while maintaining accessibility.',
+      'moderately_weird': 'Embrace unconventional sounds, structures, or production techniques that challenge expectations.',
+      'very_experimental': 'Push creative boundaries with bold sonic experimentation and non-traditional approaches.',
+      'completely_avant_garde': 'Abandon conventional music rules entirely - prioritize artistic innovation over accessibility.'
+    };
+    
+    weirdnessGuidance = ` ${weirdnessDescriptions[data.weirdness_level] || 'Approach with ' + data.weirdness_level + ' creative freedom.'}`;
+  }
+  
   if (hasSpecificElements) {
-    return 'Ensure every element serves the artistic vision while maintaining professional production standards and commercial viability. The final result should be a cohesive, impactful piece that stands out in today\'s competitive music landscape.';
+    return `Ensure every element serves the artistic vision while maintaining professional production standards and commercial viability.${weirdnessGuidance} The final result should be a cohesive, impactful piece that stands out in today's competitive music landscape.`;
   } else {
-    return 'Focus on creating a professionally produced, engaging composition that demonstrates strong musical craftsmanship and attention to detail.';
+    return `Focus on creating a professionally produced, engaging composition that demonstrates strong musical craftsmanship and attention to detail.${weirdnessGuidance}`;
   }
 }

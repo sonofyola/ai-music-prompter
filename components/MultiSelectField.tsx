@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Modal, ScrollView, SafeAreaView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -8,23 +8,35 @@ interface MultiSelectFieldProps {
   values: string[];
   onValuesChange: (values: string[]) => void;
   options: string[];
-  placeholder: string;
+  placeholder?: string;
+  maxSelections?: number;
 }
 
-export default function MultiSelectField({
-  label,
-  values,
-  onValuesChange,
-  options,
-  placeholder,
+export default function MultiSelectField({ 
+  label, 
+  values, 
+  onValuesChange, 
+  options, 
+  placeholder = "Select options...",
+  maxSelections
 }: MultiSelectFieldProps) {
   const { colors } = useTheme();
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const toggleOption = (option: string) => {
     if (values.includes(option)) {
+      // Remove option
       onValuesChange(values.filter(v => v !== option));
     } else {
+      // Add option, but check max selections
+      if (maxSelections && values.length >= maxSelections) {
+        Alert.alert(
+          'Selection Limit',
+          `You can only select up to ${maxSelections} ${label.toLowerCase()}.`,
+          [{ text: 'OK' }]
+        );
+        return;
+      }
       onValuesChange([...values, option]);
     }
   };
@@ -34,48 +46,69 @@ export default function MultiSelectField({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <TouchableOpacity
+      
+      <TouchableOpacity 
         style={styles.selector}
-        onPress={() => setIsModalVisible(true)}
+        onPress={() => setIsExpanded(!isExpanded)}
       >
-        <Text style={[styles.selectorText, values.length === 0 && styles.placeholderText]}>
-          {values.length > 0 ? values.join(', ') : placeholder}
+        <Text style={[styles.selectorText, values.length === 0 && styles.placeholder]}>
+          {values.length === 0 
+            ? placeholder 
+            : values.length === 1 
+              ? values[0]
+              : `${values.length} selected`
+          }
         </Text>
-        <MaterialIcons name="arrow-drop-down" size={24} color={colors.textSecondary} />
+        <MaterialIcons 
+          name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+          size={24} 
+          color={colors.textSecondary} 
+        />
       </TouchableOpacity>
 
-      <Modal
-        visible={isModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => setIsModalVisible(false)}
-      >
-        <SafeAreaView style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>{label}</Text>
+      {values.length > 0 && (
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          style={styles.selectedContainer}
+        >
+          {values.map((value, index) => (
             <TouchableOpacity
-              onPress={() => setIsModalVisible(false)}
-              style={styles.closeButton}
+              key={index}
+              style={styles.selectedItem}
+              onPress={() => toggleOption(value)}
             >
-              <MaterialIcons name="close" size={24} color={colors.text} />
+              <Text style={styles.selectedText}>{value}</Text>
+              <MaterialIcons name="close" size={16} color={colors.primary} />
             </TouchableOpacity>
-          </View>
-          <ScrollView style={styles.optionsList}>
-            {options.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={styles.optionItem}
-                onPress={() => toggleOption(option)}
-              >
-                <Text style={styles.optionText}>{option}</Text>
-                {values.includes(option) && (
-                  <MaterialIcons name="check" size={20} color={colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </SafeAreaView>
-      </Modal>
+          ))}
+        </ScrollView>
+      )}
+
+      {isExpanded && (
+        <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
+          {options.map((option, index) => (
+            <TouchableOpacity
+              key={index}
+              style={[
+                styles.option,
+                values.includes(option) && styles.selectedOption
+              ]}
+              onPress={() => toggleOption(option)}
+            >
+              <Text style={[
+                styles.optionText,
+                values.includes(option) && styles.selectedOptionText
+              ]}>
+                {option}
+              </Text>
+              {values.includes(option) && (
+                <MaterialIcons name="check" size={20} color={colors.primary} />
+              )}
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 }
@@ -104,6 +137,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: colors.text,
+  },
+  placeholder: {
+    color: colors.textTertiary,
   },
   placeholderText: {
     color: colors.textTertiary,
@@ -145,5 +181,41 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     color: colors.text,
     fontWeight: '500',
+  },
+  selectedContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: 8,
+  },
+  selectedItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8,
+    marginRight: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+  },
+  selectedText: {
+    fontSize: 16,
+    color: colors.text,
+    marginRight: 8,
+  },
+  selectedOption: {
+    backgroundColor: colors.background,
+  },
+  selectedOptionText: {
+    color: colors.text,
+  },
+  optionsContainer: {
+    marginTop: 8,
+  },
+  option: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
 });

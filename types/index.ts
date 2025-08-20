@@ -14,5 +14,6 @@ export interface MusicPromptData {
   era: string;
   master_notes: string;
   length: string;
+  weirdness_level: string;
   general_freeform: string;
 }
