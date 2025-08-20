@@ -200,14 +200,14 @@ export default function PromptFormScreen() {
                 onPress={() => setShowHistoryModal(true)}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="history" size={18} color={colors.primary} />
+                <MaterialIcons name="history" size={16} color={colors.primary} />
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.headerButton}
                 onPress={() => setShowTemplatesModal(true)}
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="dashboard" size={18} color={colors.primary} />
+                <MaterialIcons name="dashboard" size={16} color={colors.primary} />
               </TouchableOpacity>
               <ThemeToggle />
             </View>
@@ -515,11 +515,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 2,
   },
   headerButton: {
-    padding: 6,
-    borderRadius: 6,
+    padding: 4,
+    borderRadius: 4,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
