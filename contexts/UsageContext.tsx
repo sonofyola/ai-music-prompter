@@ -17,6 +17,12 @@ const DAILY_LIMIT = 3;
 const USAGE_KEY = 'usage_data';
 const EMAIL_KEY = 'user_email';
 
+// Developer emails that get unlimited access automatically
+const DEVELOPER_EMAILS = [
+  'your-email@example.com', // Replace with your actual email
+  'admin@yourdomain.com',   // Add any other admin emails
+];
+
 interface UsageData {
   generationsToday: number;
   lastResetDate: string;
@@ -36,12 +42,24 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     loadUserEmail();
   }, []);
 
+  // Check if user is a developer/admin
+  const isDeveloperEmail = (email: string): boolean => {
+    return DEVELOPER_EMAILS.includes(email.toLowerCase().trim());
+  };
+
   const loadUserEmail = async () => {
     try {
       const email = await AsyncStorage.getItem(EMAIL_KEY);
       if (email) {
         setUserEmailState(email);
         setIsEmailCaptured(true);
+        
+        // Auto-upgrade developers to unlimited
+        if (isDeveloperEmail(email)) {
+          console.log('Developer email detected, enabling unlimited access');
+          setIsUnlimited(true);
+          await saveUsageData(0, new Date().toDateString(), true);
+        }
       }
     } catch (error) {
       console.error('Error loading user email:', error);
@@ -53,6 +71,13 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       await AsyncStorage.setItem(EMAIL_KEY, email);
       setUserEmailState(email);
       setIsEmailCaptured(true);
+      
+      // Auto-upgrade developers to unlimited
+      if (isDeveloperEmail(email)) {
+        console.log('Developer email detected, enabling unlimited access');
+        setIsUnlimited(true);
+        await saveUsageData(generationsToday, new Date().toDateString(), true);
+      }
     } catch (error) {
       console.error('Error saving user email:', error);
     }

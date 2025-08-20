@@ -6,6 +6,7 @@ import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUsage } from '../contexts/UsageContext';
 
 interface EmailRecord {
   email: string;
@@ -22,6 +23,7 @@ interface ValidationResult {
 
 export default function AdminScreen() {
   const { colors } = useTheme();
+  const { isUnlimited, upgradeToUnlimited, generationsToday, userEmail } = useUsage();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -41,6 +43,23 @@ export default function AdminScreen() {
     } catch (error) {
       console.error('Error loading emails:', error);
     }
+  };
+
+  const handleAdminUpgrade = async () => {
+    Alert.alert(
+      'Admin Upgrade',
+      'Enable unlimited generations for this account?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Enable Unlimited', 
+          onPress: async () => {
+            await upgradeToUnlimited();
+            Alert.alert('Success!', 'Unlimited access enabled! 🎉');
+          }
+        }
+      ]
+    );
   };
 
   // Enhanced email validation
@@ -222,6 +241,21 @@ export default function AdminScreen() {
         <View style={styles.header}>
           <MaterialIcons name="admin-panel-settings" size={32} color={colors.primary} />
           <Text style={styles.title}>Email Export Admin</Text>
+          
+          {/* Admin Status */}
+          <View style={styles.adminStatus}>
+            <Text style={styles.adminEmail}>👤 {userEmail || 'No email'}</Text>
+            <View style={[styles.statusBadge, isUnlimited ? styles.unlimitedBadge : styles.limitedBadge]}>
+              <MaterialIcons 
+                name={isUnlimited ? "all-inclusive" : "hourglass-empty"} 
+                size={16} 
+                color="#fff" 
+              />
+              <Text style={styles.statusText}>
+                {isUnlimited ? 'Unlimited' : `${generationsToday}/3 today`}
+              </Text>
+            </View>
+          </View>
         </View>
 
         <View style={styles.statsContainer}>
@@ -264,6 +298,17 @@ export default function AdminScreen() {
         )}
 
         <View style={styles.actionsContainer}>
+          {/* Admin Upgrade Button */}
+          {!isUnlimited && (
+            <TouchableOpacity 
+              style={styles.adminUpgradeButton}
+              onPress={handleAdminUpgrade}
+            >
+              <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
+              <Text style={styles.buttonText}>Enable Unlimited (Admin)</Text>
+            </TouchableOpacity>
+          )}
+
           <TouchableOpacity 
             style={[styles.validateButton, isValidating && styles.disabledButton]}
             onPress={validateEmails}
@@ -419,6 +464,34 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
     marginTop: 12,
   },
+  adminStatus: {
+    alignItems: 'center',
+    marginTop: 16,
+    gap: 8,
+  },
+  adminEmail: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    gap: 6,
+  },
+  unlimitedBadge: {
+    backgroundColor: colors.success,
+  },
+  limitedBadge: {
+    backgroundColor: colors.warning,
+  },
+  statusText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   statsContainer: {
     flexDirection: 'row',
     padding: 16,
@@ -486,6 +559,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   actionsContainer: {
     padding: 16,
     gap: 12,
+  },
+  adminUpgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+    borderWidth: 2,
+    borderColor: colors.warning,
   },
   validateButton: {
     flexDirection: 'row',
