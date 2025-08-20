@@ -191,25 +191,31 @@ export default function PromptFormScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <TouchableOpacity onPress={handleTitlePress}>
+            <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.7}>
               <Text style={styles.title}>AI Music Prompt Generator</Text>
             </TouchableOpacity>
-            <Text style={styles.subtitle}>Create detailed prompts for AI music tools</Text>
+            <Text style={styles.subtitle}>
+              Create detailed prompts for AI music tools like Suno, Udio & MusicGen
+            </Text>
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity 
               style={styles.headerButton}
               onPress={() => setShowHistoryModal(true)}
+              activeOpacity={0.7}
             >
-              <MaterialIcons name="history" size={24} color={colors.primary} />
+              <MaterialIcons name="history" size={22} color={colors.primary} />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.headerButton}
               onPress={() => setShowTemplatesModal(true)}
+              activeOpacity={0.7}
             >
-              <MaterialIcons name="dashboard" size={24} color={colors.primary} />
+              <MaterialIcons name="dashboard" size={22} color={colors.primary} />
             </TouchableOpacity>
-            <ThemeToggle />
+            <View style={styles.themeToggleContainer}>
+              <ThemeToggle />
+            </View>
           </View>
         </View>
 
@@ -490,27 +496,41 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginRight: 16,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 4,
+    marginBottom: 6,
+    lineHeight: 34,
   },
   subtitle: {
-    fontSize: 16,
+    fontSize: 15,
     color: colors.textSecondary,
-    lineHeight: 22,
+    lineHeight: 20,
+    opacity: 0.8,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    marginTop: 4,
   },
   headerButton: {
-    padding: 8,
-    borderRadius: 8,
+    padding: 10,
+    borderRadius: 10,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
+    shadowColor: colors.text,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  themeToggleContainer: {
+    marginLeft: 4,
   },
   form: {
     backgroundColor: colors.surface,
