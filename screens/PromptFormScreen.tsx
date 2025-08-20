@@ -192,7 +192,7 @@ export default function PromptFormScreen() {
         <View style={styles.header}>
           <View style={styles.headerTop}>
             <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.7}>
-              <Text style={styles.title}>AI Music Prompt Generator</Text>
+              <Text style={styles.title}>AI Music Prompts</Text>
             </TouchableOpacity>
             <View style={styles.headerActions}>
               <TouchableOpacity 
@@ -498,19 +498,19 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginRight: 16,
   },
   title: {
-    fontSize: 26,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.text,
-    lineHeight: 32,
+    lineHeight: 28,
     flex: 1,
-    marginRight: 16,
+    marginRight: 12,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 13,
     color: colors.textSecondary,
-    lineHeight: 20,
+    lineHeight: 18,
     opacity: 0.75,
-    marginTop: 4,
+    marginTop: 6,
   },
   headerActions: {
     flexDirection: 'row',
