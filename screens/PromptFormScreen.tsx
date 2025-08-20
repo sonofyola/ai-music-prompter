@@ -190,33 +190,31 @@ export default function PromptFormScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.titleContainer}>
+          <View style={styles.headerTop}>
             <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.7}>
               <Text style={styles.title}>AI Music Prompt Generator</Text>
             </TouchableOpacity>
-            <Text style={styles.subtitle}>
-              Create detailed prompts for AI music tools like Suno, Udio & MusicGen
-            </Text>
-          </View>
-          <View style={styles.headerActions}>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => setShowHistoryModal(true)}
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="history" size={22} color={colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.headerButton}
-              onPress={() => setShowTemplatesModal(true)}
-              activeOpacity={0.7}
-            >
-              <MaterialIcons name="dashboard" size={22} color={colors.primary} />
-            </TouchableOpacity>
-            <View style={styles.themeToggleContainer}>
+            <View style={styles.headerActions}>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={() => setShowHistoryModal(true)}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="history" size={20} color={colors.primary} />
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.headerButton}
+                onPress={() => setShowTemplatesModal(true)}
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="dashboard" size={20} color={colors.primary} />
+              </TouchableOpacity>
               <ThemeToggle />
             </View>
           </View>
+          <Text style={styles.subtitle}>
+            Create detailed prompts for AI music tools like Suno, Udio & MusicGen
+          </Text>
         </View>
 
         <UsageIndicator onUpgradePress={onUpgradePress} />
@@ -483,51 +481,48 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
     padding: 20,
+    paddingBottom: 16,
     backgroundColor: colors.surface,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 8,
   },
   titleContainer: {
     flex: 1,
     marginRight: 16,
   },
   title: {
-    fontSize: 28,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.text,
-    marginBottom: 6,
-    lineHeight: 34,
+    lineHeight: 32,
+    flex: 1,
+    marginRight: 16,
   },
   subtitle: {
-    fontSize: 15,
+    fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
-    opacity: 0.8,
+    opacity: 0.75,
+    marginTop: 4,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 4,
+    gap: 6,
   },
   headerButton: {
-    padding: 10,
-    borderRadius: 10,
+    padding: 8,
+    borderRadius: 8,
     backgroundColor: colors.background,
     borderWidth: 1,
     borderColor: colors.border,
-    shadowColor: colors.text,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   themeToggleContainer: {
     marginLeft: 4,
