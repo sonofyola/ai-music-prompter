@@ -11,6 +11,7 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
+import AdminScreen from './AdminScreen';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import {
@@ -67,6 +68,26 @@ export default function PromptFormScreen({
 
   const [showPrompt, setShowPrompt] = useState(false);
   const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminTapCount, setAdminTapCount] = useState(0);
+
+  // Secret admin access - tap title 7 times
+  const handleTitlePress = () => {
+    const newCount = adminTapCount + 1;
+    setAdminTapCount(newCount);
+    
+    if (newCount >= 7) {
+      setShowAdmin(true);
+      setAdminTapCount(0);
+    }
+    
+    // Reset counter after 3 seconds
+    setTimeout(() => setAdminTapCount(0), 3000);
+  };
+
+  if (showAdmin) {
+    return <AdminScreen />;
+  }
 
   const updateField = <K extends keyof MusicPromptData>(
     field: K,
@@ -132,7 +153,9 @@ export default function PromptFormScreen({
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <Text style={styles.title}>AI Music Prompt Generator</Text>
+            <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.8}>
+              <Text style={styles.title}>AI Music Prompt Generator</Text>
+            </TouchableOpacity>
             <ThemeToggle />
           </View>
           <Text style={styles.subtitle}>
