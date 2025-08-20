@@ -7,7 +7,7 @@ export const PRIMARY_GENRES = [
 
 export const ELECTRONIC_GENRES = [
   // House variants
-  'Deep House', 'Tech House', 'Progressive House', 'Electro House', 'Bass House', 
+  'Deep House', 'Tech House', 'Minimal Deep Tech', 'Progressive House', 'Electro House', 'Bass House', 
   'G-House', 'Chicago House', 'Detroit House', 'Melodic House', 'Organic House', 
   'Minimal House', 'Acid House', 'Funky House', 'Tribal House', 'Afro House',
   

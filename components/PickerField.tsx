@@ -52,10 +52,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: 12,
-    backgroundColor: colors.background,
+    backgroundColor: colors.surface,
     overflow: 'hidden',
   },
   picker: {
     color: colors.text,
+    backgroundColor: colors.surface,
   },
 });

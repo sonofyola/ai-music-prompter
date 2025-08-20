@@ -138,10 +138,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: colors.borderLight,
+    borderBottomColor: colors.border,
+    backgroundColor: colors.surface,
   },
   optionText: {
     fontSize: 16,
     color: colors.text,
+    fontWeight: '500',
   },
 });
