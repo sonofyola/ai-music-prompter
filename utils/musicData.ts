@@ -101,3 +101,49 @@ export const COMMON_KEYS = [
   'F# major', 'F# minor', 'G major', 'G minor', 'G# major', 'G# minor',
   'A major', 'A minor', 'A# major', 'A# minor', 'B major', 'B minor'
 ];
+
+export const BEAT_STYLES = [
+  // House & Techno
+  'four-on-the-floor', 'off-beat hi-hats', 'rolling hi-hats', 'minimal percussion',
+  
+  // Breakbeat & DnB
+  'amen break', 'think break', 'rolling DnB', 'half-time', 'double-time',
+  
+  // Hip-Hop & Trap
+  'trap hi-hats', '808 rolls', 'boom-bap', 'drill patterns', 'jersey club',
+  
+  // Electronic
+  'broken beat', 'syncopated', 'polyrhythmic', 'shuffle', 'swing',
+  
+  // Experimental
+  'odd time signatures', 'metric modulation', 'polymetric', 'irregular patterns'
+];
+
+export const BASS_CHARACTERISTICS = [
+  // Analog & Vintage
+  'warm analog', 'vintage Moog', 'rubbery 303', 'creamy sub', 'tube saturation',
+  
+  // Digital & Modern
+  'crisp digital', 'FM synthesis', 'wavetable', 'granular', 'formant filtered',
+  
+  // Character & Texture
+  'punchy', 'deep sub', 'mid-heavy', 'distorted', 'filtered sweep',
+  'wobbly', 'tight', 'boomy', 'compressed', 'saturated',
+  
+  // Movement & Dynamics
+  'side-chained', 'pumping', 'breathing', 'evolving', 'static'
+];
+
+export const ERA_SUGGESTIONS = [
+  // Classic Electronic
+  '1970s Kraftwerk', '1980s new wave', '1990s rave', '1993 warehouse',
+  
+  // House Evolution
+  '1985 Chicago house', '1988 acid house', '1990s deep house', '2000s French house',
+  
+  // Techno Timeline
+  '1988 Detroit techno', '1990s Berlin techno', '2000s minimal techno',
+  
+  // Modern Eras
+  'Y2K bloghouse', '2010s EDM boom', '2020s future garage', 'modern 2025'
+];

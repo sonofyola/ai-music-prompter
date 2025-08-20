@@ -171,7 +171,7 @@ export default function UpgradeModal({
             </View>
 
             {!showPayment ? (
-              <EmailCapture onEmailSubmit={handleEmailSubmit} />
+              <EmailCapture onEmailSubmitted={handleEmailSubmit} />
             ) : (
               <PayPalButton 
                 email={email} 

@@ -11,6 +11,8 @@ import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
 import AdminScreen from './AdminScreen';
+import SmartSuggestions from '../components/SmartSuggestions';
+import { getSmartSuggestions } from '../utils/smartSuggestions';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
@@ -23,7 +25,9 @@ import {
   ENERGY_LEVELS,
   GROOVE_SWINGS,
   VOCAL_GENDERS,
-  VOCAL_DELIVERIES
+  VOCAL_DELIVERIES,
+  BEAT_STYLES,
+  BASS_CHARACTERISTICS
 } from '../utils/musicData';
 import { MusicPromptData } from '../types';
 
@@ -55,6 +59,8 @@ export default function PromptFormScreen() {
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [showAdmin, setShowAdmin] = useState(false);
   const [adminTapCount, setAdminTapCount] = useState(0);
+
+  const smartSuggestions = getSmartSuggestions(formData);
 
   // Secret admin access - tap title 7 times
   const handleTitlePress = () => {
@@ -187,6 +193,14 @@ export default function PromptFormScreen() {
             onChangeText={(text) => updateField('tempo_bpm', text)}
             placeholder="e.g., 128, 120-130, slow..."
           />
+          
+          {smartSuggestions.bpm.length > 0 && (
+            <SmartSuggestions
+              title="Suggested BPM for your genres"
+              suggestions={smartSuggestions.bpm}
+              onSuggestionPress={(bpm) => updateField('tempo_bpm', bpm)}
+            />
+          )}
 
           <PickerField
             label="Key/Scale"
@@ -197,6 +211,14 @@ export default function PromptFormScreen() {
               ...COMMON_KEYS.map(key => ({ label: key, value: key }))
             ]}
           />
+          
+          {smartSuggestions.keys.length > 0 && (
+            <SmartSuggestions
+              title="Keys that match your mood"
+              suggestions={smartSuggestions.keys}
+              onSuggestionPress={(key) => updateField('key_scale', key)}
+            />
+          )}
 
           <PickerField
             label="Energy Level"
@@ -212,23 +234,41 @@ export default function PromptFormScreen() {
             label="Beat Style"
             values={formData.beat}
             onValuesChange={(values) => updateField('beat', values)}
-            options={[
-              'four-on-the-floor', 'broken beat', 'rolling DnB', 'trap hi-hats',
-              'breakbeat', 'shuffle', 'swing', 'straight', 'syncopated'
-            ]}
+            options={BEAT_STYLES}
             placeholder="Select beat styles..."
           />
+          
+          {smartSuggestions.beats.length > 0 && (
+            <SmartSuggestions
+              title="Beat styles for your genre"
+              suggestions={smartSuggestions.beats}
+              onSuggestionPress={(beat) => {
+                if (!formData.beat.includes(beat)) {
+                  updateField('beat', [...formData.beat, beat]);
+                }
+              }}
+            />
+          )}
 
           <MultiSelectField
             label="Bass Character"
             values={formData.bass}
             onValuesChange={(values) => updateField('bass', values)}
-            options={[
-              'sub-heavy', 'rubbery 303', 'warm analog', 'punchy', 'deep',
-              'distorted', 'filtered', 'wobbly', 'tight', 'boomy'
-            ]}
+            options={BASS_CHARACTERISTICS}
             placeholder="Select bass characteristics..."
           />
+          
+          {smartSuggestions.bass.length > 0 && (
+            <SmartSuggestions
+              title="Bass styles for your genre"
+              suggestions={smartSuggestions.bass}
+              onSuggestionPress={(bass) => {
+                if (!formData.bass.includes(bass)) {
+                  updateField('bass', [...formData.bass, bass]);
+                }
+              }}
+            />
+          )}
 
           <PickerField
             label="Groove/Swing"
@@ -260,6 +300,14 @@ export default function PromptFormScreen() {
             onChangeText={(text) => updateField('era', text)}
             placeholder="e.g., 1993 warehouse, Y2K bloghouse, modern 2025..."
           />
+          
+          {smartSuggestions.era.length > 0 && (
+            <SmartSuggestions
+              title="Era suggestions for your genre"
+              suggestions={smartSuggestions.era}
+              onSuggestionPress={(era) => updateField('era', era)}
+            />
+          )}
 
           <FormField
             label="Length"
@@ -316,6 +364,10 @@ export default function PromptFormScreen() {
       <UpgradeModal 
         visible={showUpgradeModal}
         onClose={onCloseUpgradeModal}
+        onUpgradeSuccess={() => {
+          // Handle successful upgrade - could refresh usage context
+          setShowUpgradeModal(false);
+        }}
       />
     </SafeAreaView>
   );
