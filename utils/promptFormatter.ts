@@ -3,6 +3,12 @@ import { MusicPromptData } from '../types';
 export function formatMusicPrompt(data: MusicPromptData): string {
   const sections: string[] = [];
 
+  // Audio analysis integration
+  if (data.audio_analysis) {
+    const analysis = data.audio_analysis;
+    sections.push(`Based on audio analysis of a reference track: The detected style is ${analysis.detected_style} with ${analysis.detected_vibe}. Key characteristics include ${analysis.detected_instruments} with ${analysis.detected_energy} energy levels.`);
+  }
+
   // Opening statement with genre and theme
   const openingParts: string[] = [];
   const allGenres = [...data.genres_primary, ...data.genres_electronic].filter(Boolean);

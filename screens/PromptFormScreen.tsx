@@ -11,6 +11,7 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
 import UpgradeModal from '../components/UpgradeModal';
+import AudioAnalyzer, { AudioAnalysisResult } from '../components/AudioAnalyzer';
 import AdminScreen from './AdminScreen';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
@@ -64,6 +65,7 @@ export default function PromptFormScreen({
     era: '',
     length: '',
     general_freeform: '',
+    audio_analysis: undefined,
   });
 
   const [showPrompt, setShowPrompt] = useState(false);
@@ -142,8 +144,36 @@ export default function PromptFormScreen({
       era: '',
       length: '',
       general_freeform: '',
+      audio_analysis: undefined,
     });
     setShowPrompt(false);
+  };
+
+  const handleAudioAnalysis = (analysis: AudioAnalysisResult) => {
+    // Store the analysis
+    const audioAnalysisData = {
+      detected_genres: analysis.genres,
+      detected_mood: analysis.mood,
+      detected_tempo: analysis.tempo,
+      detected_energy: analysis.energy,
+      detected_style: analysis.style,
+      detected_instruments: analysis.instruments,
+      detected_vibe: analysis.vibe,
+    };
+
+    setFormData(prev => ({
+      ...prev,
+      audio_analysis: audioAnalysisData,
+      // Auto-populate relevant fields if they're empty
+      genres_electronic: prev.genres_electronic.length === 0 ? analysis.genres.slice(0, 2) : prev.genres_electronic,
+      mood: prev.mood.length === 0 ? analysis.mood.slice(0, 2) : prev.mood,
+      tempo_bpm: prev.tempo_bpm === '' ? analysis.tempo : prev.tempo_bpm,
+      energy: prev.energy === '' ? analysis.energy as any : prev.energy,
+      sound_palette: prev.sound_palette === '' ? analysis.instruments : prev.sound_palette,
+      general_freeform: prev.general_freeform === '' 
+        ? `Audio analysis detected: ${analysis.style}. ${analysis.vibe}` 
+        : prev.general_freeform,
+    }));
   };
 
   const styles = createStyles(colors);
@@ -164,6 +194,29 @@ export default function PromptFormScreen({
         </View>
 
         <UsageIndicator onUpgradePress={onUpgradePress} />
+
+        <View style={styles.section}>
+          <AudioAnalyzer onAnalysisComplete={handleAudioAnalysis} />
+          
+          {formData.audio_analysis && (
+            <View style={styles.analysisResults}>
+              <View style={styles.analysisHeader}>
+                <MaterialIcons name="check-circle" size={20} color={colors.success} />
+                <Text style={styles.analysisTitle}>Audio Analysis Applied</Text>
+              </View>
+              <Text style={styles.analysisText}>
+                Detected: {formData.audio_analysis.detected_genres.join(', ')} • {formData.audio_analysis.detected_mood.join(', ')} • {formData.audio_analysis.detected_tempo}
+              </Text>
+              <TouchableOpacity 
+                style={styles.clearAnalysisButton}
+                onPress={() => setFormData(prev => ({ ...prev, audio_analysis: undefined }))}
+              >
+                <MaterialIcons name="clear" size={16} color={colors.textSecondary} />
+                <Text style={styles.clearAnalysisText}>Clear Analysis</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🎵 Genres</Text>
@@ -475,5 +528,40 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   footer: {
     height: 20,
+  },
+  analysisResults: {
+    backgroundColor: colors.success + '10',
+    borderRadius: 12,
+    padding: 16,
+    marginTop: 16,
+    borderWidth: 1,
+    borderColor: colors.success + '30',
+  },
+  analysisHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  analysisTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.success,
+  },
+  analysisText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+    marginBottom: 12,
+  },
+  clearAnalysisButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    alignSelf: 'flex-start',
+  },
+  clearAnalysisText: {
+    fontSize: 12,
+    color: colors.textSecondary,
   },
 });

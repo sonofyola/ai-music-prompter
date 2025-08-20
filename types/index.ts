@@ -22,4 +22,14 @@ export interface MusicPromptData {
   era: string;
   length: string;
   general_freeform: string;
+  // Audio analysis fields
+  audio_analysis?: {
+    detected_genres: string[];
+    detected_mood: string[];
+    detected_tempo: string;
+    detected_energy: string;
+    detected_style: string;
+    detected_instruments: string;
+    detected_vibe: string;
+  };
 }
