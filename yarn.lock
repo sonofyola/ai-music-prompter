@@ -1770,6 +1770,16 @@
   resolved "https://registry.yarnpkg.com/@stardazed/streams-text-encoding/-/streams-text-encoding-1.0.2.tgz#a5a303fc8dfb18144e0aeed0773e7fb132f6c4cd"
   integrity sha512-f2Z15BId3t44a/u21yYSGXFAkCyKocmAyduoAy7swnZ4xIfbaZlOWsgly/jDNNOuj6hYQN72UaBRe3Z/tOHfqg==
 
+"@stripe/stripe-js@^7.8.0":
+  version "7.8.0"
+  resolved "https://registry.yarnpkg.com/@stripe/stripe-js/-/stripe-js-7.8.0.tgz#01390d31030f04b64a7ff13adcccbafd615c7b77"
+  integrity sha512-DNXRfYUgkZlrniQORbA/wH8CdFRhiBSE0R56gYU0V5vvpJ9WZwvGrz9tBAZmfq2aTgw6SK7mNpmTizGzLWVezw==
+
+"@stripe/stripe-react-native@0.45.0":
+  version "0.45.0"
+  resolved "https://registry.yarnpkg.com/@stripe/stripe-react-native/-/stripe-react-native-0.45.0.tgz#e0e45e20f35f7dd7a13b4a7baecd6abc91796d65"
+  integrity sha512-7ebzpzkbTrlSfwHJkxv2ixP+YhrF7rLncIr0Sxk6iOeVarB1rOoURWlLRf+Yy5G5OJYjgZDVSVpITcOddtgAVw==
+
 "@tybys/wasm-util@^0.9.0":
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/@tybys/wasm-util/-/wasm-util-0.9.0.tgz#3e75eb00604c8d6db470bf18c37b7d984a0e3355"

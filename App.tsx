@@ -1,41 +1,25 @@
-import React, { useState } from 'react';
-import { StatusBar } from 'expo-status-bar';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import '@expo/metro-runtime';
+import './utils/global-error-handler';
+import './polyfills';
+import { registerRootComponent } from 'expo';
+import React, { useEffect } from 'react';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { ThemeProvider } from './contexts/ThemeContext';
-import { UsageProvider, useUsage } from './contexts/UsageContext';
+import { UsageProvider } from './contexts/UsageContext';
 import PromptFormScreen from './screens/PromptFormScreen';
-import EmailCapture from './components/EmailCapture';
 
-function AppContent() {
-  const { isEmailCaptured, setUserEmail } = useUsage();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || '';
 
-  const handleEmailSubmitted = async (email: string) => {
-    await setUserEmail(email);
-  };
-
-  if (!isEmailCaptured) {
-    return <EmailCapture onEmailSubmitted={handleEmailSubmitted} />;
-  }
-
+function App() {
   return (
-    <PromptFormScreen 
-      onUpgradePress={() => setShowUpgradeModal(true)}
-      showUpgradeModal={showUpgradeModal}
-      onCloseUpgradeModal={() => setShowUpgradeModal(false)}
-    />
-  );
-}
-
-export default function App() {
-  return (
-    <SafeAreaProvider>
+    <StripeProvider publishableKey={STRIPE_PUBLISHABLE_KEY}>
       <ThemeProvider>
         <UsageProvider>
-          <AppContent />
-          <StatusBar style="auto" />
+          <PromptFormScreen />
         </UsageProvider>
       </ThemeProvider>
-    </SafeAreaProvider>
+    </StripeProvider>
   );
 }
+
+registerRootComponent(App);
