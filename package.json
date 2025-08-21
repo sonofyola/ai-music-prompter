@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^2.0.17",
+    "@babel/plugin-syntax-flow": "^7.27.1",
+    "@babel/preset-flow": "^7.27.1",
     "@basictech/expo": "^0.0.5",
     "@expo/metro-runtime": "~5.0.4",
     "@expo/vector-icons": "^14.1.0",
