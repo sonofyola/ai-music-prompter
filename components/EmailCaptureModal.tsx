@@ -13,10 +13,10 @@ interface EmailCaptureModalProps {
 
 export default function EmailCaptureModal({ visible, onClose, onEmailSubmitted }: EmailCaptureModalProps) {
   const { colors } = useTheme();
-  const { setUserEmail } = useUsage();
+  const { setEmailCaptured } = useUsage();
 
   const handleEmailSubmit = async (email: string) => {
-    await setUserEmail(email);
+    await setEmailCaptured(true);
     onEmailSubmitted(email);
   };
 

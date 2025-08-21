@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Modal, 
@@ -33,14 +32,11 @@ export default function PromptHistoryModal({
   currentGeneratedPrompt
 }: PromptHistoryModalProps) {
   const { colors } = useTheme();
-  const { savedPrompts, deletePrompt, toggleFavorite, updateLastUsed } = usePromptHistory();
+  const { prompts, deletePrompt } = usePromptHistory();
   const [showSaveDialog, setShowSaveDialog] = useState(false);
   const [saveName, setSaveName] = useState('');
-  const [filter, setFilter] = useState<'all' | 'favorites'>('all');
 
-  const filteredPrompts = filter === 'favorites' 
-    ? savedPrompts.filter(prompt => prompt.isFavorite)
-    : savedPrompts;
+  const filteredPrompts = prompts;
 
   const handleLoadPrompt = (prompt: SavedPrompt) => {
     Alert.alert(
@@ -50,9 +46,8 @@ export default function PromptHistoryModal({
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Load Prompt', 
-          onPress: async () => {
+          onPress: () => {
             onLoadPrompt(prompt.formData);
-            await updateLastUsed(prompt.id);
             onClose();
           }
         }
@@ -128,36 +123,10 @@ export default function PromptHistoryModal({
 
           <View style={styles.filterButtons}>
             <TouchableOpacity
-              style={[
-                styles.filterButton,
-                filter === 'all' && styles.filterButtonActive
-              ]}
-              onPress={() => setFilter('all')}
+              style={[styles.filterButton, styles.filterButtonActive]}
             >
-              <Text style={[
-                styles.filterButtonText,
-                filter === 'all' && styles.filterButtonTextActive
-              ]}>
-                All ({savedPrompts.length})
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.filterButton,
-                filter === 'favorites' && styles.filterButtonActive
-              ]}
-              onPress={() => setFilter('favorites')}
-            >
-              <MaterialIcons 
-                name="favorite" 
-                size={16} 
-                color={filter === 'favorites' ? '#fff' : colors.textSecondary} 
-              />
-              <Text style={[
-                styles.filterButtonText,
-                filter === 'favorites' && styles.filterButtonTextActive
-              ]}>
-                {savedPrompts.filter(p => p.isFavorite).length}
+              <Text style={[styles.filterButtonText, styles.filterButtonTextActive]}>
+                All ({prompts.length})
               </Text>
             </TouchableOpacity>
           </View>
@@ -168,13 +137,10 @@ export default function PromptHistoryModal({
             <View style={styles.emptyState}>
               <MaterialIcons name="history" size={48} color={colors.textTertiary} />
               <Text style={styles.emptyStateText}>
-                {filter === 'favorites' ? 'No favorite prompts yet' : 'No saved prompts yet'}
+                No saved prompts yet
               </Text>
               <Text style={styles.emptyStateSubtext}>
-                {filter === 'favorites' 
-                  ? 'Star some prompts to see them here' 
-                  : 'Save your current prompt to get started'
-                }
+                Save your current prompt to get started
               </Text>
             </View>
           ) : (
@@ -189,17 +155,6 @@ export default function PromptHistoryModal({
                     <View style={styles.promptHeader}>
                       <Text style={styles.promptName}>{prompt.name}</Text>
                       <View style={styles.promptActions}>
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => toggleFavorite(prompt.id)}
-                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        >
-                          <MaterialIcons 
-                            name={prompt.isFavorite ? "favorite" : "favorite-border"} 
-                            size={20} 
-                            color={prompt.isFavorite ? colors.primary : colors.textSecondary} 
-                          />
-                        </TouchableOpacity>
                         <TouchableOpacity
                           style={styles.actionButton}
                           onPress={() => handleDeletePrompt(prompt)}
@@ -218,11 +173,6 @@ export default function PromptHistoryModal({
                       <Text style={styles.promptDate}>
                         Created: {formatDate(prompt.createdAt)}
                       </Text>
-                      {prompt.lastUsed && (
-                        <Text style={styles.promptDate}>
-                          Last used: {formatDate(prompt.lastUsed)}
-                        </Text>
-                      )}
                     </View>
                   </TouchableOpacity>
                 </View>

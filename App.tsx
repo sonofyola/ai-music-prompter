@@ -2,6 +2,8 @@ import React from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { BasicProvider } from '@basictech/expo';
+import { schema } from './basic.config';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { UsageProvider } from './contexts/UsageContext';
@@ -11,6 +13,7 @@ import PromptFormScreen from './screens/PromptFormScreen';
 import AdminScreen from './screens/AdminScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
 import MaintenanceScreen from './components/MaintenanceScreen';
+import AuthScreen from './screens/AuthScreen';
 
 const Stack = createStackNavigator();
 
@@ -31,9 +34,14 @@ function AppNavigator() {
   return (
     <NavigationContainer>
       <Stack.Navigator 
-        initialRouteName="PromptForm"
+        initialRouteName="Auth"
         screenOptions={{ headerShown: false }}
+        id="main"
       >
+        <Stack.Screen 
+          name="Auth" 
+          component={AuthScreen}
+        />
         <Stack.Screen 
           name="PromptForm" 
           component={PromptFormScreen}
@@ -54,17 +62,19 @@ function AppNavigator() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <ThemeProvider>
-        <MaintenanceProvider>
-          <NotificationProvider>
-            <UsageProvider>
-              <PromptHistoryProvider>
-                <AppNavigator />
-              </PromptHistoryProvider>
-            </UsageProvider>
-          </NotificationProvider>
-        </MaintenanceProvider>
-      </ThemeProvider>
+      <BasicProvider project_id={schema.project_id} schema={schema}>
+        <ThemeProvider>
+          <MaintenanceProvider>
+            <NotificationProvider>
+              <UsageProvider>
+                <PromptHistoryProvider>
+                  <AppNavigator />
+                </PromptHistoryProvider>
+              </UsageProvider>
+            </NotificationProvider>
+          </MaintenanceProvider>
+        </ThemeProvider>
+      </BasicProvider>
     </SafeAreaProvider>
   );
 }

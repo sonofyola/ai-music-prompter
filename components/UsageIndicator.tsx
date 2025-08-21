@@ -10,15 +10,16 @@ interface UsageIndicatorProps {
 
 export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) {
   const { colors } = useTheme();
-  const { generationsToday, isUnlimited } = useUsage();
+  const { dailyUsage, subscriptionStatus } = useUsage();
   const styles = createStyles(colors);
 
+  const isUnlimited = subscriptionStatus === 'unlimited';
   // Don't show anything if user has unlimited - SubscriptionStatus handles that
   if (isUnlimited) {
     return null;
   }
 
-  const remaining = Math.max(0, 3 - generationsToday);
+  const remaining = Math.max(0, 3 - dailyUsage);
   const isLow = remaining <= 1;
 
   return (
@@ -40,7 +41,7 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
             style={[
               styles.progressFill, 
               { 
-                width: `${(generationsToday / 3) * 100}%`,
+                width: `${(dailyUsage / 3) * 100}%`,
                 backgroundColor: isLow ? colors.warning : colors.primary
               }
             ]} 

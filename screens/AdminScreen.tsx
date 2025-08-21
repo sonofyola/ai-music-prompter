@@ -30,7 +30,7 @@ interface AdminScreenProps {
 
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
-  const { isUnlimited, upgradeToUnlimited } = useUsage();
+  const { subscriptionStatus, upgradeToUnlimited } = useUsage();
   const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode, isAdmin, setAdminStatus } = useMaintenance();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
@@ -513,7 +513,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </View>
 
           {/* Admin Upgrade Button */}
-          {!isUnlimited && (
+          {subscriptionStatus !== 'unlimited' && (
             <TouchableOpacity 
               style={styles.currentUserUpgradeButton}
               onPress={handleAdminUpgrade}

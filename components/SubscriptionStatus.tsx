@@ -16,9 +16,7 @@ export default function SubscriptionStatus({
   const { colors } = useTheme();
   const { 
     subscriptionStatus, 
-    subscriptionExpiry, 
-    generationsToday,
-    isUnlimited 
+    dailyUsage,
   } = useUsage();
 
   const getDaysUntilExpiry = (dateString: string | null) => {
@@ -33,7 +31,7 @@ export default function SubscriptionStatus({
   const getStatusColor = () => {
     switch (subscriptionStatus) {
       case 'premium': return colors.success || '#4CAF50';
-      case 'trial': return colors.warning || '#FF9800';
+      case 'unlimited': return colors.success || '#4CAF50';
       default: return colors.textSecondary;
     }
   };
@@ -41,13 +39,13 @@ export default function SubscriptionStatus({
   const getStatusText = () => {
     switch (subscriptionStatus) {
       case 'premium': return 'Premium';
-      case 'trial': return 'Trial';
+      case 'unlimited': return 'Unlimited';
       default: return 'Free';
     }
   };
 
-  const daysUntilExpiry = getDaysUntilExpiry(subscriptionExpiry);
-  const showExpiryWarning = daysUntilExpiry !== null && daysUntilExpiry <= 7 && daysUntilExpiry > 0;
+  const isUnlimited = subscriptionStatus === 'unlimited';
+  const showExpiryWarning = false;
 
   const styles = StyleSheet.create({
     container: {
@@ -151,13 +149,13 @@ export default function SubscriptionStatus({
         ) : (
           <>
             <Text style={styles.usageText}>
-              {generationsToday} / 3 generations used today
+              {dailyUsage} / 3 generations used today
             </Text>
             <View style={styles.usageBar}>
               <View 
                 style={[
                   styles.usageProgress, 
-                  { width: `${Math.min((generationsToday / 3) * 100, 100)}%` }
+                  { width: `${Math.min((dailyUsage / 3) * 100, 100)}%` }
                 ]} 
               />
             </View>

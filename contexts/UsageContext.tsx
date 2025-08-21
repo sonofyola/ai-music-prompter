@@ -1,327 +1,169 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { syncEmailCapture, syncSubscriptionChange } from '../utils/autoresponderService';
-import { notificationService } from '../utils/notificationService';
+import { useBasic } from '@basictech/expo';
 
 interface UsageContextType {
-  generationsToday: number;
-  isUnlimited: boolean;
+  dailyUsage: number;
   canGenerate: boolean;
-  userEmail: string | null;
   isEmailCaptured: boolean;
-  subscriptionStatus: 'free' | 'premium' | 'trial';
-  subscriptionExpiry: string | null;
-  subscriptionId: string | null;
+  subscriptionStatus: 'free' | 'premium' | 'unlimited';
   incrementGeneration: () => Promise<void>;
-  upgradeToUnlimited: (subscriptionId?: string) => Promise<void>;
-  cancelSubscription: () => Promise<void>;
-  resetDailyCount: () => Promise<void>;
-  setUserEmail: (email: string) => Promise<void>;
-  checkSubscriptionStatus: () => Promise<void>;
-}
-
-const DAILY_LIMIT = 3;
-const USAGE_KEY = 'usage_data';
-const EMAIL_KEY = 'user_email';
-const SUBSCRIPTION_KEY = 'subscription_data';
-
-// Developer emails that get unlimited access automatically
-const DEVELOPER_EMAILS = [
-  'test@admin.com',        // Test admin email for preview
-  'admin@example.com',     // Another test email
-  'developer@test.com',    // Add more as needed
-];
-
-interface UsageData {
-  generationsToday: number;
-  lastResetDate: string;
-  isUnlimited: boolean;
-}
-
-interface SubscriptionData {
-  status: 'free' | 'premium' | 'trial';
-  expiry: string | null;
-  amount: number | null;
-  billing_cycle: string | null;
-  subscription_id: string | null;
-  stripe_customer_id: string | null;
+  setEmailCaptured: (captured: boolean) => void;
+  upgradeToUnlimited: () => Promise<void>;
+  resetUsage: () => Promise<void>;
 }
 
 const UsageContext = createContext<UsageContextType | undefined>(undefined);
 
+const DAILY_FREE_LIMIT = 3;
+
 export function UsageProvider({ children }: { children: React.ReactNode }) {
-  const [generationsToday, setGenerationsToday] = useState(0);
-  const [isUnlimited, setIsUnlimited] = useState(false);
-  const [userEmail, setUserEmailState] = useState<string | null>(null);
+  const { user, db, isSignedIn } = useBasic();
+  const [dailyUsage, setDailyUsage] = useState(0);
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
-  const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'trial'>('free');
-  const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
-  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'unlimited'>('free');
 
   useEffect(() => {
-    loadUsageData();
-    loadUserEmail();
-    loadSubscriptionData();
-  }, []);
-
-  // Check if user is a developer/admin
-  const isDeveloperEmail = (email: string): boolean => {
-    return DEVELOPER_EMAILS.includes(email.toLowerCase().trim());
-  };
-
-  const saveSubscriptionData = async (
-    status: 'free' | 'premium' | 'trial',
-    expiry: string | null,
-    amount: number | null,
-    billing_cycle: string | null,
-    subscription_id: string | null = null,
-    stripe_customer_id: string | null = null
-  ) => {
-    try {
-      const subscriptionData: SubscriptionData = {
-        status,
-        expiry,
-        amount,
-        billing_cycle,
-        subscription_id,
-        stripe_customer_id,
-      };
-      await AsyncStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscriptionData));
-    } catch (error) {
-      console.error('Error saving subscription data:', error);
+    if (isSignedIn && user && db) {
+      loadUserUsage();
+    } else {
+      // Fallback to local storage for non-authenticated users
+      loadLocalUsage();
     }
-  };
+  }, [isSignedIn, user, db]);
 
-  const loadSubscriptionData = async () => {
+  const loadUserUsage = async () => {
+    if (!db || !user) return;
+
     try {
-      const data = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
-      if (data) {
-        const subscriptionData: SubscriptionData = JSON.parse(data);
-        setSubscriptionStatus(subscriptionData.status);
-        setSubscriptionExpiry(subscriptionData.expiry);
-        setSubscriptionId(subscriptionData.subscription_id);
-        
-        // Check if subscription is still valid
-        if (subscriptionData.status === 'premium' && subscriptionData.expiry) {
-          const expiryDate = new Date(subscriptionData.expiry);
-          const now = new Date();
-          
-          if (now > expiryDate) {
-            // Subscription expired, revert to free
-            console.log('Subscription expired, reverting to free plan');
-            setSubscriptionStatus('free');
-            setIsUnlimited(false);
-            setSubscriptionId(null);
-            await saveSubscriptionData('free', null, null, null, null, null);
-          } else {
-            // Subscription is active
-            setIsUnlimited(true);
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading subscription data:', error);
-    }
-  };
-
-  const checkSubscriptionStatus = async () => {
-    // In a real app, this would call your backend to verify subscription status with Stripe
-    // For now, we'll just check the local expiry date
-    await loadSubscriptionData();
-  };
-
-  const loadUserEmail = async () => {
-    try {
-      const email = await AsyncStorage.getItem(EMAIL_KEY);
-      if (email) {
-        setUserEmailState(email);
-        setIsEmailCaptured(true);
-        
-        // Check if user is manually upgraded to unlimited
-        const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
-        const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
-        const isManuallyUpgraded = emailList.includes(email.toLowerCase().trim());
-        
-        // Auto-upgrade developers or manually upgraded users to unlimited
-        if (isDeveloperEmail(email) || isManuallyUpgraded) {
-          console.log('Unlimited access detected for:', email);
-          setIsUnlimited(true);
-          setSubscriptionStatus('premium'); // Set status to premium when unlimited
-          await saveUsageData(0, new Date().toDateString(), true);
-          // Save premium subscription data for manually upgraded users
-          if (isManuallyUpgraded) {
-            const expiryDate = new Date();
-            expiryDate.setFullYear(expiryDate.getFullYear() + 10); // Long expiry for manual upgrades
-            await saveSubscriptionData('premium', expiryDate.toISOString(), 0, 'manual', 'manual_upgrade');
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Error loading user email:', error);
-    }
-  };
-
-  const setUserEmail = async (email: string) => {
-    try {
-      await AsyncStorage.setItem(EMAIL_KEY, email);
-      setUserEmailState(email);
-      setIsEmailCaptured(true);
-      
-      // Sync with autoresponder
-      await syncEmailCapture(email, subscriptionStatus);
-      
-      // Check if user is manually upgraded to unlimited
-      const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
-      const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
-      const isManuallyUpgraded = emailList.includes(email.toLowerCase().trim());
-      
-      // Auto-upgrade developers or manually upgraded users to unlimited
-      if (isDeveloperEmail(email) || isManuallyUpgraded) {
-        console.log('Unlimited access detected for:', email);
-        setIsUnlimited(true);
-        setSubscriptionStatus('premium'); // Set status to premium when unlimited
-        await saveUsageData(generationsToday, new Date().toDateString(), true);
-        // Save premium subscription data for manually upgraded users
-        if (isManuallyUpgraded) {
-          const expiryDate = new Date();
-          expiryDate.setFullYear(expiryDate.getFullYear() + 10); // Long expiry for manual upgrades
-          await saveSubscriptionData('premium', expiryDate.toISOString(), 0, 'manual', 'manual_upgrade');
-          // Sync subscription change with autoresponder
-          await syncSubscriptionChange(email, 'premium');
-        }
-      }
-    } catch (error) {
-      console.error('Error saving user email:', error);
-    }
-  };
-
-  const loadUsageData = async () => {
-    try {
-      const data = await AsyncStorage.getItem(USAGE_KEY);
-      if (data) {
-        const usageData: UsageData = JSON.parse(data);
+      const userProfile = await db.from('user_profiles').get(user.id);
+      if (userProfile) {
         const today = new Date().toDateString();
+        const lastResetDate = new Date(String(userProfile.last_reset_date)).toDateString();
         
-        if (usageData.lastResetDate !== today) {
-          // Reset daily count for new day
-          setGenerationsToday(0);
-          await saveUsageData(0, today, usageData.isUnlimited);
+        if (today !== lastResetDate) {
+          // Reset daily usage for new day
+          await db.from('user_profiles').update(user.id, {
+            usage_count: 0,
+            last_reset_date: new Date().toISOString(),
+          });
+          setDailyUsage(0);
         } else {
-          setGenerationsToday(usageData.generationsToday);
-          setIsUnlimited(usageData.isUnlimited);
+          setDailyUsage(Number(userProfile.usage_count) || 0);
         }
+        
+        const status = String(userProfile.subscription_status) as 'free' | 'premium' | 'unlimited';
+        setSubscriptionStatus(status || 'free');
+        setIsEmailCaptured(true); // Authenticated users have email
       }
     } catch (error) {
-      console.error('Error loading usage data:', error);
+      console.error('Error loading user usage:', error);
     }
   };
 
-  const saveUsageData = async (generations: number, date: string, unlimited: boolean) => {
+  const loadLocalUsage = async () => {
     try {
-      const usageData: UsageData = {
-        generationsToday: generations,
-        lastResetDate: date,
-        isUnlimited: unlimited,
-      };
-      await AsyncStorage.setItem(USAGE_KEY, JSON.stringify(usageData));
+      const today = new Date().toDateString();
+      const lastUsageDate = await AsyncStorage.getItem('lastUsageDate');
+      const storedUsage = await AsyncStorage.getItem('dailyUsage');
+      const emailCaptured = await AsyncStorage.getItem('emailCaptured');
+
+      if (lastUsageDate !== today) {
+        setDailyUsage(0);
+        await AsyncStorage.setItem('lastUsageDate', today);
+        await AsyncStorage.setItem('dailyUsage', '0');
+      } else {
+        setDailyUsage(parseInt(storedUsage || '0', 10));
+      }
+
+      setIsEmailCaptured(emailCaptured === 'true');
     } catch (error) {
-      console.error('Error saving usage data:', error);
+      console.error('Error loading local usage:', error);
     }
   };
 
   const incrementGeneration = async () => {
-    if (isUnlimited || generationsToday < DAILY_LIMIT) {
-      const newCount = generationsToday + 1;
-      setGenerationsToday(newCount);
-      await saveUsageData(newCount, new Date().toDateString(), isUnlimited);
-      
-      // Send usage limit notifications for free users
-      if (!isUnlimited) {
-        const remaining = DAILY_LIMIT - newCount;
-        if (remaining <= 1) {
-          await notificationService.sendUsageLimitNotification(remaining);
-        }
+    const newUsage = dailyUsage + 1;
+    setDailyUsage(newUsage);
+
+    if (isSignedIn && user && db) {
+      // Update user profile in database
+      try {
+        await db.from('user_profiles').update(user.id, {
+          usage_count: newUsage,
+        });
+      } catch (error) {
+        console.error('Error updating user usage:', error);
+      }
+    } else {
+      // Update local storage
+      try {
+        await AsyncStorage.setItem('dailyUsage', newUsage.toString());
+      } catch (error) {
+        console.error('Error updating local usage:', error);
       }
     }
   };
 
-  const upgradeToUnlimited = async (newSubscriptionId?: string) => {
-    setIsUnlimited(true);
-    setSubscriptionStatus('premium');
-    
-    // Set expiry to 1 month from now for monthly subscription
-    const expiryDate = new Date();
-    expiryDate.setMonth(expiryDate.getMonth() + 1);
-    const expiryString = expiryDate.toISOString();
-    
-    setSubscriptionExpiry(expiryString);
-    
-    if (newSubscriptionId) {
-      setSubscriptionId(newSubscriptionId);
-    }
-    
-    await saveUsageData(generationsToday, new Date().toDateString(), true);
-    await saveSubscriptionData('premium', expiryString, 5.99, 'monthly', newSubscriptionId);
-    
-    // Send upgrade notification
-    await notificationService.sendSubscriptionNotification('upgrade');
-    
-    // Sync subscription change with autoresponder
-    if (userEmail) {
-      await syncSubscriptionChange(userEmail, 'premium');
-    }
-  };
-
-  const cancelSubscription = async () => {
-    try {
-      // In a real app, you'd call your backend to cancel the Stripe subscription
-      // For now, we'll just update the local state
-      setIsUnlimited(false);
-      setSubscriptionStatus('free');
-      setSubscriptionExpiry(null);
-      setSubscriptionId(null);
-      
-      await saveUsageData(generationsToday, new Date().toDateString(), false);
-      await saveSubscriptionData('free', null, null, null, null, null);
-      
-      // Send cancellation notification
-      await notificationService.sendSubscriptionNotification('cancelled');
-      
-      // Sync subscription change with autoresponder
-      if (userEmail) {
-        await syncSubscriptionChange(userEmail, 'free');
+  const setEmailCaptured = async (captured: boolean) => {
+    setIsEmailCaptured(captured);
+    if (!isSignedIn) {
+      try {
+        await AsyncStorage.setItem('emailCaptured', captured.toString());
+      } catch (error) {
+        console.error('Error setting email captured:', error);
       }
-      
-      console.log('Subscription cancelled locally');
-    } catch (error) {
-      console.error('Error cancelling subscription:', error);
-      throw error;
     }
   };
 
-  const resetDailyCount = async () => {
-    setGenerationsToday(0);
-    await saveUsageData(0, new Date().toDateString(), isUnlimited);
+  const upgradeToUnlimited = async () => {
+    setSubscriptionStatus('unlimited');
+    
+    if (isSignedIn && user && db) {
+      try {
+        await db.from('user_profiles').update(user.id, {
+          subscription_status: 'unlimited',
+        });
+      } catch (error) {
+        console.error('Error upgrading user:', error);
+      }
+    }
   };
 
-  const canGenerate = isUnlimited || generationsToday < DAILY_LIMIT;
+  const resetUsage = async () => {
+    setDailyUsage(0);
+    
+    if (isSignedIn && user && db) {
+      try {
+        await db.from('user_profiles').update(user.id, {
+          usage_count: 0,
+          last_reset_date: new Date().toISOString(),
+        });
+      } catch (error) {
+        console.error('Error resetting user usage:', error);
+      }
+    } else {
+      try {
+        await AsyncStorage.setItem('dailyUsage', '0');
+        await AsyncStorage.setItem('lastUsageDate', new Date().toDateString());
+      } catch (error) {
+        console.error('Error resetting local usage:', error);
+      }
+    }
+  };
+
+  const canGenerate = subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
 
   return (
     <UsageContext.Provider value={{
-      generationsToday,
-      isUnlimited,
+      dailyUsage,
       canGenerate,
-      userEmail,
       isEmailCaptured,
       subscriptionStatus,
-      subscriptionExpiry,
-      subscriptionId,
       incrementGeneration,
+      setEmailCaptured,
       upgradeToUnlimited,
-      cancelSubscription,
-      resetDailyCount,
-      setUserEmail,
-      checkSubscriptionStatus,
+      resetUsage,
     }}>
       {children}
     </UsageContext.Provider>

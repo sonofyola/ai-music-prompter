@@ -32,6 +32,7 @@ import {
   COMMON_KEYS
 } from '../utils/musicData';
 import { generateRandomTrackIdea } from '../utils/randomTrackGenerator';
+import { useBasic } from '@basictech/expo';
 
 import FormField from '../components/FormField';
 import MultiSelectField from '../components/MultiSelectField';
@@ -49,6 +50,7 @@ export default function PromptFormScreen({ navigation }: any) {
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
   const { isAdmin, setAdminStatus } = useMaintenance();
+  const { user, signout } = useBasic();
   const styles = createStyles(colors);
 
   // Debug: Log admin status
@@ -80,6 +82,29 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+
+  const handleUserLogout = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out of your account?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Sign Out', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signout();
+              navigation.replace('Auth');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to sign out. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   const handleAdminLogout = () => {
     Alert.alert(
@@ -253,9 +278,23 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
-            {/* Remove fake user menu for regular users - no real authentication exists */}
-            {/* Only show user menu if there's actual user authentication */}
-            
+            {/* User menu - now with real authentication */}
+            <TouchableOpacity
+              style={styles.userMenuButton}
+              onPress={() => {
+                Alert.alert(
+                  'Account Menu',
+                  `Signed in as: ${user?.email || 'Unknown'}`,
+                  [
+                    { text: 'Sign Out', onPress: handleUserLogout, style: 'destructive' },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
+              }}
+            >
+              <MaterialIcons name="account-circle" size={24} color={colors.text} />
+            </TouchableOpacity>
+
             {/* Admin logout - only when admin is active */}
             {isAdmin && (
               <TouchableOpacity

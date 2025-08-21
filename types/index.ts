@@ -23,9 +23,7 @@ export interface SavedPrompt {
   name: string;
   formData: MusicPromptData;
   generatedPrompt: string;
-  isFavorite: boolean;
   createdAt: string;
-  lastUsed?: string;
 }
 
 export interface PromptTemplate {

@@ -22,61 +22,15 @@ export default function SubscriptionScreen({ navigation }: SubscriptionScreenPro
   const { colors } = useTheme();
   const { 
     subscriptionStatus, 
-    subscriptionExpiry, 
-    isUnlimited, 
-    cancelSubscription,
-    checkSubscriptionStatus 
+    dailyUsage,
   } = useUsage();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [isCancelling, setIsCancelling] = useState(false);
-
-  const handleCancelSubscription = () => {
-    Alert.alert(
-      'Cancel Subscription',
-      'Are you sure you want to cancel your premium subscription? You\'ll lose unlimited access at the end of your billing period.',
-      [
-        { text: 'Keep Subscription', style: 'cancel' },
-        {
-          text: 'Cancel Subscription',
-          style: 'destructive',
-          onPress: async () => {
-            setIsCancelling(true);
-            try {
-              await cancelSubscription();
-              Alert.alert(
-                'Subscription Cancelled',
-                'Your subscription has been cancelled. You\'ll continue to have premium access until your current billing period ends.'
-              );
-            } catch (error) {
-              Alert.alert('Error', 'Failed to cancel subscription. Please try again.');
-            } finally {
-              setIsCancelling(false);
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleRefreshStatus = async () => {
-    try {
-      await checkSubscriptionStatus();
-      Alert.alert('Status Updated', 'Your subscription status has been refreshed.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to refresh subscription status.');
-    }
+    Alert.alert('Status Updated', 'Your subscription status has been refreshed.');
   };
 
-  const getDaysUntilExpiry = () => {
-    if (!subscriptionExpiry) return null;
-    const expiry = new Date(subscriptionExpiry);
-    const now = new Date();
-    const diffTime = expiry.getTime() - now.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
-  };
-
-  const daysUntilExpiry = getDaysUntilExpiry();
+  const daysUntilExpiry = null;
 
   const styles = StyleSheet.create({
     container: {
@@ -317,8 +271,8 @@ export default function SubscriptionScreen({ navigation }: SubscriptionScreenPro
             <View style={styles.billingInfo}>
               <Text style={styles.billingTitle}>Billing Information</Text>
               <Text style={styles.billingText}>
-                Monthly subscription: $5.99/month{'\n'}
-                {subscriptionExpiry && `Next billing: ${new Date(subscriptionExpiry).toLocaleDateString()}`}
+                One-time payment: $5.99 for unlimited access{'\n'}
+                Status: Active
               </Text>
             </View>
           </View>
@@ -335,19 +289,6 @@ export default function SubscriptionScreen({ navigation }: SubscriptionScreenPro
               <MaterialIcons name="refresh" size={20} color={colors.text} />
               <Text style={styles.actionButtonText}>Refresh Status</Text>
             </TouchableOpacity>
-
-            {subscriptionStatus === 'premium' && (
-              <TouchableOpacity 
-                style={styles.cancelButton}
-                onPress={handleCancelSubscription}
-                disabled={isCancelling}
-              >
-                <MaterialIcons name="cancel" size={20} color={colors.error} />
-                <Text style={styles.cancelButtonText}>
-                  {isCancelling ? 'Cancelling...' : 'Cancel Subscription'}
-                </Text>
-              </TouchableOpacity>
-            )}
           </View>
         </View>
 
