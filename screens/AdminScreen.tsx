@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform, TextInput } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform, TextInput, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
@@ -7,6 +7,7 @@ import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
+import { useMaintenance } from '../contexts/MaintenanceContext';
 import AutoresponderConfigComponent from '../components/AutoresponderConfig';
 import NotificationSettings from '../components/NotificationSettings';
 
@@ -30,6 +31,7 @@ interface AdminScreenProps {
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { isUnlimited, upgradeToUnlimited } = useUsage();
+  const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode } = useMaintenance();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -38,6 +40,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [manualUpgradeEmail, setManualUpgradeEmail] = useState('');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [unlimitedEmails, setUnlimitedEmails] = useState<string[]>([]);
+  const [customMaintenanceMessage, setCustomMaintenanceMessage] = useState(maintenanceMessage);
 
   // Enhanced email validation
   const isValidEmail = (email: string): boolean => {
@@ -334,6 +337,35 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
+  const handleMaintenanceToggle = async (enabled: boolean) => {
+    try {
+      await toggleMaintenanceMode(enabled, customMaintenanceMessage);
+      Alert.alert(
+        'Maintenance Mode',
+        enabled 
+          ? 'Maintenance mode has been enabled. Users will see the maintenance screen.'
+          : 'Maintenance mode has been disabled. Users can now access the app normally.',
+        [{ text: 'OK' }]
+      );
+    } catch (error) {
+      Alert.alert('Error', 'Failed to toggle maintenance mode. Please try again.');
+    }
+  };
+
+  const updateMaintenanceMessage = async () => {
+    if (!customMaintenanceMessage.trim()) {
+      Alert.alert('Message Required', 'Please enter a maintenance message.');
+      return;
+    }
+
+    try {
+      await toggleMaintenanceMode(isMaintenanceMode, customMaintenanceMessage);
+      Alert.alert('Success', 'Maintenance message has been updated.');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update maintenance message. Please try again.');
+    }
+  };
+
   const styles = createStyles(colors);
 
   return (
@@ -346,6 +378,53 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Maintenance Mode Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔧 Maintenance Mode</Text>
+          
+          <View style={styles.maintenanceContainer}>
+            <View style={styles.maintenanceToggleRow}>
+              <View style={styles.maintenanceToggleInfo}>
+                <Text style={styles.maintenanceToggleTitle}>
+                  {isMaintenanceMode ? '🔴 Maintenance Active' : '🟢 App Online'}
+                </Text>
+                <Text style={styles.maintenanceToggleSubtitle}>
+                  {isMaintenanceMode 
+                    ? 'Users see maintenance screen (admins can still access)'
+                    : 'App is accessible to all users'
+                  }
+                </Text>
+              </View>
+              <Switch
+                value={isMaintenanceMode}
+                onValueChange={handleMaintenanceToggle}
+                trackColor={{ false: colors.border, true: colors.primary }}
+                thumbColor={isMaintenanceMode ? '#fff' : colors.textSecondary}
+              />
+            </View>
+
+            <View style={styles.maintenanceMessageContainer}>
+              <Text style={styles.maintenanceMessageLabel}>Maintenance Message:</Text>
+              <TextInput
+                style={styles.maintenanceMessageInput}
+                value={customMaintenanceMessage}
+                onChangeText={setCustomMaintenanceMessage}
+                placeholder="Enter maintenance message for users..."
+                placeholderTextColor={colors.textTertiary}
+                multiline
+                numberOfLines={3}
+              />
+              <TouchableOpacity 
+                style={styles.updateMessageButton}
+                onPress={updateMaintenanceMessage}
+              >
+                <MaterialIcons name="update" size={16} color="#fff" />
+                <Text style={styles.updateMessageButtonText}>Update Message</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+
         {/* Email Management Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Email Management</Text>
@@ -846,5 +925,67 @@ const createStyles = (colors: any) => StyleSheet.create({
   emailTimestamp: {
     fontSize: 10,
     color: colors.textSecondary,
+  },
+  maintenanceContainer: {
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: colors.warning + '40',
+  },
+  maintenanceToggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  maintenanceToggleInfo: {
+    flex: 1,
+    marginRight: 16,
+  },
+  maintenanceToggleTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  maintenanceToggleSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  maintenanceMessageContainer: {
+    gap: 12,
+  },
+  maintenanceMessageLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+  },
+  maintenanceMessageInput: {
+    borderWidth: 1,
+    borderColor: colors.border,
+    borderRadius: 12,
+    padding: 16,
+    fontSize: 14,
+    color: colors.text,
+    backgroundColor: colors.background,
+    textAlignVertical: 'top',
+    minHeight: 80,
+  },
+  updateMessageButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: 12,
+    gap: 6,
+  },
+  updateMessageButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

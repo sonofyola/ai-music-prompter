@@ -15,6 +15,7 @@ import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
+import { useMaintenance } from '../contexts/MaintenanceContext';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import { 
@@ -47,6 +48,7 @@ export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
+  const { setAdminStatus } = useMaintenance();
   const styles = createStyles(colors);
 
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -99,8 +101,15 @@ export default function PromptFormScreen({ navigation }: any) {
       if (titleTapTimeout) {
         clearTimeout(titleTapTimeout);
       }
+      // Set admin status and navigate
+      setAdminStatus(true);
       navigation?.navigate('Admin');
     }
+  };
+
+  const handleAdminAccess = () => {
+    setAdminStatus(true);
+    navigation?.navigate('Admin');
   };
 
   const handleRandomTrackIdea = () => {
@@ -294,7 +303,7 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <TouchableOpacity 
               style={styles.iconButton} 
-              onPress={() => navigation?.navigate('Admin')}
+              onPress={handleAdminAccess}
             >
               <MaterialIcons name="admin-panel-settings" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
