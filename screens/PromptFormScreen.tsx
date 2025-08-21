@@ -37,8 +37,8 @@ import MultiSelectField from '../components/MultiSelectField';
 import PickerField from '../components/PickerField';
 import ThemeToggle from '../components/ThemeToggle';
 import UsageIndicator from '../components/UsageIndicator';
+import SubscriptionStatus from '../components/SubscriptionStatus';
 import UpgradeModal from '../components/UpgradeModal';
-import EmailCapture from '../components/EmailCapture';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import TemplatesModal from '../components/TemplatesModal';
 import EmailCaptureModal from '../components/EmailCaptureModal';
@@ -313,6 +313,13 @@ export default function PromptFormScreen({ navigation }: any) {
 
         <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
 
+        <View style={styles.subscriptionContainer}>
+          <SubscriptionStatus 
+            onManagePress={() => navigation?.navigate('Subscription')}
+            compact={true}
+          />
+        </View>
+
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
           <View style={styles.section}>
             <FormField
@@ -580,6 +587,11 @@ const createStyles = (colors: any) => StyleSheet.create({
   form: {
     flex: 1,
     paddingHorizontal: 20,
+  },
+  subscriptionContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 4,
   },
   section: {
     marginTop: 24,
