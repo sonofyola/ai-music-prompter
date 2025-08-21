@@ -1,7 +1,5 @@
 import * as Notifications from 'expo-notifications';
-import * as Device from 'expo-device';
 import { Platform } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export interface NotificationData {
   title: string;
@@ -345,20 +343,63 @@ class NotificationService {
     }
   }
 
-  async cancelAllNotifications(): Promise<void> {
-    try {
-      await Notifications.cancelAllScheduledNotificationsAsync();
-    } catch (error) {
-      console.error('Error cancelling all notifications:', error);
+  static async getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+    if (Platform.OS === 'web') {
+      // Return empty array on web since notifications aren't supported
+      return [];
     }
-  }
-
-  async getScheduledNotifications(): Promise<Notifications.NotificationRequest[]> {
+    
     try {
       return await Notifications.getAllScheduledNotificationsAsync();
     } catch (error) {
       console.error('Error getting scheduled notifications:', error);
       return [];
+    }
+  }
+
+  static async cancelAllNotifications(): Promise<void> {
+    if (Platform.OS === 'web') {
+      // No-op on web
+      return;
+    }
+    
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.error('Error canceling notifications:', error);
+    }
+  }
+
+  static async scheduleNotification(
+    title: string,
+    body: string,
+    trigger: Notifications.NotificationTriggerInput
+  ): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      // Return null on web since notifications aren't supported
+      console.log('Notifications not supported on web');
+      return null;
+    }
+    
+    try {
+      return await Notifications.scheduleNotificationAsync({
+        content: {
+          title,
+          body,
+        },
+        trigger,
+      });
+    } catch (error) {
+      console.error('Error scheduling notification:', error);
+      return null;
+    }
+  }
+
+  async cancelAllNotifications(): Promise<void> {
+    try {
+      await Notifications.cancelAllScheduledNotificationsAsync();
+    } catch (error) {
+      console.error('Error cancelling all notifications:', error);
     }
   }
 
