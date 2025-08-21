@@ -27,7 +27,10 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isSignedIn && user && db) {
-      loadUserUsage();
+      loadUserUsage().catch(error => {
+        console.error('Failed to load user usage, falling back to local storage:', error);
+        loadLocalUsage();
+      });
     } else {
       // Fallback to local storage for non-authenticated users
       loadLocalUsage();
@@ -40,7 +43,9 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       setSubscriptionStatus('unlimited');
     } else if (isSignedIn && user && db) {
       // Reload user usage to get correct subscription status
-      loadUserUsage();
+      loadUserUsage().catch(error => {
+        console.error('Failed to reload user usage:', error);
+      });
     }
   }, [isAdmin, isSignedIn, user, db]);
 
@@ -73,9 +78,24 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         }
         
         setIsEmailCaptured(true); // Authenticated users have email
+      } else {
+        // Create new user profile if it doesn't exist
+        await db.from('user_profiles').add({
+          email: user.email || '',
+          subscription_status: 'free',
+          usage_count: 0,
+          last_reset_date: new Date().toISOString(),
+          created_at: new Date().toISOString(),
+          stripe_customer_id: '',
+        });
+        setDailyUsage(0);
+        setSubscriptionStatus('free');
+        setIsEmailCaptured(true);
       }
     } catch (error) {
       console.error('Error loading user usage:', error);
+      // Fall back to local storage on database error
+      await loadLocalUsage();
     }
   };
 

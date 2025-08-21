@@ -27,31 +27,42 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
-    loadMaintenanceState();
+    loadMaintenanceState().catch(error => {
+      console.error('Failed to load maintenance state:', error);
+    });
   }, []);
 
   useEffect(() => {
     // Reset admin status when user changes
     if (isSignedIn && user) {
-      checkAdminAccess();
+      checkAdminAccess().catch(error => {
+        console.error('Failed to check admin access:', error);
+        setIsAdmin(false);
+      });
     } else {
       setIsAdmin(false);
     }
   }, [isSignedIn, user]);
 
   const checkAdminAccess = async (): Promise<boolean> => {
-    if (!user?.email) {
+    try {
+      if (!user?.email) {
+        setIsAdmin(false);
+        return false;
+      }
+
+      const userEmail = user.email.toLowerCase().trim();
+      const hasAdminAccess = ADMIN_EMAILS.some(adminEmail => 
+        adminEmail.toLowerCase().trim() === userEmail
+      );
+
+      setIsAdmin(hasAdminAccess);
+      return hasAdminAccess;
+    } catch (error) {
+      console.error('Error checking admin access:', error);
       setIsAdmin(false);
       return false;
     }
-
-    const userEmail = user.email.toLowerCase().trim();
-    const hasAdminAccess = ADMIN_EMAILS.some(adminEmail => 
-      adminEmail.toLowerCase().trim() === userEmail
-    );
-
-    setIsAdmin(hasAdminAccess);
-    return hasAdminAccess;
   };
 
   const setAdminStatus = async (status: boolean) => {
