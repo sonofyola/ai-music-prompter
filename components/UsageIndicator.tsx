@@ -13,15 +13,9 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
   const { generationsToday, isUnlimited } = useUsage();
   const styles = createStyles(colors);
 
+  // Don't show anything if user has unlimited - SubscriptionStatus handles that
   if (isUnlimited) {
-    return (
-      <View style={styles.container}>
-        <View style={styles.unlimitedContainer}>
-          <MaterialIcons name="star" size={18} color={colors.success} />
-          <Text style={styles.unlimitedText}>Unlimited generations</Text>
-        </View>
-      </View>
-    );
+    return null;
   }
 
   const remaining = Math.max(0, 3 - generationsToday);
