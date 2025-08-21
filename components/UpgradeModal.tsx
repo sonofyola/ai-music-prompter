@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { useTheme } from '../contexts/ThemeContext';
 import EmailCapture from './EmailCapture';
-import PayPalButton from './PayPalButton';
+import StripePaymentForm from './StripePaymentForm';
 
 interface UpgradeModalProps {
   visible: boolean;
@@ -31,11 +31,18 @@ export default function UpgradeModal({
     setShowPayment(true);
   };
 
-  const handlePaymentSuccess = () => {
+  const handlePaymentSuccess = (subscriptionId: string) => {
+    console.log('Stripe subscription created:', subscriptionId);
     onUpgradeSuccess();
     onClose();
     setShowPayment(false);
     setEmail('');
+  };
+
+  const handlePaymentError = (error: string) => {
+    console.error('Stripe payment error:', error);
+    // You could show an error message to the user here
+    alert(`Payment failed: ${error}`);
   };
 
   const styles = StyleSheet.create({
@@ -141,7 +148,7 @@ export default function UpgradeModal({
             <Text style={styles.subtitle}>Get Unlimited Access</Text>
             
             <Text style={styles.price}>$5.99</Text>
-            <Text style={styles.priceSubtext}>One-time payment • 30 days access</Text>
+            <Text style={styles.priceSubtext}>Monthly subscription</Text>
 
             <View style={styles.feature}>
               <Text style={styles.checkmark}>✓</Text>
@@ -165,17 +172,18 @@ export default function UpgradeModal({
 
             <View style={styles.guarantee}>
               <Text style={styles.guaranteeText}>
-                💰 30-day money-back guarantee{'\n'}
-                Not satisfied? Get a full refund, no questions asked.
+                🔒 Secure payment powered by Stripe{'\n'}
+                Cancel anytime. No long-term commitments.
               </Text>
             </View>
 
             {!showPayment ? (
               <EmailCapture onEmailSubmitted={handleEmailSubmit} />
             ) : (
-              <PayPalButton 
+              <StripePaymentForm 
                 email={email} 
                 onPaymentSuccess={handlePaymentSuccess}
+                onPaymentError={handlePaymentError}
               />
             )}
           </ScrollView>

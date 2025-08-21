@@ -201,7 +201,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     setIsUnlimited(true);
     setSubscriptionStatus('premium');
     
-    // Set expiry to 1 month from now
+    // Set expiry to 1 month from now for monthly subscription
     const expiryDate = new Date();
     expiryDate.setMonth(expiryDate.getMonth() + 1);
     const expiryString = expiryDate.toISOString();
