@@ -53,6 +53,12 @@
     },
     "plugins": [
       [
+        "expo-router",
+        {
+          "origin": false
+        }
+      ],
+      [
         "expo-notifications",
         {
           "icon": "./assets/images/notification-icon.png",
