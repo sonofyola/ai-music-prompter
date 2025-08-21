@@ -146,10 +146,7 @@ export default function PromptFormScreen({ navigation }: any) {
           style: 'destructive',
           onPress: () => {
             setAdminStatus(false);
-            Alert.alert(
-              'Logged Out', 
-              'Admin access has been revoked.\n\nTo regain admin access, tap the app title 7 times quickly.'
-            );
+            Alert.alert('Logged Out', 'Admin access has been revoked.');
           }
         }
       ]
@@ -343,28 +340,26 @@ export default function PromptFormScreen({ navigation }: any) {
         )}
 
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.headerLeft}
-            onPress={handleTitleTap}
-            activeOpacity={0.7}
-          >
-            <MaterialIcons name="music-note" size={24} color={colors.primary} />
-            <Text style={styles.headerTitle}>AI Music Prompter</Text>
-          </TouchableOpacity>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>🎵 AI Music Prompter</Text>
+          </View>
           <View style={styles.headerRight}>
-            {/* Debug: Manual admin toggle for testing - ONLY in development */}
+            {/* Debug admin toggle - only for development */}
             {__DEV__ && (
-              <TouchableOpacity 
-                style={styles.debugAdminButton}
-                onPress={() => {
-                  setAdminStatus(!isAdmin);
-                  Alert.alert('Debug Toggle', `Admin status: ${!isAdmin ? 'ENABLED' : 'DISABLED'}`);
-                }}
-              >
-                <Text style={styles.debugButtonText}>
-                  {isAdmin ? 'DISABLE' : 'ENABLE'}
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.debugContainer}>
+                <Text style={styles.debugText}>DEBUG: Admin = {isAdmin ? 'TRUE' : 'FALSE'}</Text>
+                <TouchableOpacity
+                  style={[styles.debugButton, { backgroundColor: isAdmin ? '#ff4444' : '#44ff44' }]}
+                  onPress={() => {
+                    setAdminStatus(!isAdmin);
+                    Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
+                  }}
+                >
+                  <Text style={styles.debugButtonText}>
+                    {isAdmin ? 'DISABLE ADMIN' : 'ENABLE ADMIN'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
             )}
             
             {/* Admin button - only show if admin */}
@@ -400,7 +395,7 @@ export default function PromptFormScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* VERY VISIBLE Admin status indicator */}
+        {/* Admin status indicator - only shows when admin is active */}
         {isAdmin && (
           <TouchableOpacity 
             style={styles.adminIndicatorLarge}
@@ -930,5 +925,29 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 8,
     color: '#000',
     fontWeight: 'bold',
+  },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  debugContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  debugButton: {
+    backgroundColor: '#00ff00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginRight: 8,
   }
 });
