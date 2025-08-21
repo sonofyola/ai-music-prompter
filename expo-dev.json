@@ -1,0 +1,10 @@
+{
+  "development": {
+    "developmentClient": {
+      "silentLaunch": false
+    },
+    "server": {
+      "port": 8081
+    }
+  }
+}

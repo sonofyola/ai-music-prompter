@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "AI Music Promptr",
+    "name": "AI Music Prompter",
     "slug": "user-app-f9ba5f44",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -55,6 +55,12 @@
       "orientation": "portrait"
     },
     "plugins": [
+      [
+        "expo-router",
+        {
+          "origin": false
+        }
+      ],
       [
         "expo-notifications",
         {
