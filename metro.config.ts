@@ -21,16 +21,17 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
-// Add server configuration to handle CORS issues
+// Override server configuration to handle CORS properly
 config.server = {
-  ...config.server,
+  port: 8081,
   enhanceMiddleware: (middleware, server) => {
     return (req, res, next) => {
-      // Set CORS headers
+      // Add CORS headers before any other middleware
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD');
+      res.setHeader('Access-Control-Allow-Headers', '*');
       res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Max-Age', '86400');
       
       // Handle preflight requests
       if (req.method === 'OPTIONS') {

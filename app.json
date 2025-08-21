@@ -52,15 +52,10 @@
       "backgroundColor": "#ffffff",
       "startUrl": "/",
       "display": "standalone",
-      "orientation": "portrait"
+      "orientation": "portrait",
+      "crossOrigin": "anonymous"
     },
     "plugins": [
-      [
-        "expo-router",
-        {
-          "origin": false
-        }
-      ],
       [
         "expo-notifications",
         {

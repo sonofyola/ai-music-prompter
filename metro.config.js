@@ -21,10 +21,28 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
-// Add transformer to handle font files
-config.transformer = {
-  ...config.transformer,
-  assetPlugins: ['expo-asset/tools/hashAssetFiles'],
+// Override server configuration to handle CORS properly
+config.server = {
+  port: 8081,
+  enhanceMiddleware: (middleware, server) => {
+    return (req, res, next) => {
+      // Add CORS headers before any other middleware
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, HEAD');
+      res.setHeader('Access-Control-Allow-Headers', '*');
+      res.setHeader('Access-Control-Allow-Credentials', 'true');
+      res.setHeader('Access-Control-Max-Age', '86400');
+      
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+      
+      return middleware(req, res, next);
+    };
+  },
 };
 
 module.exports = wrapWithReanimatedMetroConfig(config);
