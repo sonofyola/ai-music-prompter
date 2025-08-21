@@ -1,11 +1,20 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+
+function AppContent() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Text style={styles.text}>Hello World - App is Working!</Text>
+    </SafeAreaView>
+  );
+}
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Hello World - App is Working!</Text>
-    </View>
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
   );
 }
 
