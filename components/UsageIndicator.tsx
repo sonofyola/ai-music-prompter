@@ -16,97 +16,99 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
   if (isUnlimited) {
     return (
       <View style={styles.container}>
-        <View style={styles.unlimitedBadge}>
-          <MaterialIcons name="star" size={16} color={colors.warning} />
-          <Text style={styles.unlimitedText}>Unlimited</Text>
+        <View style={styles.unlimitedContainer}>
+          <MaterialIcons name="star" size={18} color={colors.success} />
+          <Text style={styles.unlimitedText}>Unlimited generations</Text>
         </View>
       </View>
     );
   }
 
   const remaining = Math.max(0, 3 - generationsToday);
+  const isLow = remaining <= 1;
 
   return (
     <View style={styles.container}>
-      <View style={styles.usageInfo}>
-        <Text style={styles.usageText}>
-          {remaining} free generations left today
-        </Text>
+      <View style={styles.content}>
+        <View style={styles.textRow}>
+          <Text style={styles.usageText}>
+            {remaining} free generations remaining
+          </Text>
+          {isLow && (
+            <TouchableOpacity style={styles.upgradeButton} onPress={onUpgradePress}>
+              <Text style={styles.upgradeText}>Upgrade</Text>
+              <MaterialIcons name="arrow-forward" size={14} color={colors.primary} />
+            </TouchableOpacity>
+          )}
+        </View>
         <View style={styles.progressBar}>
           <View 
             style={[
               styles.progressFill, 
-              { width: `${(generationsToday / 3) * 100}%` }
+              { 
+                width: `${(generationsToday / 3) * 100}%`,
+                backgroundColor: isLow ? colors.warning : colors.primary
+              }
             ]} 
           />
         </View>
       </View>
-      <TouchableOpacity style={styles.upgradeButton} onPress={onUpgradePress}>
-        <MaterialIcons name="star" size={16} color={colors.primary} />
-        <Text style={styles.upgradeText}>Upgrade</Text>
-      </TouchableOpacity>
     </View>
   );
 }
 
 const createStyles = (colors: any) => StyleSheet.create({
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
     backgroundColor: colors.surface,
-    marginHorizontal: 16,
-    marginTop: 16,
     borderRadius: 12,
     padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  usageInfo: {
-    flex: 1,
-    marginRight: 16,
+  content: {
+    gap: 8,
+  },
+  textRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   usageText: {
     fontSize: 14,
     color: colors.textSecondary,
-    marginBottom: 8,
+    fontWeight: '500',
   },
   progressBar: {
-    height: 4,
-    backgroundColor: colors.borderLight,
-    borderRadius: 2,
+    height: 6,
+    backgroundColor: colors.border,
+    borderRadius: 3,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 2,
+    borderRadius: 3,
   },
-  unlimitedBadge: {
+  unlimitedContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.warning + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
+    gap: 8,
   },
   unlimitedText: {
     fontSize: 14,
     fontWeight: '600',
-    color: colors.warning,
+    color: colors.success,
   },
   upgradeButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.primary + '20',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: colors.primary + '15',
   },
   upgradeText: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: '600',
     color: colors.primary,
   },

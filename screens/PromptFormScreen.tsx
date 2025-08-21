@@ -40,7 +40,7 @@ import { MusicPromptData } from '../types';
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { canGenerate, incrementGeneration } = useUsage();
+  const { canGenerate, incrementGeneration, resetDailyCount } = useUsage();
   const { savePrompt } = usePromptHistory();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showRandomTrackModal, setShowRandomTrackModal] = useState(false);
@@ -100,7 +100,6 @@ export default function PromptFormScreen() {
           text: 'Set to 2 generations', 
           onPress: async () => {
             // Simulate having used 2 generations
-            const { resetDailyCount, incrementGeneration } = useUsage();
             await resetDailyCount();
             await incrementGeneration();
             await incrementGeneration();
@@ -222,26 +221,35 @@ export default function PromptFormScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Header */}
+        {/* Modern Header */}
         <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <Text style={styles.title}>AI Music Prompt Generator</Text>
+          <View style={styles.headerContent}>
+            <View style={styles.titleRow}>
+              <TouchableOpacity 
+                onPress={handleTitlePress}
+                onLongPress={handleTitleLongPress}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.title}>AI Music Prompts</Text>
+              </TouchableOpacity>
+              <ThemeToggle />
+            </View>
             <Text style={styles.subtitle}>
-              Create detailed prompts for AI music tools like Suno, Riffusion & MusicGen
+              Generate detailed prompts for Suno, Riffusion & MusicGen
             </Text>
           </View>
-          <ThemeToggle />
         </View>
 
-        {/* Subscription Status */}
-        <View style={styles.statusContainer}>
+        {/* Status Cards */}
+        <View style={styles.statusSection}>
           <SubscriptionStatus 
             onManagePress={handleManageSubscription}
             compact={true}
           />
+          <View style={styles.usageContainer}>
+            <UsageIndicator onUpgradePress={onUpgradePress} />
+          </View>
         </View>
-
-        <UsageIndicator onUpgradePress={onUpgradePress} />
 
         <View style={styles.form}>
           <FormField
@@ -505,56 +513,45 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
   },
   header: {
-    padding: 20,
+    backgroundColor: colors.background,
+    paddingTop: 8,
+    paddingHorizontal: 20,
     paddingBottom: 16,
-    backgroundColor: colors.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
-  headerTop: {
+  headerContent: {
+    gap: 8,
+  },
+  titleRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
-  },
-  titleContainer: {
-    flex: 1,
-    marginRight: 16,
+    alignItems: 'center',
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '700',
     color: colors.text,
-    lineHeight: 28,
-    flex: 1,
-    marginRight: 12,
+    letterSpacing: -0.5,
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 15,
     color: colors.textSecondary,
-    lineHeight: 18,
-    opacity: 0.75,
-    marginTop: 6,
+    lineHeight: 20,
+    opacity: 0.8,
   },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
+  statusSection: {
+    paddingHorizontal: 20,
+    gap: 12,
+    marginBottom: 8,
   },
-  headerButton: {
-    padding: 4,
-    borderRadius: 4,
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  themeToggleContainer: {
-    marginLeft: 4,
+  usageContainer: {
+    marginTop: 16,
   },
   form: {
     backgroundColor: colors.surface,
-    marginTop: 12,
-    padding: 16,
+    marginTop: 8,
+    padding: 20,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
   },
   sectionTitle: {
     fontSize: 18,
@@ -563,8 +560,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginBottom: 16,
   },
   buttonContainer: {
-    padding: 16,
+    padding: 20,
+    paddingTop: 16,
     gap: 12,
+    backgroundColor: colors.surface,
   },
   generateButton: {
     flexDirection: 'row',
@@ -572,11 +571,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
     borderRadius: 12,
-    padding: 16,
+    padding: 18,
     gap: 8,
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   disabledButton: {
     backgroundColor: colors.textTertiary,
+    shadowOpacity: 0,
+    elevation: 0,
   },
   generateButtonText: {
     color: '#fff',
@@ -587,11 +593,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: 'transparent',
     borderRadius: 12,
-    padding: 16,
+    padding: 18,
     gap: 8,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
   },
   clearButtonText: {
@@ -601,9 +607,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   footer: {
     height: 20,
-  },
-  statusContainer: {
-    marginHorizontal: 20,
-    marginBottom: 16,
+    backgroundColor: colors.surface,
   },
 });

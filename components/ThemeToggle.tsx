@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { TouchableOpacity, StyleSheet, Animated } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -10,31 +10,29 @@ export default function ThemeToggle() {
   React.useEffect(() => {
     Animated.timing(animation, {
       toValue: theme === 'dark' ? 1 : 0,
-      duration: 300,
+      duration: 200,
       useNativeDriver: false,
     }).start();
   }, [theme, animation]);
 
-  const translateX = animation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [2, 26],
-  });
-
   const backgroundColor = animation.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.primary, '#475569'],
+    outputRange: [colors.border, colors.textSecondary],
+  });
+
+  const iconOpacity = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0.7, 1],
   });
 
   return (
-    <TouchableOpacity onPress={toggleTheme} style={styles.container}>
-      <Animated.View style={[styles.track, { backgroundColor }]}>
-        <Animated.View style={[styles.thumb, { transform: [{ translateX }] }]}>
-          <MaterialIcons 
-            name={theme === 'light' ? 'wb-sunny' : 'nightlight-round'} 
-            size={16} 
-            color={theme === 'light' ? '#fbbf24' : '#e2e8f0'} 
-          />
-        </Animated.View>
+    <TouchableOpacity onPress={toggleTheme} style={styles.container} activeOpacity={0.7}>
+      <Animated.View style={[styles.button, { backgroundColor, opacity: iconOpacity }]}>
+        <MaterialIcons 
+          name={theme === 'light' ? 'dark-mode' : 'light-mode'} 
+          size={20} 
+          color={theme === 'light' ? colors.textSecondary : colors.text} 
+        />
       </Animated.View>
     </TouchableOpacity>
   );
@@ -42,26 +40,13 @@ export default function ThemeToggle() {
 
 const styles = StyleSheet.create({
   container: {
-    padding: 4,
+    // No extra padding needed
   },
-  track: {
-    width: 52,
-    height: 28,
-    borderRadius: 14,
-    justifyContent: 'center',
-  },
-  thumb: {
-    position: 'absolute',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
+  button: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-    elevation: 3,
   },
 });

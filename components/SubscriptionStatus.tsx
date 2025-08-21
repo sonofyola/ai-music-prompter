@@ -52,8 +52,8 @@ export default function SubscriptionStatus({
   const styles = StyleSheet.create({
     container: {
       backgroundColor: colors.surface,
-      borderRadius: compact ? 8 : 12,
-      padding: compact ? 12 : 16,
+      borderRadius: 12,
+      padding: 16,
       borderWidth: 1,
       borderColor: colors.border,
     },
@@ -66,9 +66,9 @@ export default function SubscriptionStatus({
     statusBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 8,
-      paddingVertical: 4,
-      borderRadius: 12,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 16,
       backgroundColor: getStatusColor(),
     },
     statusText: {
@@ -78,7 +78,9 @@ export default function SubscriptionStatus({
       marginLeft: 4,
     },
     manageButton: {
-      padding: 4,
+      padding: 6,
+      borderRadius: 8,
+      backgroundColor: colors.border,
     },
     usageContainer: {
       marginBottom: compact ? 0 : 8,
@@ -86,18 +88,19 @@ export default function SubscriptionStatus({
     usageText: {
       fontSize: compact ? 12 : 14,
       color: colors.textSecondary,
-      marginBottom: 4,
+      marginBottom: 6,
+      fontWeight: '500',
     },
     usageBar: {
-      height: 4,
+      height: 6,
       backgroundColor: colors.border,
-      borderRadius: 2,
+      borderRadius: 3,
       overflow: 'hidden',
     },
     usageProgress: {
       height: '100%',
       backgroundColor: colors.primary,
-      borderRadius: 2,
+      borderRadius: 3,
     },
     unlimitedText: {
       fontSize: compact ? 12 : 14,
@@ -107,16 +110,17 @@ export default function SubscriptionStatus({
     warningContainer: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: '#FFF3CD',
-      padding: 8,
-      borderRadius: 6,
-      marginTop: 8,
+      backgroundColor: colors.warning + '15',
+      padding: 10,
+      borderRadius: 8,
+      marginTop: 10,
     },
     warningText: {
-      color: '#856404',
+      color: colors.warning,
       fontSize: 12,
       marginLeft: 6,
       flex: 1,
+      fontWeight: '500',
     },
   });
 

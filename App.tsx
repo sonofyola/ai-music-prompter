@@ -47,12 +47,12 @@ function AppContent() {
         <Tab.Screen 
           name="Generate" 
           component={PromptFormScreen} 
-          options={{ title: 'AI Music Prompts' }}
+          options={{ headerShown: false }}
         />
         <Tab.Screen 
           name="Subscription" 
           component={SubscriptionScreen} 
-          options={{ title: 'Subscription' }}
+          options={{ headerShown: false }}
         />
       </Tab.Navigator>
     </NavigationContainer>
