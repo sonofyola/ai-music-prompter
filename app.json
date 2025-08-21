@@ -6,6 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
+    "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -16,11 +17,16 @@
     ],
     "ios": {
       "supportsTablet": true,
+      "bundleIdentifier": "com.aimusicprompts.generator",
       "infoPlist": {
-        "UIBackgroundModes": ["background-fetch", "background-processing"]
+        "UIBackgroundModes": ["background-fetch", "background-processing"],
+        "NSAppTransportSecurity": {
+          "NSAllowsArbitraryLoads": true
+        }
       }
     },
     "android": {
+      "package": "com.aimusicprompts.generator",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -28,13 +34,22 @@
       "permissions": [
         "android.permission.RECEIVE_BOOT_COMPLETED",
         "android.permission.VIBRATE",
-        "android.permission.WAKE_LOCK"
+        "android.permission.WAKE_LOCK",
+        "android.permission.INTERNET"
       ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro",
-      "output": "static"
+      "output": "static",
+      "name": "AI Music Prompt Generator",
+      "shortName": "AI Music Prompts",
+      "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools",
+      "themeColor": "#6366f1",
+      "backgroundColor": "#ffffff",
+      "startUrl": "/",
+      "display": "standalone",
+      "orientation": "portrait"
     },
     "plugins": [
       "expo-router",
@@ -50,6 +65,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "your-eas-project-id"
+      }
     }
   }
 }
