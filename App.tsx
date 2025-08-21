@@ -3,12 +3,15 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { UsageProvider } from './contexts/UsageContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
+import { NotificationProvider } from './contexts/NotificationContext';
 import PromptFormScreen from './screens/PromptFormScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
 
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { MaterialIcons } from '@expo/vector-icons';
+import { StatusBar } from 'react-native';
+import { StackNavigator } from '@react-navigation/stack';
 
 const Tab = createBottomTabNavigator();
 
@@ -65,7 +68,21 @@ export default function App() {
       <ThemeProvider>
         <UsageProvider>
           <PromptHistoryProvider>
-            <AppContent />
+            <NotificationProvider>
+              <StatusBar style="auto" />
+              <NavigationContainer>
+                <Stack.Navigator
+                  initialRouteName="PromptForm"
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: 'transparent' },
+                  }}
+                >
+                  <Stack.Screen name="PromptForm" component={PromptFormScreen} />
+                  <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+                </Stack.Navigator>
+              </NavigationContainer>
+            </NotificationProvider>
           </PromptHistoryProvider>
         </UsageProvider>
       </ThemeProvider>

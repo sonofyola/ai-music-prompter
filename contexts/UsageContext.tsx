@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { syncEmailCapture, syncSubscriptionChange } from '../utils/autoresponderService';
+import { notificationService } from '../utils/notificationService';
 
 interface UsageContextType {
   generationsToday: number;
@@ -233,6 +234,14 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       const newCount = generationsToday + 1;
       setGenerationsToday(newCount);
       await saveUsageData(newCount, new Date().toDateString(), isUnlimited);
+      
+      // Send usage limit notifications for free users
+      if (!isUnlimited) {
+        const remaining = DAILY_LIMIT - newCount;
+        if (remaining <= 1) {
+          await notificationService.sendUsageLimitNotification(remaining);
+        }
+      }
     }
   };
 
@@ -254,6 +263,9 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     await saveUsageData(generationsToday, new Date().toDateString(), true);
     await saveSubscriptionData('premium', expiryString, 5.99, 'monthly', newSubscriptionId);
     
+    // Send upgrade notification
+    await notificationService.sendSubscriptionNotification('upgrade');
+    
     // Sync subscription change with autoresponder
     if (userEmail) {
       await syncSubscriptionChange(userEmail, 'premium');
@@ -271,6 +283,9 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       
       await saveUsageData(generationsToday, new Date().toDateString(), false);
       await saveSubscriptionData('free', null, null, null, null, null);
+      
+      // Send cancellation notification
+      await notificationService.sendSubscriptionNotification('cancelled');
       
       // Sync subscription change with autoresponder
       if (userEmail) {

@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
 import AutoresponderConfigComponent from '../components/AutoresponderConfig';
+import NotificationSettings from '../components/NotificationSettings';
 
 interface EmailRecord {
   email: string;
@@ -464,6 +465,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         {/* Autoresponder Configuration Section */}
         <View style={styles.section}>
           <AutoresponderConfigComponent />
+        </View>
+
+        {/* Notification Settings Section */}
+        <View style={styles.section}>
+          <NotificationSettings />
         </View>
 
         {showValidationDetails && validationResult && (

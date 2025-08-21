@@ -37,6 +37,7 @@ import {
   WEIRDNESS_LEVELS
 } from '../utils/musicData';
 import { MusicPromptData } from '../types';
+import { sendGenerationCompleteNotification } from '../utils/notificationService';
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
@@ -172,25 +173,61 @@ export default function PromptFormScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const generatePrompt = async () => {
+  const handleGenerate = async () => {
     if (!canGenerate) {
-      Alert.alert(
-        'Daily Limit Reached',
-        'You\'ve used all 3 free generations today. Upgrade to unlimited for just $4.99!',
-        [
-          { text: 'Maybe Later', style: 'cancel' },
-          { text: 'Upgrade Now', onPress: onUpgradePress }
-        ]
-      );
+      setShowUpgradeModal(true);
       return;
     }
 
-    const prompt = formatMusicPrompt(formData);
-    setGeneratedPrompt(prompt);
-    setShowPrompt(true);
-    
-    // Increment usage count
-    await incrementGeneration();
+    setIsGenerating(true);
+    setGeneratedPrompt('');
+
+    try {
+      await incrementGeneration();
+      
+      const prompt = formatPrompt({
+        genres: selectedGenres,
+        mood: selectedMood,
+        energy: selectedEnergy,
+        instruments: selectedInstruments,
+        tempo: selectedTempo,
+        key: selectedKey,
+        timeSignature: selectedTimeSignature,
+        weirdnessLevel: weirdnessLevel,
+        customPrompt: customPrompt.trim() || undefined,
+      });
+
+      // Simulate generation delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setGeneratedPrompt(prompt);
+      
+      // Add to history
+      addToHistory({
+        prompt,
+        timestamp: new Date().toISOString(),
+        parameters: {
+          genres: selectedGenres,
+          mood: selectedMood,
+          energy: selectedEnergy,
+          instruments: selectedInstruments,
+          tempo: selectedTempo,
+          key: selectedKey,
+          timeSignature: selectedTimeSignature,
+          weirdnessLevel: weirdnessLevel,
+          customPrompt: customPrompt.trim() || undefined,
+        }
+      });
+
+      // Send completion notification
+      await sendGenerationCompleteNotification();
+      
+    } catch (error) {
+      console.error('Error generating prompt:', error);
+      Alert.alert('Error', 'Failed to generate prompt. Please try again.');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   const clearForm = () => {
