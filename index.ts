@@ -1,6 +1,5 @@
 import "@expo/metro-runtime";
-// Temporarily disable global error handler to avoid CORS issues
-// import './utils/global-error-handler';
+import './utils/global-error-handler';
 import './polyfills';
 import { registerRootComponent } from 'expo';
 

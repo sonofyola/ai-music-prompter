@@ -21,7 +21,25 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
-// Remove custom server configuration to avoid CORS issues
-// Let Expo handle CORS properly with default settings
+// Web-specific configuration to handle CORS properly
+if (config.server) {
+  config.server.enhanceMiddleware = (middleware, server) => {
+    return (req, res, next) => {
+      // Set CORS headers for all requests
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
+      
+      // Handle preflight requests
+      if (req.method === 'OPTIONS') {
+        res.writeHead(200);
+        res.end();
+        return;
+      }
+      
+      return middleware(req, res, next);
+    };
+  };
+}
 
 module.exports = wrapWithReanimatedMetroConfig(config);
