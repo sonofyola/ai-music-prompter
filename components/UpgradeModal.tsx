@@ -173,7 +173,8 @@ export default function UpgradeModal({
             <View style={styles.guarantee}>
               <Text style={styles.guaranteeText}>
                 🔒 Secure payment powered by Stripe{'\n'}
-                Cancel anytime. No long-term commitments.
+                Cancel anytime. No long-term commitments.{'\n'}
+                Instant activation after payment.
               </Text>
             </View>
 
