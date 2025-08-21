@@ -48,7 +48,7 @@ export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { setAdminStatus } = useMaintenance();
+  const { isAdmin, setAdminStatus } = useMaintenance();
   const styles = createStyles(colors);
 
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -108,8 +108,34 @@ export default function PromptFormScreen({ navigation }: any) {
   };
 
   const handleAdminAccess = () => {
-    setAdminStatus(true);
-    navigation?.navigate('Admin');
+    // Only allow admin access if user is already admin
+    if (isAdmin) {
+      navigation?.navigate('Admin');
+    } else {
+      Alert.alert(
+        'Access Denied',
+        'Admin access required. Tap the title 7 times quickly to gain admin access.',
+        [{ text: 'OK' }]
+      );
+    }
+  };
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout Admin',
+      'Are you sure you want to logout from admin access?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: () => {
+            setAdminStatus(false);
+            Alert.alert('Logged Out', 'Admin access has been revoked.');
+          }
+        }
+      ]
+    );
   };
 
   const handleRandomTrackIdea = () => {
@@ -301,12 +327,24 @@ export default function PromptFormScreen({ navigation }: any) {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            <TouchableOpacity 
-              style={styles.iconButton} 
-              onPress={handleAdminAccess}
-            >
-              <MaterialIcons name="admin-panel-settings" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
+            {/* Only show admin button if user is admin */}
+            {isAdmin && (
+              <TouchableOpacity 
+                style={styles.iconButton} 
+                onPress={handleAdminAccess}
+              >
+                <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
+              </TouchableOpacity>
+            )}
+            {/* Show logout button if user is admin */}
+            {isAdmin && (
+              <TouchableOpacity 
+                style={styles.iconButton} 
+                onPress={handleLogout}
+              >
+                <MaterialIcons name="logout" size={20} color={colors.error} />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity style={styles.iconButton} onPress={() => setShowHistoryModal(true)}>
               <MaterialIcons name="history" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -319,6 +357,14 @@ export default function PromptFormScreen({ navigation }: any) {
             <ThemeToggle />
           </View>
         </View>
+
+        {/* Show admin status indicator */}
+        {isAdmin && (
+          <View style={styles.adminIndicator}>
+            <MaterialIcons name="admin-panel-settings" size={16} color={colors.primary} />
+            <Text style={styles.adminIndicatorText}>Admin Mode Active</Text>
+          </View>
+        )}
 
         <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
 
@@ -716,4 +762,18 @@ const createStyles = (colors: any) => StyleSheet.create({
   bottomSpacing: {
     height: 40,
   },
+  adminIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary + '20',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    gap: 6,
+  },
+  adminIndicatorText: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '600',
+  }
 });

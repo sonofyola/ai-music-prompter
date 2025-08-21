@@ -31,7 +31,7 @@ interface AdminScreenProps {
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { isUnlimited, upgradeToUnlimited } = useUsage();
-  const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode } = useMaintenance();
+  const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode, isAdmin, setAdminStatus } = useMaintenance();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -337,6 +337,24 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout Admin',
+      'Are you sure you want to logout and return to the main app?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: () => {
+            setAdminStatus(false);
+            onBackToApp();
+          }
+        }
+      ]
+    );
+  };
+
   const handleMaintenanceToggle = async (enabled: boolean) => {
     try {
       await toggleMaintenanceMode(enabled, customMaintenanceMessage);
@@ -375,9 +393,22 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title}>Admin Panel</Text>
+        <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+          <MaterialIcons name="logout" size={20} color={colors.error} />
+          <Text style={styles.logoutButtonText}>Logout</Text>
+        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Admin Status Indicator */}
+        <View style={styles.section}>
+          <View style={styles.adminStatusContainer}>
+            <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
+            <Text style={styles.adminStatusText}>Admin Access Active</Text>
+            <Text style={styles.adminStatusSubtext}>You have full administrative privileges</Text>
+          </View>
+        </View>
+
         {/* Maintenance Mode Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>🔧 Maintenance Mode</Text>
@@ -541,15 +572,24 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </TouchableOpacity>
         </View>
 
-        {/* Autoresponder Configuration Section */}
-        <View style={styles.section}>
-          <AutoresponderConfigComponent />
-        </View>
+        {/* Admin-Only Sections */}
+        {isAdmin && (
+          <>
+            {/* Autoresponder Configuration Section */}
+            <View style={styles.section}>
+              <AutoresponderConfigComponent />
+            </View>
 
-        {/* Notification Settings Section */}
-        <View style={styles.section}>
-          <NotificationSettings />
-        </View>
+            {/* Notification Settings Section */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>🔔 Admin Notification Settings</Text>
+              <Text style={styles.sectionSubtitle}>
+                Configure system-wide notification preferences (Admin Only)
+              </Text>
+              <NotificationSettings />
+            </View>
+          </>
+        )}
 
         {showValidationDetails && validationResult && (
           <View style={styles.detailsContainer}>
@@ -646,6 +686,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
@@ -987,5 +1028,47 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.error + '40',
+  },
+  logoutButtonText: {
+    fontSize: 12,
+    color: colors.error,
+    fontWeight: '600',
+  },
+  adminStatusContainer: {
+    backgroundColor: colors.primary + '10',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.primary + '30',
+  },
+  adminStatusText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.primary,
+    marginTop: 8,
+    marginBottom: 4,
+  },
+  adminStatusSubtext: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginBottom: 16,
+    fontStyle: 'italic',
   },
 });

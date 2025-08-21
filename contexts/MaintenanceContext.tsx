@@ -7,6 +7,7 @@ interface MaintenanceContextType {
   isAdmin: boolean;
   toggleMaintenanceMode: (enabled: boolean, message?: string) => Promise<void>;
   setAdminStatus: (isAdmin: boolean) => void;
+  logout: () => Promise<void>;
 }
 
 const MaintenanceContext = createContext<MaintenanceContextType | undefined>(undefined);
@@ -72,6 +73,15 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     }
   };
 
+  const logout = async () => {
+    try {
+      await AsyncStorage.removeItem(ADMIN_STATUS_KEY);
+      setIsAdmin(false);
+    } catch (error) {
+      console.error('Error logging out:', error);
+    }
+  };
+
   return (
     <MaintenanceContext.Provider value={{
       isMaintenanceMode,
@@ -79,6 +89,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       isAdmin,
       toggleMaintenanceMode,
       setAdminStatus,
+      logout,
     }}>
       {children}
     </MaintenanceContext.Provider>

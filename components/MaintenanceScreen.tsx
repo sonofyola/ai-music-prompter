@@ -7,9 +7,10 @@ import { useTheme } from '../contexts/ThemeContext';
 interface MaintenanceScreenProps {
   message: string;
   onAdminAccess?: () => void;
+  showAdminAccess?: boolean;
 }
 
-export default function MaintenanceScreen({ message, onAdminAccess }: MaintenanceScreenProps) {
+export default function MaintenanceScreen({ message, onAdminAccess, showAdminAccess = true }: MaintenanceScreenProps) {
   const { colors } = useTheme();
 
   const styles = createStyles(colors);
@@ -44,7 +45,7 @@ export default function MaintenanceScreen({ message, onAdminAccess }: Maintenanc
           We appreciate your patience while we make AI Music Prompter even better!
         </Text>
 
-        {onAdminAccess && (
+        {showAdminAccess && onAdminAccess && (
           <TouchableOpacity style={styles.adminButton} onPress={onAdminAccess}>
             <MaterialIcons name="admin-panel-settings" size={20} color={colors.textSecondary} />
             <Text style={styles.adminButtonText}>Admin Access</Text>
