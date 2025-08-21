@@ -48,7 +48,7 @@ export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { isAdmin, setAdminStatus } = useMaintenance();
+  const { isAdmin, setAdminStatus, logout } = useMaintenance();
   const styles = createStyles(colors);
 
   // Debug: Log admin status
@@ -80,60 +80,6 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
-  const [titleTapCount, setTitleTapCount] = useState(0);
-  const [titleTapTimeout, setTitleTapTimeout] = useState<NodeJS.Timeout | null>(null);
-
-  const handleTitleTap = () => {
-    const newCount = titleTapCount + 1;
-    setTitleTapCount(newCount);
-
-    // Clear existing timeout
-    if (titleTapTimeout) {
-      clearTimeout(titleTapTimeout);
-    }
-
-    // Set new timeout to reset count
-    const timeout = setTimeout(() => {
-      setTitleTapCount(0);
-    }, 2000); // Reset after 2 seconds of no taps
-    setTitleTapTimeout(timeout);
-
-    // Show progress feedback starting from tap 3
-    if (newCount >= 3) {
-      Alert.alert('Admin Access Progress', `${newCount}/7 taps - Keep tapping quickly!`);
-    }
-
-    // Check if we've reached 7 taps
-    if (newCount >= 7) {
-      setTitleTapCount(0);
-      if (titleTapTimeout) {
-        clearTimeout(titleTapTimeout);
-      }
-      // Set admin status
-      setAdminStatus(true);
-      Alert.alert(
-        'Admin Access Granted! 🔓',
-        'You now have admin privileges.\n\nTo logout: Tap the red logout button in the header or the blue admin status bar.',
-        [
-          { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
-          { text: 'Stay Here', style: 'cancel' }
-        ]
-      );
-    }
-  };
-
-  const handleAdminAccess = () => {
-    // Only allow admin access if user is already admin
-    if (isAdmin) {
-      navigation?.navigate('Admin');
-    } else {
-      Alert.alert(
-        'Access Denied',
-        'Admin access required. Tap the title 7 times quickly to gain admin access.',
-        [{ text: 'OK' }]
-      );
-    }
-  };
 
   const handleUserLogout = () => {
     Alert.alert(
@@ -149,6 +95,7 @@ export default function PromptFormScreen({ navigation }: any) {
               await logout();
               Alert.alert('Logged Out', 'You have been logged out successfully.');
             } catch (error) {
+              console.error('Logout error:', error);
               Alert.alert('Error', 'Failed to logout. Please try again.');
             }
           }
@@ -166,9 +113,14 @@ export default function PromptFormScreen({ navigation }: any) {
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: () => {
-            setAdminStatus(false);
-            Alert.alert('Logged Out', 'Admin access has been revoked.');
+          onPress: async () => {
+            try {
+              await setAdminStatus(false);
+              Alert.alert('Logged Out', 'Admin access has been revoked.');
+            } catch (error) {
+              console.error('Admin logout error:', error);
+              Alert.alert('Error', 'Failed to logout from admin mode.');
+            }
           }
         }
       ]
@@ -253,43 +205,6 @@ export default function PromptFormScreen({ navigation }: any) {
     );
   };
 
-  const resetForm = () => {
-    Alert.alert(
-      'Reset Form',
-      'Are you sure you want to clear all fields?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Reset', 
-          style: 'destructive',
-          onPress: () => {
-            setFormData({
-              subject: '',
-              genres_primary: [],
-              genres_electronic: [],
-              mood: [],
-              tempo_bpm: '',
-              key_scale: '',
-              energy: '',
-              beat: [],
-              bass: [],
-              groove_swing: '',
-              vocal_gender: 'none',
-              vocal_delivery: '',
-              era: '',
-              master_notes: '',
-              length: '',
-              weirdness_level: 'conventional',
-              general_freeform: ''
-            });
-            setGeneratedPrompt('');
-            setShowPrompt(false);
-          }
-        }
-      ]
-    );
-  };
-
   const loadTemplate = (templateData: Partial<MusicPromptData>) => {
     setFormData(prev => ({
       ...prev,
@@ -356,8 +271,23 @@ export default function PromptFormScreen({ navigation }: any) {
       >
         {/* Debug admin status at the very top */}
         {__DEV__ && (
-          <View style={styles.debugBar}>
+          <View style={styles.debugContainer}>
             <Text style={styles.debugText}>DEBUG: Admin = {isAdmin ? 'TRUE' : 'FALSE'}</Text>
+            <TouchableOpacity
+              style={[styles.debugButton, { backgroundColor: isAdmin ? '#ff4444' : '#44ff44' }]}
+              onPress={async () => {
+                try {
+                  await setAdminStatus(!isAdmin);
+                  Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
+                } catch (error) {
+                  console.error('Debug toggle error:', error);
+                }
+              }}
+            >
+              <Text style={styles.debugButtonText}>
+                {isAdmin ? 'DISABLE ADMIN' : 'ENABLE ADMIN'}
+              </Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -407,7 +337,7 @@ export default function PromptFormScreen({ navigation }: any) {
                 'Choose an action:',
                 [
                   { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
-                  { text: 'Logout Admin', onPress: handleLogout, style: 'destructive' },
+                  { text: 'Logout Admin', onPress: handleAdminLogout, style: 'destructive' },
                   { text: 'Cancel', style: 'cancel' }
                 ]
               );
@@ -418,7 +348,7 @@ export default function PromptFormScreen({ navigation }: any) {
             <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE (Long press for options)</Text>
             <TouchableOpacity 
               style={styles.logoutButtonInBar}
-              onPress={handleLogout}
+              onPress={handleAdminLogout}
             >
               <MaterialIcons name="logout" size={16} color="#fff" />
               <Text style={styles.logoutButtonText}>LOGOUT</Text>
@@ -838,10 +768,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  adminButton: {
-    backgroundColor: colors.primary + '20',
-    borderRadius: 6,
-  },
   logoutButton: {
     backgroundColor: colors.error + '20',
     borderRadius: 6,
@@ -859,22 +785,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 10,
     color: colors.error,
     fontWeight: '600',
-  },
-  debugBar: {
-    backgroundColor: '#ff0000',
-    padding: 4,
-    alignItems: 'center',
-  },
-  debugText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-  },
-  adminButton: {
-    backgroundColor: colors.primary + '40',
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: colors.primary,
   },
   logoutButtonLarge: {
     backgroundColor: '#ff4444',
@@ -916,18 +826,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
   },
-  debugAdminButton: {
-    backgroundColor: '#00ff00',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    marginRight: 8,
-  },
-  debugButtonText: {
-    fontSize: 8,
-    color: '#000',
-    fontWeight: 'bold',
-  },
   titleContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -943,14 +841,24 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 16,
+    paddingVertical: 8,
+    backgroundColor: '#333',
+  },
+  debugText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+    marginRight: 8,
   },
   debugButton: {
-    backgroundColor: '#00ff00',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
-    marginRight: 8,
+  },
+  debugButtonText: {
+    fontSize: 10,
+    color: '#000',
+    fontWeight: 'bold',
   },
   userMenuButton: {
     padding: 8,
