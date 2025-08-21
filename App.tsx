@@ -1,11 +1,45 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialIcons } from '@expo/vector-icons';
+import PromptFormScreen from './screens/PromptFormScreen';
+import SubscriptionScreen from './screens/SubscriptionScreen';
+
+const Tab = createBottomTabNavigator();
 
 export default function App() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#f0f0f0' }}>
-      <Text style={{ fontSize: 24, color: '#000' }}>App is Working!</Text>
-      <Text style={{ fontSize: 16, color: '#666', marginTop: 10 }}>Basic React Native app</Text>
-    </View>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <Tab.Navigator
+          id="MainTabs"
+          screenOptions={{
+            tabBarActiveTintColor: '#6366f1',
+            tabBarInactiveTintColor: '#64748b',
+            headerShown: false,
+          }}
+        >
+          <Tab.Screen 
+            name="Generate" 
+            component={PromptFormScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="auto-awesome" size={size} color={color} />
+              ),
+            }}
+          />
+          <Tab.Screen 
+            name="Subscription" 
+            component={SubscriptionScreen}
+            options={{
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="card-membership" size={size} color={color} />
+              ),
+            }}
+          />
+        </Tab.Navigator>
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }
