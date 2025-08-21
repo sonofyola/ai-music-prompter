@@ -36,6 +36,7 @@ function AppNavigator() {
       <Stack.Navigator 
         initialRouteName="Auth"
         screenOptions={{ headerShown: false }}
+        {...({} as any)}
       >
         <Stack.Screen 
           name="Auth" 
