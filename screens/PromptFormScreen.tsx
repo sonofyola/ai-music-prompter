@@ -98,7 +98,7 @@ export default function PromptFormScreen({ navigation }: any) {
     }, 2000); // Reset after 2 seconds of no taps
     setTitleTapTimeout(timeout);
 
-    // Show progress feedback
+    // Show progress feedback starting from tap 3
     if (newCount >= 3) {
       Alert.alert('Admin Access Progress', `${newCount}/7 taps - Keep tapping quickly!`);
     }
@@ -109,11 +109,11 @@ export default function PromptFormScreen({ navigation }: any) {
       if (titleTapTimeout) {
         clearTimeout(titleTapTimeout);
       }
-      // Set admin status and navigate
+      // Set admin status
       setAdminStatus(true);
       Alert.alert(
         'Admin Access Granted! 🔓',
-        `Admin status: ${isAdmin ? 'Already admin' : 'Now admin'}\n\nLook for:\n• Red logout button in header\n• Blue admin status bar\n• Admin panel button`,
+        'You now have admin privileges.\n\nTo logout: Tap the red logout button in the header or the blue admin status bar.',
         [
           { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
           { text: 'Stay Here', style: 'cancel' }
@@ -146,7 +146,10 @@ export default function PromptFormScreen({ navigation }: any) {
           style: 'destructive',
           onPress: () => {
             setAdminStatus(false);
-            Alert.alert('Logged Out', 'Admin access has been revoked.');
+            Alert.alert(
+              'Logged Out', 
+              'Admin access has been revoked.\n\nTo regain admin access, tap the app title 7 times quickly.'
+            );
           }
         }
       ]
@@ -349,17 +352,17 @@ export default function PromptFormScreen({ navigation }: any) {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            {/* Debug: Manual admin toggle for testing */}
+            {/* Debug: Manual admin toggle for testing - ONLY in development */}
             {__DEV__ && (
               <TouchableOpacity 
                 style={styles.debugAdminButton}
                 onPress={() => {
                   setAdminStatus(!isAdmin);
-                  Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
+                  Alert.alert('Debug Toggle', `Admin status: ${!isAdmin ? 'ENABLED' : 'DISABLED'}`);
                 }}
               >
                 <Text style={styles.debugButtonText}>
-                  {isAdmin ? 'DISABLE' : 'ENABLE'} ADMIN
+                  {isAdmin ? 'DISABLE' : 'ENABLE'}
                 </Text>
               </TouchableOpacity>
             )}
@@ -370,7 +373,7 @@ export default function PromptFormScreen({ navigation }: any) {
                 style={[styles.iconButton, styles.adminButton]} 
                 onPress={handleAdminAccess}
               >
-                <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
+                <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
               </TouchableOpacity>
             )}
             
@@ -380,7 +383,7 @@ export default function PromptFormScreen({ navigation }: any) {
                 style={[styles.iconButton, styles.logoutButtonLarge]} 
                 onPress={handleLogout}
               >
-                <MaterialIcons name="logout" size={24} color="#fff" />
+                <MaterialIcons name="logout" size={20} color="#fff" />
               </TouchableOpacity>
             )}
             
@@ -399,9 +402,23 @@ export default function PromptFormScreen({ navigation }: any) {
 
         {/* VERY VISIBLE Admin status indicator */}
         {isAdmin && (
-          <View style={styles.adminIndicatorLarge}>
+          <TouchableOpacity 
+            style={styles.adminIndicatorLarge}
+            onLongPress={() => {
+              Alert.alert(
+                'Admin Options',
+                'Choose an action:',
+                [
+                  { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
+                  { text: 'Logout Admin', onPress: handleLogout, style: 'destructive' },
+                  { text: 'Cancel', style: 'cancel' }
+                ]
+              );
+            }}
+            delayLongPress={1000}
+          >
             <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
-            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE</Text>
+            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE (Long press for options)</Text>
             <TouchableOpacity 
               style={styles.logoutButtonInBar}
               onPress={handleLogout}
@@ -409,7 +426,7 @@ export default function PromptFormScreen({ navigation }: any) {
               <MaterialIcons name="logout" size={16} color="#fff" />
               <Text style={styles.logoutButtonText}>LOGOUT</Text>
             </TouchableOpacity>
-          </View>
+          </TouchableOpacity>
         )}
 
         <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
