@@ -47,6 +47,7 @@ export default function PromptFormScreen() {
   const [showRandomTrackModal, setShowRandomTrackModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
   const navigation = useNavigation();
 
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -173,7 +174,7 @@ export default function PromptFormScreen() {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleGenerate = async () => {
+  const generatePrompt = async () => {
     if (!canGenerate) {
       setShowUpgradeModal(true);
       return;
@@ -185,39 +186,16 @@ export default function PromptFormScreen() {
     try {
       await incrementGeneration();
       
-      const prompt = formatPrompt({
-        genres: selectedGenres,
-        mood: selectedMood,
-        energy: selectedEnergy,
-        instruments: selectedInstruments,
-        tempo: selectedTempo,
-        key: selectedKey,
-        timeSignature: selectedTimeSignature,
-        weirdnessLevel: weirdnessLevel,
-        customPrompt: customPrompt.trim() || undefined,
-      });
+      const prompt = formatMusicPrompt(formData);
 
       // Simulate generation delay
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setGeneratedPrompt(prompt);
+      setShowPrompt(true);
       
-      // Add to history
-      addToHistory({
-        prompt,
-        timestamp: new Date().toISOString(),
-        parameters: {
-          genres: selectedGenres,
-          mood: selectedMood,
-          energy: selectedEnergy,
-          instruments: selectedInstruments,
-          tempo: selectedTempo,
-          key: selectedKey,
-          timeSignature: selectedTimeSignature,
-          weirdnessLevel: weirdnessLevel,
-          customPrompt: customPrompt.trim() || undefined,
-        }
-      });
+      // Auto-save to history
+      await savePrompt(`Generated ${new Date().toLocaleDateString()}`, formData, prompt);
 
       // Send completion notification
       await sendGenerationCompleteNotification();
@@ -267,12 +245,12 @@ export default function PromptFormScreen() {
                 onLongPress={handleTitleLongPress}
                 activeOpacity={0.7}
               >
-                <Text style={styles.title}>AI Music Prompts</Text>
+                <Text style={styles.title}>AI Music Prompter</Text>
               </TouchableOpacity>
               <ThemeToggle />
             </View>
             <Text style={styles.subtitle}>
-              Generate detailed prompts for Suno, Riffusion & MusicGen
+              Generate detailed prompts for Suno, Udio & MusicGen
             </Text>
           </View>
         </View>
@@ -488,14 +466,14 @@ export default function PromptFormScreen() {
           <TouchableOpacity 
             style={[
               styles.generateButton, 
-              !canGenerate && styles.disabledButton
+              (!canGenerate || isGenerating) && styles.disabledButton
             ]} 
             onPress={generatePrompt}
-            disabled={!canGenerate}
+            disabled={!canGenerate || isGenerating}
           >
             <MaterialIcons name="auto-awesome" size={20} color="#fff" />
             <Text style={styles.generateButtonText}>
-              {canGenerate ? 'Generate Prompt' : 'Daily Limit Reached'}
+              {isGenerating ? 'Generating...' : canGenerate ? 'Generate Prompt' : 'Daily Limit Reached'}
             </Text>
           </TouchableOpacity>
           

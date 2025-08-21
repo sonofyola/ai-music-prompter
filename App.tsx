@@ -1,17 +1,15 @@
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { MaterialIcons } from '@expo/vector-icons';
 import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { UsageProvider } from './contexts/UsageContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import PromptFormScreen from './screens/PromptFormScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
-
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { MaterialIcons } from '@expo/vector-icons';
-import { StatusBar } from 'react-native';
-import { StackNavigator } from '@react-navigation/stack';
 
 const Tab = createBottomTabNavigator();
 
@@ -20,6 +18,7 @@ function AppContent() {
 
   return (
     <NavigationContainer>
+      <StatusBar style="auto" />
       <Tab.Navigator
         screenOptions={({ route }) => ({
           tabBarIcon: ({ color, size }) => {
@@ -69,19 +68,7 @@ export default function App() {
         <UsageProvider>
           <PromptHistoryProvider>
             <NotificationProvider>
-              <StatusBar style="auto" />
-              <NavigationContainer>
-                <Stack.Navigator
-                  initialRouteName="PromptForm"
-                  screenOptions={{
-                    headerShown: false,
-                    contentStyle: { backgroundColor: 'transparent' },
-                  }}
-                >
-                  <Stack.Screen name="PromptForm" component={PromptFormScreen} />
-                  <Stack.Screen name="Subscription" component={SubscriptionScreen} />
-                </Stack.Navigator>
-              </NavigationContainer>
+              <AppContent />
             </NotificationProvider>
           </PromptHistoryProvider>
         </UsageProvider>
