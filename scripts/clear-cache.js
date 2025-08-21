@@ -4,7 +4,7 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🧹 Clearing Expo and Metro cache...');
+console.log('🧹 Clearing all caches and restarting...');
 
 try {
   // Clear Expo cache

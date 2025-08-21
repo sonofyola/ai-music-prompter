@@ -5,11 +5,10 @@ interface ErrorInfo {
   componentStack?: string;
 }
 
-// This function will be exported and used by the ErrorBoundary component later
-export function sendErrorToIframeParent(errorSource: any, errorInfo?: ErrorInfo) {
-  // Temporarily disabled to avoid CORS conflicts
-  console.log('[GlobalErrorHandler] Error captured but not sent to avoid CORS issues:', errorSource);
-}
+// Simplified global error handler to avoid CORS conflicts
+console.log('[GlobalErrorHandler] Initialized in safe mode');
 
-// Temporarily disable all global error handlers to avoid CORS conflicts
-console.log('[GlobalErrorHandler] Global error handlers temporarily disabled to resolve CORS issues.');
+// Export a no-op function to maintain compatibility
+export function sendErrorToIframeParent() {
+  // No-op to avoid CORS issues
+}
