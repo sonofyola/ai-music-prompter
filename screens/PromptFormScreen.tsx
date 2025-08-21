@@ -86,6 +86,32 @@ export default function PromptFormScreen() {
     setTimeout(() => setAdminTapCount(0), 3000);
   };
 
+  // Add test helper for quick limit testing
+  const handleTitleLongPress = () => {
+    Alert.alert(
+      'Test Mode',
+      'Quick test options:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Set to 2 generations', 
+          onPress: async () => {
+            // Simulate having used 2 generations
+            const { resetDailyCount, incrementGeneration } = useUsage();
+            await resetDailyCount();
+            await incrementGeneration();
+            await incrementGeneration();
+            Alert.alert('Test', 'Set to 2/3 generations used');
+          }
+        },
+        { 
+          text: 'Trigger upgrade modal', 
+          onPress: () => setShowUpgradeModal(true)
+        }
+      ]
+    );
+  };
+
   const handleRandomTrackPress = () => {
     setShowRandomTrackModal(true);
   };
@@ -191,7 +217,11 @@ export default function PromptFormScreen() {
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View style={styles.headerTop}>
-            <TouchableOpacity onPress={handleTitlePress} activeOpacity={0.7}>
+            <TouchableOpacity 
+              onPress={handleTitlePress}
+              onLongPress={handleTitleLongPress}
+              activeOpacity={0.7}
+            >
               <Text style={styles.title}>AI Music Prompts</Text>
             </TouchableOpacity>
             <View style={styles.headerActions}>
