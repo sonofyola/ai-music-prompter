@@ -49,9 +49,12 @@ export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { isAdmin, setAdminStatus } = useMaintenance();
+  const { isAdmin, setAdminStatus, checkAdminAccess } = useMaintenance();
   const { user, signout } = useBasic();
   const styles = createStyles(colors);
+
+  // Admin access state
+  const [titlePressCount, setTitlePressCount] = useState(0);
 
   // Debug: Log admin status
   console.log('Admin Status:', isAdmin);
@@ -82,6 +85,51 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+
+  const handleTitlePress = async () => {
+    setTitlePressCount(prev => {
+      const newCount = prev + 1;
+      
+      if (newCount === 7) {
+        // Check if user has admin access
+        checkAdminAccessHandler();
+        return 0; // Reset counter
+      }
+      
+      // Reset counter after 3 seconds of no presses
+      setTimeout(() => {
+        setTitlePressCount(0);
+      }, 3000);
+      
+      return newCount;
+    });
+  };
+
+  const checkAdminAccessHandler = async () => {
+    try {
+      const hasAccess = await checkAdminAccess();
+      if (hasAccess) {
+        await setAdminStatus(true);
+        Alert.alert(
+          '🔓 Admin Access Granted',
+          `Welcome, admin! You now have access to administrative features.`,
+          [
+            { text: 'Continue', onPress: () => {} },
+            { text: 'Open Admin Panel', onPress: () => navigation.navigate('Admin') }
+          ]
+        );
+      } else {
+        Alert.alert(
+          '🚫 Access Denied',
+          'You are not authorized for admin access. Only whitelisted email addresses can access admin features.',
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('Admin access error:', error);
+      Alert.alert('Error', 'Failed to check admin access. Please try again.');
+    }
+  };
 
   const handleUserLogout = () => {
     Alert.alert(
@@ -273,7 +321,9 @@ export default function PromptFormScreen({ navigation }: any) {
       >
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>🎵 AI Music Prompter</Text>
+            <TouchableOpacity onPress={handleTitlePress}>
+              <Text style={styles.title}>🎵 AI Music Prompter</Text>
+            </TouchableOpacity>
           </View>
           <View style={styles.headerRight}>
             <ThemeToggle />
@@ -853,47 +903,3 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginLeft: 8,
   }
 });
-
-const handleTitlePress = async () => {
-  setTitlePressCount(prev => {
-    const newCount = prev + 1;
-    
-    if (newCount === 7) {
-      // Check if user has admin access
-      checkAdminAccess();
-      return 0; // Reset counter
-    }
-    
-    // Reset counter after 3 seconds of no presses
-    setTimeout(() => {
-      setTitlePressCount(0);
-    }, 3000);
-    
-    return newCount;
-  });
-};
-
-const checkAdminAccess = async () => {
-  try {
-    const hasAccess = await checkAdminAccess();
-    if (hasAccess) {
-      await setAdminStatus(true);
-      Alert.alert(
-        '🔓 Admin Access Granted',
-        `Welcome, admin! You now have access to administrative features.`,
-        [
-          { text: 'Continue', onPress: () => {} },
-          { text: 'Open Admin Panel', onPress: () => navigation.navigate('Admin') }
-        ]
-      );
-    } else {
-      Alert.alert(
-        '🚫 Access Denied',
-        'You are not authorized for admin access. Only whitelisted email addresses can access admin features.',
-        [{ text: 'OK' }]
-      );
-    }
-  } catch (error) {
-    Alert.alert('Error', 'Failed to check admin access. Please try again.');
-  }
-};
