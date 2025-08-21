@@ -29,14 +29,18 @@ export interface NotificationSettings {
 const NOTIFICATION_SETTINGS_KEY = 'notification_settings';
 const PUSH_TOKEN_KEY = 'push_token';
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-  }),
-});
+// Only configure notification handler on native platforms
+if (Platform.OS !== 'web') {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 class NotificationService {
   private pushToken: string | null = null;
@@ -50,6 +54,12 @@ class NotificationService {
   };
 
   async initialize(): Promise<void> {
+    // Skip initialization on web
+    if (Platform.OS === 'web') {
+      console.log('Notifications not supported on web platform');
+      return;
+    }
+
     try {
       await this.loadSettings();
       await this.setupNotificationCategories();
@@ -91,6 +101,11 @@ class NotificationService {
   }
 
   async registerForPushNotifications(): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      console.log('Push notifications not supported on web');
+      return null;
+    }
+
     try {
       if (!Device.isDevice) {
         console.log('Push notifications only work on physical devices');
@@ -147,6 +162,10 @@ class NotificationService {
   }
 
   async setupNotificationCategories(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       await Notifications.setNotificationCategoryAsync('reminder', [
         {
@@ -174,6 +193,11 @@ class NotificationService {
   }
 
   async sendLocalNotification(notification: NotificationData): Promise<string> {
+    if (Platform.OS === 'web') {
+      console.log('Local notifications not supported on web');
+      return '';
+    }
+
     try {
       if (!this.settings.enabled) {
         console.log('Notifications are disabled');
@@ -200,6 +224,11 @@ class NotificationService {
   }
 
   async scheduleNotification(notification: ScheduledNotification): Promise<string> {
+    if (Platform.OS === 'web') {
+      console.log('Scheduled notifications not supported on web');
+      return '';
+    }
+
     try {
       if (!this.settings.enabled) {
         console.log('Notifications are disabled');
@@ -227,6 +256,10 @@ class NotificationService {
   }
 
   async scheduleDailyReminders(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       // Cancel existing daily reminders
       await this.cancelNotificationsByCategory('daily_reminder');
@@ -245,6 +278,7 @@ class NotificationService {
         categoryId: 'reminder',
         data: { type: 'daily_reminder' },
         trigger: {
+          type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
           hour: hours,
           minute: minutes,
           repeats: true,
@@ -321,6 +355,10 @@ class NotificationService {
   }
 
   async cancelNotification(identifier: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       await Notifications.cancelScheduledNotificationAsync(identifier);
     } catch (error) {
@@ -329,6 +367,10 @@ class NotificationService {
   }
 
   async cancelNotificationsByCategory(category: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       const scheduledNotifications = await Notifications.getAllScheduledNotificationsAsync();
       const notificationsToCancel = scheduledNotifications.filter(
@@ -360,6 +402,10 @@ class NotificationService {
   }
 
   async cancelAllNotifications(): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       await Notifications.cancelAllScheduledNotificationsAsync();
     } catch (error) {
@@ -368,6 +414,10 @@ class NotificationService {
   }
 
   async getBadgeCount(): Promise<number> {
+    if (Platform.OS === 'web') {
+      return 0;
+    }
+
     try {
       return await Notifications.getBadgeCountAsync();
     } catch (error) {
@@ -377,6 +427,10 @@ class NotificationService {
   }
 
   async setBadgeCount(count: number): Promise<void> {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
     try {
       await Notifications.setBadgeCountAsync(count);
     } catch (error) {

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { notificationService, NotificationSettings } from '../utils/notificationService';
 
@@ -28,7 +29,9 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     initializeNotifications();
-    setupNotificationListeners();
+    if (Platform.OS !== 'web') {
+      setupNotificationListeners();
+    }
   }, []);
 
   const initializeNotifications = async () => {
@@ -44,10 +47,15 @@ export function NotificationProvider({ children }: { children: React.ReactNode }
       setIsInitialized(true);
     } catch (error) {
       console.error('Error initializing notifications:', error);
+      setIsInitialized(true); // Still mark as initialized even if it fails
     }
   };
 
   const setupNotificationListeners = () => {
+    if (Platform.OS === 'web') {
+      return () => {}; // Return empty cleanup function
+    }
+
     // Listen for notifications received while app is in foreground
     const foregroundSubscription = Notifications.addNotificationReceivedListener(notification => {
       console.log('Notification received in foreground:', notification);
