@@ -95,6 +95,11 @@ export default function PromptFormScreen({ navigation }: any) {
     }, 2000); // Reset after 2 seconds of no taps
     setTitleTapTimeout(timeout);
 
+    // Show progress feedback
+    if (newCount >= 5) {
+      Alert.alert('Admin Access', `${newCount}/7 taps - Keep tapping!`);
+    }
+
     // Check if we've reached 7 taps
     if (newCount >= 7) {
       setTitleTapCount(0);
@@ -103,7 +108,14 @@ export default function PromptFormScreen({ navigation }: any) {
       }
       // Set admin status and navigate
       setAdminStatus(true);
-      navigation?.navigate('Admin');
+      Alert.alert(
+        'Admin Access Granted! 🔓',
+        'You now have admin privileges. Look for the admin and logout buttons in the header.',
+        [
+          { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
+          { text: 'Stay Here', style: 'cancel' }
+        ]
+      );
     }
   };
 
@@ -330,7 +342,7 @@ export default function PromptFormScreen({ navigation }: any) {
             {/* Only show admin button if user is admin */}
             {isAdmin && (
               <TouchableOpacity 
-                style={styles.iconButton} 
+                style={[styles.iconButton, styles.adminButton]} 
                 onPress={handleAdminAccess}
               >
                 <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
@@ -339,7 +351,7 @@ export default function PromptFormScreen({ navigation }: any) {
             {/* Show logout button if user is admin */}
             {isAdmin && (
               <TouchableOpacity 
-                style={styles.iconButton} 
+                style={[styles.iconButton, styles.logoutButton]} 
                 onPress={handleLogout}
               >
                 <MaterialIcons name="logout" size={20} color={colors.error} />
@@ -363,6 +375,13 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.adminIndicator}>
             <MaterialIcons name="admin-panel-settings" size={16} color={colors.primary} />
             <Text style={styles.adminIndicatorText}>Admin Mode Active</Text>
+            <TouchableOpacity 
+              style={styles.quickLogoutButton}
+              onPress={handleLogout}
+            >
+              <MaterialIcons name="logout" size={14} color={colors.error} />
+              <Text style={styles.quickLogoutText}>Logout</Text>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -774,6 +793,30 @@ const createStyles = (colors: any) => StyleSheet.create({
   adminIndicatorText: {
     fontSize: 12,
     color: colors.primary,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  adminButton: {
+    backgroundColor: colors.primary + '20',
+    borderRadius: 6,
+  },
+  logoutButton: {
+    backgroundColor: colors.error + '20',
+    borderRadius: 6,
+  },
+  quickLogoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: colors.error + '20',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  quickLogoutText: {
+    fontSize: 10,
+    color: colors.error,
     fontWeight: '600',
   }
 });
