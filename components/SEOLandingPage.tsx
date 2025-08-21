@@ -17,25 +17,25 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
       {/* Hero Section */}
       <View style={styles.hero}>
         <Text style={styles.heroTitle}>
-          AI Music Prompt Generator
+          AI Music Prompter
         </Text>
         <Text style={styles.heroSubtitle}>
           Create Professional Music Prompts for Suno AI, Udio, MusicGen & More
         </Text>
         <Text style={styles.heroDescription}>
-          Generate detailed, optimized prompts that produce amazing results with AI music tools. 
+          AI Music Prompter generates detailed, optimized prompts that produce amazing results with AI music tools. 
           Perfect for musicians, content creators, and music enthusiasts.
         </Text>
         <TouchableOpacity style={styles.ctaButton} onPress={onGetStarted}>
           <MaterialIcons name="music-note" size={24} color="#fff" />
-          <Text style={styles.ctaButtonText}>Start Creating Music Prompts</Text>
+          <Text style={styles.ctaButtonText}>Start Using AI Music Prompter</Text>
         </TouchableOpacity>
         <Text style={styles.freeText}>✨ 3 Free Generations Daily • No Credit Card Required</Text>
       </View>
 
       {/* Features Section */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Why Choose Our AI Music Prompt Generator?</Text>
+        <Text style={styles.sectionTitle}>Why Choose AI Music Prompter?</Text>
         
         <View style={styles.featuresGrid}>
           <View style={styles.featureCard}>
@@ -48,7 +48,7 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
           
           <View style={styles.featureCard}>
             <MaterialIcons name="library-music" size={32} color={colors.primary} />
-            <Text style={styles.featureTitle}>Comprehensive Music Control</Text>
+            <Text style={styles.featureTitle}>Professional Music Control</Text>
             <Text style={styles.featureDescription}>
               Specify genre, mood, instruments, tempo, key, and advanced parameters for precise results
             </Text>
@@ -97,7 +97,7 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
 
       {/* How It Works */}
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>How It Works</Text>
+        <Text style={styles.sectionTitle}>How AI Music Prompter Works</Text>
         <View style={styles.stepsContainer}>
           <View style={styles.step}>
             <View style={styles.stepNumber}>
@@ -118,7 +118,7 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
             <View style={styles.stepContent}>
               <Text style={styles.stepTitle}>Generate Your Prompt</Text>
               <Text style={styles.stepDescription}>
-                Our AI creates a detailed, optimized prompt tailored to your specifications
+                AI Music Prompter creates a detailed, optimized prompt tailored to your specifications
               </Text>
             </View>
           </View>
@@ -172,7 +172,7 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
       <View style={styles.ctaSection}>
         <Text style={styles.ctaTitle}>Ready to Create Amazing Music?</Text>
         <Text style={styles.ctaDescription}>
-          Join thousands of creators using our AI music prompt generator to bring their musical ideas to life.
+          Join thousands of creators using AI Music Prompter to bring their musical ideas to life.
         </Text>
         <TouchableOpacity style={styles.ctaButton} onPress={onGetStarted}>
           <MaterialIcons name="play-arrow" size={24} color="#fff" />
@@ -184,7 +184,7 @@ export default function SEOLandingPage({ onGetStarted }: SEOLandingPageProps) {
       {/* Footer */}
       <View style={styles.footer}>
         <Text style={styles.footerText}>
-          © 2024 AI Music Prompt Generator. Create professional music prompts for AI music generation.
+          © 2024 AI Music Prompter. Create professional music prompts for AI music generation.
         </Text>
       </View>
     </ScrollView>

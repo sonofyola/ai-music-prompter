@@ -1,12 +1,12 @@
 {
   "expo": {
-    "name": "AI Music Prompt Generator",
-    "slug": "ai-music-prompt-generator",
+    "name": "AI Music Prompter",
+    "slug": "ai-music-prompter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
+    "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
     "splash": {
       "image": "./assets/images/splash.png",
       "resizeMode": "contain",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aimusicprompts.generator",
+      "bundleIdentifier": "com.aimusicprompter.app",
       "infoPlist": {
         "UIBackgroundModes": ["background-fetch", "background-processing"],
         "NSAppTransportSecurity": {
@@ -26,7 +26,7 @@
       }
     },
     "android": {
-      "package": "com.aimusicprompts.generator",
+      "package": "com.aimusicprompter.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
@@ -42,9 +42,9 @@
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro",
       "output": "static",
-      "name": "AI Music Prompt Generator",
-      "shortName": "AI Music Prompts",
-      "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools",
+      "name": "AI Music Prompter",
+      "shortName": "AI Prompter",
+      "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools",
       "themeColor": "#6366f1",
       "backgroundColor": "#ffffff",
       "startUrl": "/",

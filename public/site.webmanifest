@@ -1,6 +1,6 @@
 {
-  "name": "AI Music Prompt Generator",
-  "short_name": "AI Music Prompts",
+  "name": "AI Music Prompter",
+  "short_name": "AI Prompter",
   "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and more",
   "icons": [
     {
