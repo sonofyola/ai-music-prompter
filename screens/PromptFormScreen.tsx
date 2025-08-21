@@ -269,28 +269,6 @@ export default function PromptFormScreen({ navigation }: any) {
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-        {/* Debug admin status at the very top */}
-        {__DEV__ && (
-          <View style={styles.debugContainer}>
-            <Text style={styles.debugText}>DEBUG: Admin = {isAdmin ? 'TRUE' : 'FALSE'}</Text>
-            <TouchableOpacity
-              style={[styles.debugButton, { backgroundColor: isAdmin ? '#ff4444' : '#44ff44' }]}
-              onPress={async () => {
-                try {
-                  await setAdminStatus(!isAdmin);
-                  Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
-                } catch (error) {
-                  console.error('Debug toggle error:', error);
-                }
-              }}
-            >
-              <Text style={styles.debugButtonText}>
-                {isAdmin ? 'DISABLE ADMIN' : 'ENABLE ADMIN'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        )}
-
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>🎵 AI Music Prompter</Text>
