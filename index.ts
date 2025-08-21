@@ -1,6 +1,6 @@
 import "@expo/metro-runtime";
 import './utils/global-error-handler';
-import { registerRootComponent } from 'expo';
+import 'expo-router/entry';
 
 import App from './App';
 
