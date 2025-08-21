@@ -1,28 +1,20 @@
-// Platform polyfill for React Native web compatibility
-const Platform = {
-  OS: typeof window !== 'undefined' ? 'web' : 'ios',
-  Version: typeof window !== 'undefined' ? 1 : 14,
-  isTV: false,
-  isTesting: false,
-  isPad: false,
-  constants: {},
-  select: function(obj) {
-    const platform = this.OS;
-    return obj[platform] || obj.default || obj.native || obj.ios;
-  },
-};
-
-// Export in multiple ways to ensure compatibility
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Platform;
-  module.exports.default = Platform;
-}
-
+// Platform-specific polyfills for React Native Web
 if (typeof window !== 'undefined') {
-  window.Platform = Platform;
+  // Web environment
+  if (!window.__ASSET_REGISTRY__) {
+    window.__ASSET_REGISTRY__ = {};
+  }
+  
+  // Mock missing asset registry path
+  if (typeof require !== 'undefined' && require.resolve) {
+    const originalResolve = require.resolve;
+    require.resolve = function(id) {
+      if (id === 'missing-asset-registry-path') {
+        return 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+      }
+      return originalResolve.apply(this, arguments);
+    };
+  }
 }
 
-// Also make it available globally
-if (typeof global !== 'undefined') {
-  global.Platform = Platform;
-}
+export {};
