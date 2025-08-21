@@ -7,6 +7,7 @@ import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
+import AutoresponderConfigComponent from '../components/AutoresponderConfig';
 
 interface EmailRecord {
   email: string;
@@ -318,74 +319,37 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity onPress={onBackToApp} style={styles.backButton}>
-              <MaterialIcons name="arrow-back" size={24} color={colors.primary} />
-              <Text style={styles.backButtonText}>Back to App</Text>
-            </TouchableOpacity>
-          </View>
+      <View style={styles.header}>
+        <TouchableOpacity onPress={onBackToApp} style={styles.backButton}>
+          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
+        </TouchableOpacity>
+        <Text style={styles.title}>Admin Panel</Text>
+      </View>
+
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {/* Email Management Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Email Management</Text>
           
-          <MaterialIcons name="admin-panel-settings" size={32} color={colors.primary} />
-          <Text style={styles.title}>Email Export Admin</Text>
-          
-          {/* Admin Status */}
-          <View style={styles.adminStatus}>
-            <Text style={styles.adminEmail}>👤 {userEmail || 'No email'}</Text>
-            <View style={[styles.statusBadge, isUnlimited ? styles.unlimitedBadge : styles.limitedBadge]}>
-              <MaterialIcons 
-                name={isUnlimited ? "all-inclusive" : "hourglass-empty"} 
-                size={16} 
-                color="#fff" 
-              />
-              <Text style={styles.statusText}>
-                {isUnlimited ? 'Unlimited' : `${generationsToday}/3 today`}
-              </Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{emails.length}</Text>
+              <Text style={styles.statLabel}>Total Emails</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{validEmails.length}</Text>
+              <Text style={styles.statLabel}>Valid Emails</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{invalidEmails.length}</Text>
+              <Text style={styles.statLabel}>Invalid Emails</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{unlimitedEmails.length}</Text>
+              <Text style={styles.statLabel}>Unlimited Users</Text>
             </View>
           </View>
-        </View>
 
-        <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>{emails.length}</Text>
-            <Text style={styles.statLabel}>Total Emails</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              {emails.filter(e => e.tier === 'free').length}
-            </Text>
-            <Text style={styles.statLabel}>Free Users</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statNumber}>
-              {emails.filter(e => e.tier === 'premium').length}
-            </Text>
-            <Text style={styles.statLabel}>Premium Users</Text>
-          </View>
-        </View>
-
-        {validationResult && (
-          <View style={styles.validationContainer}>
-            <Text style={styles.validationTitle}>📊 Validation Results</Text>
-            <View style={styles.validationStats}>
-              <View style={[styles.validationCard, styles.validCard]}>
-                <Text style={styles.validationNumber}>{validationResult.valid.length}</Text>
-                <Text style={styles.validationLabel}>✅ Valid</Text>
-              </View>
-              <View style={[styles.validationCard, styles.invalidCard]}>
-                <Text style={styles.validationNumber}>{validationResult.invalid.length}</Text>
-                <Text style={styles.validationLabel}>❌ Invalid</Text>
-              </View>
-              <View style={[styles.validationCard, styles.duplicateCard]}>
-                <Text style={styles.validationNumber}>{validationResult.duplicates.length}</Text>
-                <Text style={styles.validationLabel}>🔄 Duplicates</Text>
-              </View>
-            </View>
-          </View>
-        )}
-
-        <View style={styles.actionsContainer}>
           {/* Manual Email Upgrade Section */}
           <View style={styles.manualUpgradeContainer}>
             <Text style={styles.manualUpgradeTitle}>🔓 Manual Account Upgrade</Text>
@@ -477,6 +441,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             <MaterialIcons name="delete-forever" size={20} color={colors.error} />
             <Text style={styles.clearButtonText}>Clear All Emails</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* Autoresponder Configuration Section */}
+        <View style={styles.section}>
+          <AutoresponderConfigComponent />
         </View>
 
         {showValidationDetails && validationResult && (
@@ -571,66 +540,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  scrollView: {
+  content: {
     flex: 1,
   },
-  header: {
-    alignItems: 'center',
-    padding: 24,
-    backgroundColor: colors.surface,
-  },
-  headerTop: {
-    width: '100%',
-    marginBottom: 16,
-  },
-  backButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    alignSelf: 'flex-start',
-  },
-  backButtonText: {
-    fontSize: 16,
-    color: colors.primary,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: colors.text,
-    marginTop: 12,
-  },
-  adminStatus: {
-    alignItems: 'center',
-    marginTop: 16,
-    gap: 8,
-  },
-  adminEmail: {
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  statusBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    gap: 6,
-  },
-  unlimitedBadge: {
-    backgroundColor: colors.success,
-  },
-  limitedBadge: {
-    backgroundColor: colors.warning,
-  },
-  statusText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  statsContainer: {
-    flexDirection: 'row',
+  section: {
     padding: 16,
+    gap: 12,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  statsGrid: {
+    flexDirection: 'row',
     gap: 12,
   },
   statCard: {
@@ -649,52 +574,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     marginTop: 4,
-  },
-  validationContainer: {
-    margin: 16,
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-  },
-  validationTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  validationStats: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  validationCard: {
-    flex: 1,
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  validCard: {
-    backgroundColor: colors.success + '20',
-  },
-  invalidCard: {
-    backgroundColor: colors.error + '20',
-  },
-  duplicateCard: {
-    backgroundColor: colors.warning + '20',
-  },
-  validationNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: colors.text,
-  },
-  validationLabel: {
-    fontSize: 10,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  actionsContainer: {
-    padding: 16,
-    gap: 12,
   },
   manualUpgradeContainer: {
     backgroundColor: colors.surface,

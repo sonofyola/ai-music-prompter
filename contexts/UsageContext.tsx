@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { syncEmailCapture, syncSubscriptionChange } from '../utils/autoresponderService';
 
 interface UsageContextType {
   generationsToday: number;
@@ -144,7 +145,14 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         if (isDeveloperEmail(email) || isManuallyUpgraded) {
           console.log('Unlimited access detected for:', email);
           setIsUnlimited(true);
+          setSubscriptionStatus('premium'); // Set status to premium when unlimited
           await saveUsageData(0, new Date().toDateString(), true);
+          // Save premium subscription data for manually upgraded users
+          if (isManuallyUpgraded) {
+            const expiryDate = new Date();
+            expiryDate.setFullYear(expiryDate.getFullYear() + 10); // Long expiry for manual upgrades
+            await saveSubscriptionData('premium', expiryDate.toISOString(), 0, 'manual', 'manual_upgrade');
+          }
         }
       }
     } catch (error) {
@@ -158,6 +166,9 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       setUserEmailState(email);
       setIsEmailCaptured(true);
       
+      // Sync with autoresponder
+      await syncEmailCapture(email, subscriptionStatus);
+      
       // Check if user is manually upgraded to unlimited
       const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
       const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
@@ -167,7 +178,16 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       if (isDeveloperEmail(email) || isManuallyUpgraded) {
         console.log('Unlimited access detected for:', email);
         setIsUnlimited(true);
+        setSubscriptionStatus('premium'); // Set status to premium when unlimited
         await saveUsageData(generationsToday, new Date().toDateString(), true);
+        // Save premium subscription data for manually upgraded users
+        if (isManuallyUpgraded) {
+          const expiryDate = new Date();
+          expiryDate.setFullYear(expiryDate.getFullYear() + 10); // Long expiry for manual upgrades
+          await saveSubscriptionData('premium', expiryDate.toISOString(), 0, 'manual', 'manual_upgrade');
+          // Sync subscription change with autoresponder
+          await syncSubscriptionChange(email, 'premium');
+        }
       }
     } catch (error) {
       console.error('Error saving user email:', error);
@@ -233,6 +253,11 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     
     await saveUsageData(generationsToday, new Date().toDateString(), true);
     await saveSubscriptionData('premium', expiryString, 5.99, 'monthly', newSubscriptionId);
+    
+    // Sync subscription change with autoresponder
+    if (userEmail) {
+      await syncSubscriptionChange(userEmail, 'premium');
+    }
   };
 
   const cancelSubscription = async () => {
@@ -246,6 +271,11 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       
       await saveUsageData(generationsToday, new Date().toDateString(), false);
       await saveSubscriptionData('free', null, null, null, null, null);
+      
+      // Sync subscription change with autoresponder
+      if (userEmail) {
+        await syncSubscriptionChange(userEmail, 'free');
+      }
       
       console.log('Subscription cancelled locally');
     } catch (error) {
