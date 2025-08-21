@@ -51,6 +51,9 @@ export default function PromptFormScreen({ navigation }: any) {
   const { isAdmin, setAdminStatus } = useMaintenance();
   const styles = createStyles(colors);
 
+  // Debug: Log admin status
+  console.log('Admin Status:', isAdmin);
+
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
     genres_primary: [],
@@ -96,8 +99,8 @@ export default function PromptFormScreen({ navigation }: any) {
     setTitleTapTimeout(timeout);
 
     // Show progress feedback
-    if (newCount >= 5) {
-      Alert.alert('Admin Access', `${newCount}/7 taps - Keep tapping!`);
+    if (newCount >= 3) {
+      Alert.alert('Admin Access Progress', `${newCount}/7 taps - Keep tapping quickly!`);
     }
 
     // Check if we've reached 7 taps
@@ -110,7 +113,7 @@ export default function PromptFormScreen({ navigation }: any) {
       setAdminStatus(true);
       Alert.alert(
         'Admin Access Granted! 🔓',
-        'You now have admin privileges. Look for the admin and logout buttons in the header.',
+        `Admin status: ${isAdmin ? 'Already admin' : 'Now admin'}\n\nLook for:\n• Red logout button in header\n• Blue admin status bar\n• Admin panel button`,
         [
           { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
           { text: 'Stay Here', style: 'cancel' }
@@ -329,6 +332,13 @@ export default function PromptFormScreen({ navigation }: any) {
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
+        {/* Debug admin status at the very top */}
+        {__DEV__ && (
+          <View style={styles.debugBar}>
+            <Text style={styles.debugText}>DEBUG: Admin = {isAdmin ? 'TRUE' : 'FALSE'}</Text>
+          </View>
+        )}
+
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.headerLeft}
@@ -339,24 +349,41 @@ export default function PromptFormScreen({ navigation }: any) {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </TouchableOpacity>
           <View style={styles.headerRight}>
-            {/* Only show admin button if user is admin */}
+            {/* Debug: Manual admin toggle for testing */}
+            {__DEV__ && (
+              <TouchableOpacity 
+                style={styles.debugAdminButton}
+                onPress={() => {
+                  setAdminStatus(!isAdmin);
+                  Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
+                }}
+              >
+                <Text style={styles.debugButtonText}>
+                  {isAdmin ? 'DISABLE' : 'ENABLE'} ADMIN
+                </Text>
+              </TouchableOpacity>
+            )}
+            
+            {/* Admin button - only show if admin */}
             {isAdmin && (
               <TouchableOpacity 
                 style={[styles.iconButton, styles.adminButton]} 
                 onPress={handleAdminAccess}
               >
-                <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
+                <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
               </TouchableOpacity>
             )}
-            {/* Show logout button if user is admin */}
+            
+            {/* LOGOUT BUTTON - Make it VERY visible */}
             {isAdmin && (
               <TouchableOpacity 
-                style={[styles.iconButton, styles.logoutButton]} 
+                style={[styles.iconButton, styles.logoutButtonLarge]} 
                 onPress={handleLogout}
               >
-                <MaterialIcons name="logout" size={20} color={colors.error} />
+                <MaterialIcons name="logout" size={24} color="#fff" />
               </TouchableOpacity>
             )}
+            
             <TouchableOpacity style={styles.iconButton} onPress={() => setShowHistoryModal(true)}>
               <MaterialIcons name="history" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
@@ -370,17 +397,17 @@ export default function PromptFormScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Show admin status indicator */}
+        {/* VERY VISIBLE Admin status indicator */}
         {isAdmin && (
-          <View style={styles.adminIndicator}>
-            <MaterialIcons name="admin-panel-settings" size={16} color={colors.primary} />
-            <Text style={styles.adminIndicatorText}>Admin Mode Active</Text>
+          <View style={styles.adminIndicatorLarge}>
+            <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
+            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE</Text>
             <TouchableOpacity 
-              style={styles.quickLogoutButton}
+              style={styles.logoutButtonInBar}
               onPress={handleLogout}
             >
-              <MaterialIcons name="logout" size={14} color={colors.error} />
-              <Text style={styles.quickLogoutText}>Logout</Text>
+              <MaterialIcons name="logout" size={16} color="#fff" />
+              <Text style={styles.logoutButtonText}>LOGOUT</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -818,5 +845,73 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 10,
     color: colors.error,
     fontWeight: '600',
+  },
+  debugBar: {
+    backgroundColor: '#ff0000',
+    padding: 4,
+    alignItems: 'center',
+  },
+  debugText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  adminButton: {
+    backgroundColor: colors.primary + '40',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
+  logoutButtonLarge: {
+    backgroundColor: '#ff4444',
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#ff0000',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  adminIndicatorLarge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  adminIndicatorTextLarge: {
+    fontSize: 14,
+    color: '#fff',
+    fontWeight: '700',
+    flex: 1,
+    textAlign: 'center',
+  },
+  logoutButtonInBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#ff4444',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  logoutButtonText: {
+    fontSize: 12,
+    color: '#fff',
+    fontWeight: '700',
+  },
+  debugAdminButton: {
+    backgroundColor: '#00ff00',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    marginRight: 8,
+  },
+  debugButtonText: {
+    fontSize: 8,
+    color: '#000',
+    fontWeight: 'bold',
   }
 });
