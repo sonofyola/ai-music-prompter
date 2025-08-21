@@ -11,7 +11,7 @@ config.resolver.platforms = ['web', 'ios', 'android', 'native'];
 // Add asset extensions
 config.resolver.assetExts = [
   ...config.resolver.assetExts,
-  'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'
+  'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ttf', 'otf', 'woff', 'woff2'
 ];
 
 // For web, resolve the missing asset registry path to a dummy module
