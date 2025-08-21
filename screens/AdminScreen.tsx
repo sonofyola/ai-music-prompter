@@ -28,7 +28,7 @@ interface AdminScreenProps {
 
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
-  const { isUnlimited, upgradeToUnlimited, generationsToday, userEmail } = useUsage();
+  const { isUnlimited, upgradeToUnlimited } = useUsage();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -36,9 +36,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [showValidationDetails, setShowValidationDetails] = useState(false);
   const [manualUpgradeEmail, setManualUpgradeEmail] = useState('');
   const [isUpgrading, setIsUpgrading] = useState(false);
+  const [unlimitedEmails, setUnlimitedEmails] = useState<string[]>([]);
 
   useEffect(() => {
     loadEmails();
+    loadUnlimitedEmails();
   }, []);
 
   const loadEmails = async () => {
@@ -47,10 +49,25 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       if (storedEmails) {
         setEmails(JSON.parse(storedEmails));
       }
-    } catch (error) {
-      console.error('Error loading emails:', error);
+    } catch {
+      console.error('Error loading emails');
     }
   };
+
+  const loadUnlimitedEmails = async () => {
+    try {
+      const storedUnlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
+      if (storedUnlimitedEmails) {
+        setUnlimitedEmails(JSON.parse(storedUnlimitedEmails));
+      }
+    } catch {
+      console.error('Error loading unlimited emails');
+    }
+  };
+
+  // Calculate validation stats
+  const validEmails = validationResult ? validationResult.valid : emails.filter(record => isValidEmail(record.email));
+  const invalidEmails = validationResult ? validationResult.invalid : emails.filter(record => !isValidEmail(record.email));
 
   const handleAdminUpgrade = async () => {
     Alert.alert(
@@ -84,8 +101,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
     try {
       // Get current unlimited emails list
-      const unlimitedEmails = await AsyncStorage.getItem('unlimited_emails');
-      const emailList: string[] = unlimitedEmails ? JSON.parse(unlimitedEmails) : [];
+      const unlimitedEmailsData = await AsyncStorage.getItem('unlimited_emails');
+      const emailList: string[] = unlimitedEmailsData ? JSON.parse(unlimitedEmailsData) : [];
       
       const emailToAdd = manualUpgradeEmail.toLowerCase().trim();
       
@@ -98,6 +115,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       // Add email to unlimited list
       emailList.push(emailToAdd);
       await AsyncStorage.setItem('unlimited_emails', JSON.stringify(emailList));
+      setUnlimitedEmails(emailList); // Update state
 
       // Update the email record if it exists in collected emails
       const storedEmails = await AsyncStorage.getItem('collected_emails');
@@ -539,6 +557,22 @@ const createStyles = (colors: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 12,
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: colors.text,
   },
   content: {
     flex: 1,
