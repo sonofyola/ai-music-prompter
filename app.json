@@ -44,7 +44,7 @@
     "web": {
       "favicon": "./assets/images/favicon.png",
       "bundler": "metro",
-      "output": "static",
+      "output": "single",
       "name": "AI Music Prompter",
       "shortName": "AI Prompter",
       "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools",

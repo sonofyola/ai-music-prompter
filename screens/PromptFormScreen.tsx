@@ -87,10 +87,14 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
 
   const handleTitlePress = async () => {
+    console.log('Title pressed! Count:', titlePressCount + 1);
+    
     setTitlePressCount(prev => {
       const newCount = prev + 1;
+      console.log('New count:', newCount);
       
       if (newCount === 7) {
+        console.log('7 clicks reached! Checking admin access...');
         // Check if user has admin access
         checkAdminAccessHandler();
         return 0; // Reset counter
@@ -98,6 +102,7 @@ export default function PromptFormScreen({ navigation }: any) {
       
       // Reset counter after 3 seconds of no presses
       setTimeout(() => {
+        console.log('Resetting title press counter');
         setTitlePressCount(0);
       }, 3000);
       
@@ -106,8 +111,12 @@ export default function PromptFormScreen({ navigation }: any) {
   };
 
   const checkAdminAccessHandler = async () => {
+    console.log('Checking admin access for user:', user?.email);
+    
     try {
       const hasAccess = await checkAdminAccess();
+      console.log('Admin access result:', hasAccess);
+      
       if (hasAccess) {
         await setAdminStatus(true);
         Alert.alert(
@@ -115,7 +124,7 @@ export default function PromptFormScreen({ navigation }: any) {
           `Welcome, admin! You now have access to administrative features.`,
           [
             { text: 'Continue', onPress: () => {} },
-            { text: 'Open Admin Panel', onPress: () => navigation.navigate('Admin') }
+            { text: 'Open Admin Panel', onPress: () => navigation?.navigate('Admin') }
           ]
         );
       } else {
@@ -321,8 +330,14 @@ export default function PromptFormScreen({ navigation }: any) {
       >
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <TouchableOpacity onPress={handleTitlePress}>
+            <TouchableOpacity 
+              onPress={handleTitlePress}
+              style={[styles.titleButton, titlePressCount > 0 && styles.titleButtonPressed]}
+            >
               <Text style={styles.title}>🎵 AI Music Prompter</Text>
+              {titlePressCount > 0 && (
+                <Text style={styles.clickCounter}>({titlePressCount}/7)</Text>
+              )}
             </TouchableOpacity>
           </View>
           <View style={styles.headerRight}>
@@ -867,6 +882,20 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
   },
+  titleButton: {
+    alignItems: 'center',
+    padding: 8,
+    borderRadius: 8,
+  },
+  titleButtonPressed: {
+    backgroundColor: colors.primary + '20',
+  },
+  clickCounter: {
+    fontSize: 12,
+    color: colors.primary,
+    fontWeight: '600',
+    marginTop: 2,
+  },
   debugContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -901,5 +930,40 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.surface,
     marginLeft: 8,
+  },
+  debugButton: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+  },
+  debugButtonText: {
+    fontSize: 10,
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  userMenuButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    marginLeft: 8,
+  },
+  adminLogoutButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    marginLeft: 8,
+  },
+  titleButton: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  titleButtonPressed: {
+    color: colors.primary,
+  },
+  clickCounter: {
+    fontSize: 12,
+    color: colors.primary,
+    marginLeft: 4,
   }
 });

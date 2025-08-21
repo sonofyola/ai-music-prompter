@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+
 const webTargetOrigins = [
   "http://localhost:8081", // Your parent dev server
   "https://kiki.dev",       // Your production parent
@@ -7,8 +8,13 @@ const webTargetOrigins = [
   // Often something like "http://localhost:19006" or "http://localhost:8080"
 ];
 
+// Define a simple error info type to avoid React import
+interface ErrorInfo {
+  componentStack?: string;
+}
+
 // This function will be exported and used by the ErrorBoundary component later
-export function sendErrorToIframeParent(errorSource: any, errorInfo?: { componentStack?: string } | React.ErrorInfo) {
+export function sendErrorToIframeParent(errorSource: any, errorInfo?: ErrorInfo) {
   if (Platform.OS === 'web' && typeof window !== 'undefined' && window.parent && window.parent !== window) {
     console.debug('[GlobalErrorHandler] Attempting to send error to parent:', {
       errorSource,
@@ -19,7 +25,7 @@ export function sendErrorToIframeParent(errorSource: any, errorInfo?: { componen
 
     let message = 'Unknown error';
     let stack = undefined;
-    let componentStack = (errorInfo as React.ErrorInfo)?.componentStack; // Type assertion for clarity
+    let componentStack = errorInfo?.componentStack;
 
     if (errorSource instanceof Error) {
       message = errorSource.message;
