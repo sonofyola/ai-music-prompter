@@ -1,6 +1,5 @@
 import "@expo/metro-runtime";
 import './utils/global-error-handler';
-import './polyfills/Platform'; // Load platform-specific polyfills first
 import './polyfills';
 import { registerRootComponent } from 'expo';
 

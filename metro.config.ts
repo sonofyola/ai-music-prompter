@@ -5,48 +5,20 @@ const {
 
 const config = getDefaultConfig(__dirname);
 
-// Ensure all platforms are supported
+// Basic configuration for all platforms
 config.resolver.platforms = ['web', 'ios', 'android', 'native'];
 
 // Add asset extensions
 config.resolver.assetExts = [
   ...config.resolver.assetExts,
-  'png',
-  'jpg',
-  'jpeg',
-  'gif',
-  'webp',
-  'svg',
-  'ttf',
-  'otf',
-  'woff',
-  'woff2'
+  'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg'
 ];
 
-// Configure transformer for better asset handling
-config.transformer = {
-  ...config.transformer,
-  assetRegistryPath: require.resolve('react-native/Libraries/Image/AssetRegistry'),
-  getTransformOptions: async () => ({
-    transform: {
-      experimentalImportSupport: false,
-      inlineRequires: true,
-    },
-  }),
-};
-
-// Add resolver configuration for web
-config.resolver.alias = {
-  ...config.resolver.alias,
-  'react-native$': 'react-native-web',
-};
-
-// Configure web-specific settings
+// For web, resolve the missing asset registry path to a dummy module
 if (process.env.EXPO_PLATFORM === 'web') {
   config.resolver.alias = {
     ...config.resolver.alias,
-    'react-native': 'react-native-web',
-    'react-native/Libraries/Image/AssetRegistry': 'react-native-web/dist/modules/AssetRegistry',
+    'missing-asset-registry-path': require.resolve('react-native-web/dist/modules/AssetRegistry'),
   };
 }
 

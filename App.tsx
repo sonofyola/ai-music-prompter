@@ -1,8 +1,7 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
+import { View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BasicProvider } from '@basictech/expo';
+import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
@@ -15,48 +14,37 @@ import SubscriptionScreen from './screens/SubscriptionScreen';
 import MaintenanceScreen from './components/MaintenanceScreen';
 import AuthScreen from './screens/AuthScreen';
 
-const Stack = createStackNavigator();
+function AppContent() {
+  const { isSignedIn, user, isLoading } = useBasic();
+  const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
 
-function AppNavigator() {
-  const { isMaintenanceMode, maintenanceMessage, isAdmin, setAdminStatus } = useMaintenance();
+  // Show loading state
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   // If maintenance mode is active and user is not admin, show maintenance screen
   if (isMaintenanceMode && !isAdmin) {
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
-        onAdminAccess={() => setAdminStatus(true)}
+        onAdminAccess={() => {}}
         showAdminAccess={true}
       />
     );
   }
 
-  return (
-    <NavigationContainer>
-      <Stack.Navigator 
-        initialRouteName="Auth"
-        screenOptions={{ headerShown: false }}
-        {...({} as any)}
-      >
-        <Stack.Screen 
-          name="Auth" 
-          component={AuthScreen}
-        />
-        <Stack.Screen 
-          name="PromptForm" 
-          component={PromptFormScreen}
-        />
-        <Stack.Screen 
-          name="Admin" 
-          component={AdminScreen}
-        />
-        <Stack.Screen 
-          name="Subscription" 
-          component={SubscriptionScreen}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
+  // Show auth screen if not signed in
+  if (!isSignedIn || !user) {
+    return <AuthScreen />;
+  }
+
+  // Show main app - for now just the prompt form
+  return <PromptFormScreen navigation={null} />;
 }
 
 export default function App() {
@@ -68,7 +56,7 @@ export default function App() {
             <NotificationProvider>
               <UsageProvider>
                 <PromptHistoryProvider>
-                  <AppNavigator />
+                  <AppContent />
                 </PromptHistoryProvider>
               </UsageProvider>
             </NotificationProvider>
