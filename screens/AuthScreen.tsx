@@ -81,7 +81,7 @@ export default function AuthScreen({ navigation }: any) {
             <Text style={styles.featureText}>Save & manage prompt history</Text>
           </View>
           <View style={styles.feature}>
-            <MaterialIcons name="template" size={24} color={colors.primary} />
+            <MaterialIcons name="dashboard" size={24} color={colors.primary} />
             <Text style={styles.featureText}>Smart prompt templates</Text>
           </View>
           <View style={styles.feature}>

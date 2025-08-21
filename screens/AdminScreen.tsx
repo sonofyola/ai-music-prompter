@@ -5,6 +5,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
 import { useMaintenance } from '../contexts/MaintenanceContext';
@@ -32,6 +33,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { subscriptionStatus, upgradeToUnlimited } = useUsage();
   const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode, isAdmin, setAdminStatus } = useMaintenance();
+  const { user } = useBasic();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);

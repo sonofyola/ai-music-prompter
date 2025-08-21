@@ -3,47 +3,47 @@ export const schema = {
   version: 0,
   tables: {
     user_profiles: {
-      type: 'collection',
+      type: 'collection' as const,
       fields: {
         email: {
-          type: 'string',
+          type: 'string' as const,
         },
         subscription_status: {
-          type: 'string', // 'free', 'premium', 'unlimited'
+          type: 'string' as const, // 'free', 'premium', 'unlimited'
         },
         usage_count: {
-          type: 'number',
+          type: 'number' as const,
         },
         last_reset_date: {
-          type: 'string',
+          type: 'string' as const,
         },
         created_at: {
-          type: 'string',
+          type: 'string' as const,
         },
         stripe_customer_id: {
-          type: 'string',
+          type: 'string' as const,
         },
       },
     },
     prompt_history: {
-      type: 'collection',
+      type: 'collection' as const,
       fields: {
         user_id: {
-          type: 'string',
+          type: 'string' as const,
         },
         name: {
-          type: 'string',
+          type: 'string' as const,
         },
         form_data: {
-          type: 'string', // JSON string
+          type: 'string' as const, // JSON string
         },
         generated_prompt: {
-          type: 'string',
+          type: 'string' as const,
         },
         created_at: {
-          type: 'string',
+          type: 'string' as const,
         },
       },
     },
   },
-}
+} as const;

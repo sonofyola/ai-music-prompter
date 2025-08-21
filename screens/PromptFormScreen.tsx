@@ -931,39 +931,4 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.surface,
     marginLeft: 8,
   },
-  debugButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  debugButtonText: {
-    fontSize: 10,
-    color: '#000',
-    fontWeight: 'bold',
-  },
-  userMenuButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    marginLeft: 8,
-  },
-  adminLogoutButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    marginLeft: 8,
-  },
-  titleButton: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
-  },
-  titleButtonPressed: {
-    color: colors.primary,
-  },
-  clickCounter: {
-    fontSize: 12,
-    color: colors.primary,
-    marginLeft: 4,
-  }
 });
