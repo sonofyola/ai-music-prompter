@@ -11,7 +11,10 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
+import { useUsage } from '../contexts/UsageContext';
+import { usePromptHistory } from '../contexts/PromptHistoryContext';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import { 
@@ -33,9 +36,17 @@ import FormField from '../components/FormField';
 import MultiSelectField from '../components/MultiSelectField';
 import PickerField from '../components/PickerField';
 import ThemeToggle from '../components/ThemeToggle';
+import UsageIndicator from '../components/UsageIndicator';
+import UpgradeModal from '../components/UpgradeModal';
+import EmailCapture from '../components/EmailCapture';
+import PromptHistoryModal from '../components/PromptHistoryModal';
+import TemplatesModal from '../components/TemplatesModal';
+import EmailCaptureModal from '../components/EmailCaptureModal';
 
-export default function PromptFormScreen() {
+export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
+  const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
+  const { savePrompt } = usePromptHistory();
   const styles = createStyles(colors);
 
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -60,6 +71,10 @@ export default function PromptFormScreen() {
 
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [showPrompt, setShowPrompt] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showEmailCapture, setShowEmailCapture] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
 
   const handleRandomTrackIdea = () => {
     const idea = generateRandomTrackIdea();
@@ -75,7 +90,7 @@ export default function PromptFormScreen() {
     );
   };
 
-  const generatePrompt = () => {
+  const generatePrompt = async () => {
     if (!formData.subject.trim() && formData.genres_primary.length === 0 && formData.genres_electronic.length === 0) {
       Alert.alert(
         'Missing Information',
@@ -85,22 +100,58 @@ export default function PromptFormScreen() {
       return;
     }
 
+    // Check if user can generate
+    if (!canGenerate) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
+    // Check if email is captured for free users
+    if (!isEmailCaptured) {
+      setShowEmailCapture(true);
+      return;
+    }
+
     const prompt = formatMusicPrompt(formData);
     setGeneratedPrompt(prompt);
     setShowPrompt(true);
+    
+    // Increment usage count
+    await incrementGeneration();
   };
 
   const copyToClipboard = async () => {
     try {
-      // For now, just show an alert. In a real app, you'd use Clipboard API
+      await Clipboard.setStringAsync(generatedPrompt);
       Alert.alert(
         'Prompt Copied!',
         'The generated prompt has been copied to your clipboard.',
         [{ text: 'OK' }]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to copy prompt to clipboard.');
     }
+  };
+
+  const saveCurrentPrompt = () => {
+    Alert.prompt(
+      'Save Prompt',
+      'Enter a name for this prompt:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Save',
+          onPress: async (name) => {
+            if (name?.trim()) {
+              await savePrompt(name.trim(), formData, generatedPrompt);
+              Alert.alert('Success', 'Prompt saved to history!');
+            }
+          }
+        }
+      ],
+      'plain-text',
+      formData.subject || 'My Prompt'
+    );
   };
 
   const resetForm = () => {
@@ -140,6 +191,19 @@ export default function PromptFormScreen() {
     );
   };
 
+  const loadTemplate = (templateData: Partial<MusicPromptData>) => {
+    setFormData(prev => ({
+      ...prev,
+      ...templateData
+    }));
+    setShowTemplatesModal(false);
+  };
+
+  const loadFromHistory = (historyData: MusicPromptData) => {
+    setFormData(historyData);
+    setShowHistoryModal(false);
+  };
+
   if (showPrompt) {
     return (
       <SafeAreaView style={styles.container}>
@@ -169,11 +233,16 @@ export default function PromptFormScreen() {
                 <Text style={styles.copyButtonText}>Copy Prompt</Text>
               </TouchableOpacity>
               
-              <TouchableOpacity style={styles.newPromptButton} onPress={generatePrompt}>
-                <MaterialIcons name="refresh" size={20} color={colors.primary} />
-                <Text style={styles.newPromptButtonText}>Regenerate</Text>
+              <TouchableOpacity style={styles.saveButton} onPress={saveCurrentPrompt}>
+                <MaterialIcons name="bookmark" size={20} color={colors.primary} />
+                <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
+            
+            <TouchableOpacity style={styles.newPromptButton} onPress={generatePrompt}>
+              <MaterialIcons name="refresh" size={20} color={colors.primary} />
+              <Text style={styles.newPromptButtonText}>Generate New Prompt</Text>
+            </TouchableOpacity>
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -192,17 +261,29 @@ export default function PromptFormScreen() {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.resetButton} onPress={resetForm}>
+            <TouchableOpacity 
+              style={styles.iconButton} 
+              onPress={() => navigation?.navigate('Admin')}
+            >
+              <MaterialIcons name="admin-panel-settings" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => setShowHistoryModal(true)}>
+              <MaterialIcons name="history" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={() => setShowTemplatesModal(true)}>
+              <MaterialIcons name="library-books" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconButton} onPress={resetForm}>
               <MaterialIcons name="refresh" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
             <ThemeToggle />
           </View>
         </View>
 
+        <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
+
         <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Core Concept</Text>
-            
             <FormField
               label="Subject/Theme"
               value={formData.subject}
@@ -377,6 +458,44 @@ export default function PromptFormScreen() {
 
           <View style={styles.bottomSpacing} />
         </ScrollView>
+
+        {/* Modals */}
+        <UpgradeModal 
+          visible={showUpgradeModal} 
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgradeSuccess={() => {
+            setShowUpgradeModal(false);
+            // Optionally show success message
+            Alert.alert('Success!', 'You now have unlimited access to AI Music Prompter!');
+          }}
+        />
+        
+        {showEmailCapture && (
+          <EmailCaptureModal 
+            visible={showEmailCapture} 
+            onClose={() => setShowEmailCapture(false)}
+            onEmailSubmitted={(email) => {
+              setShowEmailCapture(false);
+              // Email captured, now try to generate again
+              generatePrompt();
+            }}
+          />
+        )}
+        
+        <PromptHistoryModal 
+          visible={showHistoryModal} 
+          onClose={() => setShowHistoryModal(false)}
+          onLoadPrompt={loadFromHistory}
+          onSaveCurrentPrompt={saveCurrentPrompt}
+          currentFormData={formData}
+          currentGeneratedPrompt={generatedPrompt}
+        />
+        
+        <TemplatesModal 
+          visible={showTemplatesModal} 
+          onClose={() => setShowTemplatesModal(false)}
+          onSelectTemplate={loadTemplate}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -411,9 +530,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  resetButton: {
+  iconButton: {
     padding: 8,
-    marginRight: 8,
+    marginRight: 4,
   },
   backButton: {
     flexDirection: 'row',
@@ -486,6 +605,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   promptActions: {
     flexDirection: 'row',
     gap: 12,
+    marginBottom: 12,
   },
   copyButton: {
     flex: 1,
@@ -503,8 +623,25 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.background,
     marginLeft: 8,
   },
-  newPromptButton: {
+  saveButton: {
     flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 8,
+  },
+  newPromptButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
