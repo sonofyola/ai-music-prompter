@@ -39,6 +39,26 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [unlimitedEmails, setUnlimitedEmails] = useState<string[]>([]);
 
+  // Enhanced email validation
+  const isValidEmail = (email: string): boolean => {
+    // Basic regex pattern for email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    // Additional checks
+    const hasValidLength = email.length >= 5 && email.length <= 254;
+    const hasValidLocalPart = email.split('@')[0]?.length <= 64;
+    const hasValidDomain = email.split('@')[1]?.length <= 253;
+    const noConsecutiveDots = !email.includes('..');
+    const noStartEndDots = !email.startsWith('.') && !email.endsWith('.');
+    
+    return emailRegex.test(email) && 
+           hasValidLength && 
+           hasValidLocalPart && 
+           hasValidDomain && 
+           noConsecutiveDots && 
+           noStartEndDots;
+  };
+
   useEffect(() => {
     loadEmails();
     loadUnlimitedEmails();
@@ -144,26 +164,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     } finally {
       setIsUpgrading(false);
     }
-  };
-
-  // Enhanced email validation
-  const isValidEmail = (email: string): boolean => {
-    // Basic regex pattern for email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    
-    // Additional checks
-    const hasValidLength = email.length >= 5 && email.length <= 254;
-    const hasValidLocalPart = email.split('@')[0]?.length <= 64;
-    const hasValidDomain = email.split('@')[1]?.length <= 253;
-    const noConsecutiveDots = !email.includes('..');
-    const noStartEndDots = !email.startsWith('.') && !email.endsWith('.');
-    
-    return emailRegex.test(email) && 
-           hasValidLength && 
-           hasValidLocalPart && 
-           hasValidDomain && 
-           noConsecutiveDots && 
-           noStartEndDots;
   };
 
   const validateEmails = async () => {
