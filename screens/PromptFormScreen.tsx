@@ -48,7 +48,7 @@ export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { isAdmin, setAdminStatus, logout } = useMaintenance();
+  const { isAdmin, setAdminStatus } = useMaintenance();
   const styles = createStyles(colors);
 
   // Debug: Log admin status
@@ -80,29 +80,6 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
-
-  const handleUserLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout of your account?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await logout();
-              Alert.alert('Logged Out', 'You have been logged out successfully.');
-            } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
-            }
-          }
-        }
-      ]
-    );
-  };
 
   const handleAdminLogout = () => {
     Alert.alert(
@@ -276,23 +253,9 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
-            {/* User menu - always available */}
-            <TouchableOpacity
-              style={styles.userMenuButton}
-              onPress={() => {
-                Alert.alert(
-                  'User Menu',
-                  'Choose an option:',
-                  [
-                    { text: 'Logout', onPress: handleUserLogout, style: 'destructive' },
-                    { text: 'Cancel', style: 'cancel' }
-                  ]
-                );
-              }}
-            >
-              <MaterialIcons name="account-circle" size={24} color={colors.text} />
-            </TouchableOpacity>
-
+            {/* Remove fake user menu for regular users - no real authentication exists */}
+            {/* Only show user menu if there's actual user authentication */}
+            
             {/* Admin logout - only when admin is active */}
             {isAdmin && (
               <TouchableOpacity
