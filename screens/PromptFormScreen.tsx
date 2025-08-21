@@ -15,6 +15,8 @@ import SmartSuggestions from '../components/SmartSuggestions';
 import RandomTrackModal from '../components/RandomTrackModal';
 import TemplatesModal from '../components/TemplatesModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
+import SubscriptionStatus from '../components/SubscriptionStatus';
+import { useNavigation } from '@react-navigation/native';
 
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
@@ -44,6 +46,7 @@ export default function PromptFormScreen() {
   const [showRandomTrackModal, setShowRandomTrackModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const navigation = useNavigation();
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -155,6 +158,10 @@ export default function PromptFormScreen() {
     setShowUpgradeModal(false);
   };
 
+  const handleManageSubscription = () => {
+    navigation.navigate('Subscription' as never);
+  };
+
   if (showAdmin) {
     return <AdminScreen onBackToApp={() => setShowAdmin(false)} />;
   }
@@ -215,36 +222,23 @@ export default function PromptFormScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity 
-              onPress={handleTitlePress}
-              onLongPress={handleTitleLongPress}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.title}>AI Music Prompts</Text>
-            </TouchableOpacity>
-            <View style={styles.headerActions}>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => setShowHistoryModal(true)}
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="history" size={16} color={colors.primary} />
-              </TouchableOpacity>
-              <TouchableOpacity 
-                style={styles.headerButton}
-                onPress={() => setShowTemplatesModal(true)}
-                activeOpacity={0.7}
-              >
-                <MaterialIcons name="dashboard" size={16} color={colors.primary} />
-              </TouchableOpacity>
-              <ThemeToggle />
-            </View>
+          <View style={styles.titleContainer}>
+            <Text style={styles.title}>AI Music Prompt Generator</Text>
+            <Text style={styles.subtitle}>
+              Create detailed prompts for AI music tools like Suno, Riffusion & MusicGen
+            </Text>
           </View>
-          <Text style={styles.subtitle}>
-            Create detailed prompts for AI music tools like Suno, Udio & MusicGen
-          </Text>
+          <ThemeToggle />
+        </View>
+
+        {/* Subscription Status */}
+        <View style={styles.statusContainer}>
+          <SubscriptionStatus 
+            onManagePress={handleManageSubscription}
+            compact={true}
+          />
         </View>
 
         <UsageIndicator onUpgradePress={onUpgradePress} />
@@ -607,5 +601,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   footer: {
     height: 20,
+  },
+  statusContainer: {
+    marginHorizontal: 20,
+    marginBottom: 16,
   },
 });

@@ -9,10 +9,13 @@ interface UsageContextType {
   isEmailCaptured: boolean;
   subscriptionStatus: 'free' | 'premium' | 'trial';
   subscriptionExpiry: string | null;
+  subscriptionId: string | null;
   incrementGeneration: () => Promise<void>;
-  upgradeToUnlimited: () => Promise<void>;
+  upgradeToUnlimited: (subscriptionId?: string) => Promise<void>;
+  cancelSubscription: () => Promise<void>;
   resetDailyCount: () => Promise<void>;
   setUserEmail: (email: string) => Promise<void>;
+  checkSubscriptionStatus: () => Promise<void>;
 }
 
 const DAILY_LIMIT = 3;
@@ -38,6 +41,8 @@ interface SubscriptionData {
   expiry: string | null;
   amount: number | null;
   billing_cycle: string | null;
+  subscription_id: string | null;
+  stripe_customer_id: string | null;
 }
 
 const UsageContext = createContext<UsageContextType | undefined>(undefined);
@@ -49,6 +54,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'trial'>('free');
   const [subscriptionExpiry, setSubscriptionExpiry] = useState<string | null>(null);
+  const [subscriptionId, setSubscriptionId] = useState<string | null>(null);
 
   useEffect(() => {
     loadUsageData();
@@ -61,6 +67,29 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     return DEVELOPER_EMAILS.includes(email.toLowerCase().trim());
   };
 
+  const saveSubscriptionData = async (
+    status: 'free' | 'premium' | 'trial',
+    expiry: string | null,
+    amount: number | null,
+    billing_cycle: string | null,
+    subscription_id: string | null = null,
+    stripe_customer_id: string | null = null
+  ) => {
+    try {
+      const subscriptionData: SubscriptionData = {
+        status,
+        expiry,
+        amount,
+        billing_cycle,
+        subscription_id,
+        stripe_customer_id,
+      };
+      await AsyncStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscriptionData));
+    } catch (error) {
+      console.error('Error saving subscription data:', error);
+    }
+  };
+
   const loadSubscriptionData = async () => {
     try {
       const data = await AsyncStorage.getItem(SUBSCRIPTION_KEY);
@@ -68,6 +97,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         const subscriptionData: SubscriptionData = JSON.parse(data);
         setSubscriptionStatus(subscriptionData.status);
         setSubscriptionExpiry(subscriptionData.expiry);
+        setSubscriptionId(subscriptionData.subscription_id);
         
         // Check if subscription is still valid
         if (subscriptionData.status === 'premium' && subscriptionData.expiry) {
@@ -76,9 +106,11 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           
           if (now > expiryDate) {
             // Subscription expired, revert to free
+            console.log('Subscription expired, reverting to free plan');
             setSubscriptionStatus('free');
             setIsUnlimited(false);
-            await saveSubscriptionData('free', null, null, null);
+            setSubscriptionId(null);
+            await saveSubscriptionData('free', null, null, null, null, null);
           } else {
             // Subscription is active
             setIsUnlimited(true);
@@ -90,23 +122,10 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const saveSubscriptionData = async (
-    status: 'free' | 'premium' | 'trial',
-    expiry: string | null,
-    amount: number | null,
-    billing_cycle: string | null
-  ) => {
-    try {
-      const subscriptionData: SubscriptionData = {
-        status,
-        expiry,
-        amount,
-        billing_cycle,
-      };
-      await AsyncStorage.setItem(SUBSCRIPTION_KEY, JSON.stringify(subscriptionData));
-    } catch (error) {
-      console.error('Error saving subscription data:', error);
-    }
+  const checkSubscriptionStatus = async () => {
+    // In a real app, this would call your backend to verify subscription status with Stripe
+    // For now, we'll just check the local expiry date
+    await loadSubscriptionData();
   };
 
   const loadUserEmail = async () => {
@@ -197,7 +216,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const upgradeToUnlimited = async () => {
+  const upgradeToUnlimited = async (newSubscriptionId?: string) => {
     setIsUnlimited(true);
     setSubscriptionStatus('premium');
     
@@ -208,8 +227,31 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     
     setSubscriptionExpiry(expiryString);
     
+    if (newSubscriptionId) {
+      setSubscriptionId(newSubscriptionId);
+    }
+    
     await saveUsageData(generationsToday, new Date().toDateString(), true);
-    await saveSubscriptionData('premium', expiryString, 5.99, 'monthly');
+    await saveSubscriptionData('premium', expiryString, 5.99, 'monthly', newSubscriptionId);
+  };
+
+  const cancelSubscription = async () => {
+    try {
+      // In a real app, you'd call your backend to cancel the Stripe subscription
+      // For now, we'll just update the local state
+      setIsUnlimited(false);
+      setSubscriptionStatus('free');
+      setSubscriptionExpiry(null);
+      setSubscriptionId(null);
+      
+      await saveUsageData(generationsToday, new Date().toDateString(), false);
+      await saveSubscriptionData('free', null, null, null, null, null);
+      
+      console.log('Subscription cancelled locally');
+    } catch (error) {
+      console.error('Error cancelling subscription:', error);
+      throw error;
+    }
   };
 
   const resetDailyCount = async () => {
@@ -228,10 +270,13 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       isEmailCaptured,
       subscriptionStatus,
       subscriptionExpiry,
+      subscriptionId,
       incrementGeneration,
       upgradeToUnlimited,
+      cancelSubscription,
       resetDailyCount,
       setUserEmail,
+      checkSubscriptionStatus,
     }}>
       {children}
     </UsageContext.Provider>
