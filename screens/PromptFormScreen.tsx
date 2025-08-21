@@ -75,6 +75,33 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showEmailCapture, setShowEmailCapture] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [titleTapCount, setTitleTapCount] = useState(0);
+  const [titleTapTimeout, setTitleTapTimeout] = useState<NodeJS.Timeout | null>(null);
+
+  const handleTitleTap = () => {
+    const newCount = titleTapCount + 1;
+    setTitleTapCount(newCount);
+
+    // Clear existing timeout
+    if (titleTapTimeout) {
+      clearTimeout(titleTapTimeout);
+    }
+
+    // Set new timeout to reset count
+    const timeout = setTimeout(() => {
+      setTitleTapCount(0);
+    }, 2000); // Reset after 2 seconds of no taps
+    setTitleTapTimeout(timeout);
+
+    // Check if we've reached 7 taps
+    if (newCount >= 7) {
+      setTitleTapCount(0);
+      if (titleTapTimeout) {
+        clearTimeout(titleTapTimeout);
+      }
+      navigation?.navigate('Admin');
+    }
+  };
 
   const handleRandomTrackIdea = () => {
     const idea = generateRandomTrackIdea();
@@ -256,10 +283,14 @@ export default function PromptFormScreen({ navigation }: any) {
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
+          <TouchableOpacity 
+            style={styles.headerLeft}
+            onPress={handleTitleTap}
+            activeOpacity={0.7}
+          >
             <MaterialIcons name="music-note" size={24} color={colors.primary} />
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
-          </View>
+          </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity 
               style={styles.iconButton} 
@@ -519,6 +550,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+    borderRadius: 8,
   },
   headerTitle: {
     fontSize: 20,
