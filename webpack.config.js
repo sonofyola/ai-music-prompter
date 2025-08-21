@@ -10,29 +10,27 @@ module.exports = async function (env, argv) {
     'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
   };
   
-  // Configure asset handling for fonts and images
+  // Handle font files specifically
   config.module.rules.push({
     test: /\.(ttf|otf|woff|woff2)$/,
-    use: {
-      loader: 'file-loader',
-      options: {
-        name: '[name].[hash].[ext]',
-        outputPath: 'static/fonts/',
-        publicPath: '/static/fonts/',
-      },
+    type: 'asset/resource',
+    generator: {
+      filename: 'static/fonts/[name].[hash][ext]',
     },
   });
   
+  // Ignore asset registry imports in font files
   config.module.rules.push({
-    test: /\.(png|jpe?g|gif|svg)$/,
-    use: {
-      loader: 'file-loader',
-      options: {
-        name: '[name].[hash].[ext]',
-        outputPath: 'static/images/',
-        publicPath: '/static/images/',
+    test: /\.ttf$/,
+    use: [
+      {
+        loader: 'ignore-loader',
+        options: {
+          // Ignore the missing-asset-registry-path import
+          ignore: /missing-asset-registry-path/,
+        },
       },
-    },
+    ],
   });
   
   return config;

@@ -21,4 +21,10 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
+// Add transformer to handle font files
+config.transformer = {
+  ...config.transformer,
+  assetPlugins: ['expo-asset/tools/hashAssetFiles'],
+};
+
 module.exports = wrapWithReanimatedMetroConfig(config);

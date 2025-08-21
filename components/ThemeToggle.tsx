@@ -1,6 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, StyleSheet, Animated } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
+import { TouchableOpacity, StyleSheet, Animated, Text } from 'react-native';
+// Temporarily comment out MaterialIcons to test
+// import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 
 export default function ThemeToggle() {
@@ -28,11 +29,9 @@ export default function ThemeToggle() {
   return (
     <TouchableOpacity onPress={toggleTheme} style={styles.container} activeOpacity={0.7}>
       <Animated.View style={[styles.button, { backgroundColor, opacity: iconOpacity }]}>
-        <MaterialIcons 
-          name={theme === 'light' ? 'dark-mode' : 'light-mode'} 
-          size={20} 
-          color={theme === 'light' ? colors.textSecondary : colors.text} 
-        />
+        <Text style={{ fontSize: 16, color: theme === 'light' ? colors.textSecondary : colors.text }}>
+          {theme === 'light' ? '🌙' : '☀️'}
+        </Text>
       </Animated.View>
     </TouchableOpacity>
   );
