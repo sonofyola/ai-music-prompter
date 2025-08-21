@@ -15,8 +15,8 @@ const MaintenanceContext = createContext<MaintenanceContextType | undefined>(und
 
 // ADMIN EMAIL WHITELIST - Only these emails can access admin features
 const ADMIN_EMAILS = [
-  'your-admin-email@example.com', // Replace with your actual admin email
-  'admin@aimusicpromptr.com',     // Replace with your domain admin email
+  'drremotework@gmail.com',        // Your admin email
+  'admin@aimusicpromptr.com',      // Domain admin email
   // Add more admin emails as needed
 ];
 
