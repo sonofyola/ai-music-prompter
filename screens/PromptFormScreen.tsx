@@ -135,7 +135,29 @@ export default function PromptFormScreen({ navigation }: any) {
     }
   };
 
-  const handleLogout = () => {
+  const handleUserLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout of your account?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              Alert.alert('Logged Out', 'You have been logged out successfully.');
+            } catch (error) {
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleAdminLogout = () => {
     Alert.alert(
       'Logout Admin',
       'Are you sure you want to logout from admin access?',
@@ -344,54 +366,34 @@ export default function PromptFormScreen({ navigation }: any) {
             <Text style={styles.title}>🎵 AI Music Prompter</Text>
           </View>
           <View style={styles.headerRight}>
-            {/* Debug admin toggle - only for development */}
-            {__DEV__ && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugText}>DEBUG: Admin = {isAdmin ? 'TRUE' : 'FALSE'}</Text>
-                <TouchableOpacity
-                  style={[styles.debugButton, { backgroundColor: isAdmin ? '#ff4444' : '#44ff44' }]}
-                  onPress={() => {
-                    setAdminStatus(!isAdmin);
-                    Alert.alert('Debug', `Admin status toggled to: ${!isAdmin}`);
-                  }}
-                >
-                  <Text style={styles.debugButtonText}>
-                    {isAdmin ? 'DISABLE ADMIN' : 'ENABLE ADMIN'}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-            )}
-            
-            {/* Admin button - only show if admin */}
-            {isAdmin && (
-              <TouchableOpacity 
-                style={[styles.iconButton, styles.adminButton]} 
-                onPress={handleAdminAccess}
-              >
-                <MaterialIcons name="admin-panel-settings" size={20} color={colors.primary} />
-              </TouchableOpacity>
-            )}
-            
-            {/* LOGOUT BUTTON - Make it VERY visible */}
-            {isAdmin && (
-              <TouchableOpacity 
-                style={[styles.iconButton, styles.logoutButtonLarge]} 
-                onPress={handleLogout}
-              >
-                <MaterialIcons name="logout" size={20} color="#fff" />
-              </TouchableOpacity>
-            )}
-            
-            <TouchableOpacity style={styles.iconButton} onPress={() => setShowHistoryModal(true)}>
-              <MaterialIcons name="history" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={() => setShowTemplatesModal(true)}>
-              <MaterialIcons name="library-books" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton} onPress={resetForm}>
-              <MaterialIcons name="refresh" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
             <ThemeToggle />
+            
+            {/* User menu - always available */}
+            <TouchableOpacity
+              style={styles.userMenuButton}
+              onPress={() => {
+                Alert.alert(
+                  'User Menu',
+                  'Choose an option:',
+                  [
+                    { text: 'Logout', onPress: handleUserLogout, style: 'destructive' },
+                    { text: 'Cancel', style: 'cancel' }
+                  ]
+                );
+              }}
+            >
+              <MaterialIcons name="account-circle" size={24} color={colors.text} />
+            </TouchableOpacity>
+
+            {/* Admin logout - only when admin is active */}
+            {isAdmin && (
+              <TouchableOpacity
+                style={styles.adminLogoutButton}
+                onPress={handleAdminLogout}
+              >
+                <MaterialIcons name="logout" size={20} color="#ff4444" />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -949,5 +951,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 4,
     marginRight: 8,
+  },
+  userMenuButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    marginLeft: 8,
+  },
+  adminLogoutButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    marginLeft: 8,
   }
 });
