@@ -52,8 +52,7 @@
       "backgroundColor": "#ffffff",
       "startUrl": "/",
       "display": "standalone",
-      "orientation": "portrait",
-      "crossOrigin": "anonymous"
+      "orientation": "portrait"
     },
     "plugins": [
       [
