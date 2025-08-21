@@ -405,7 +405,12 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <View style={styles.adminStatusContainer}>
             <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
             <Text style={styles.adminStatusText}>Admin Access Active</Text>
-            <Text style={styles.adminStatusSubtext}>You have full administrative privileges</Text>
+            <Text style={styles.adminStatusSubtext}>
+              Signed in as: {user?.email || 'Unknown'}
+            </Text>
+            <Text style={styles.adminStatusSubtext}>
+              You have full administrative privileges
+            </Text>
           </View>
         </View>
 

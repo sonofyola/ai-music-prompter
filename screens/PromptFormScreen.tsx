@@ -853,3 +853,47 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginLeft: 8,
   }
 });
+
+const handleTitlePress = async () => {
+  setTitlePressCount(prev => {
+    const newCount = prev + 1;
+    
+    if (newCount === 7) {
+      // Check if user has admin access
+      checkAdminAccess();
+      return 0; // Reset counter
+    }
+    
+    // Reset counter after 3 seconds of no presses
+    setTimeout(() => {
+      setTitlePressCount(0);
+    }, 3000);
+    
+    return newCount;
+  });
+};
+
+const checkAdminAccess = async () => {
+  try {
+    const hasAccess = await checkAdminAccess();
+    if (hasAccess) {
+      await setAdminStatus(true);
+      Alert.alert(
+        '🔓 Admin Access Granted',
+        `Welcome, admin! You now have access to administrative features.`,
+        [
+          { text: 'Continue', onPress: () => {} },
+          { text: 'Open Admin Panel', onPress: () => navigation.navigate('Admin') }
+        ]
+      );
+    } else {
+      Alert.alert(
+        '🚫 Access Denied',
+        'You are not authorized for admin access. Only whitelisted email addresses can access admin features.',
+        [{ text: 'OK' }]
+      );
+    }
+  } catch (error) {
+    Alert.alert('Error', 'Failed to check admin access. Please try again.');
+  }
+};
