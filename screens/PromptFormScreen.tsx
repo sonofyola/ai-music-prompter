@@ -88,6 +88,8 @@ export default function PromptFormScreen({ navigation }: any) {
 
   const handleTitlePress = async () => {
     console.log('Title pressed! Count:', titlePressCount + 1);
+    console.log('Current user email:', user?.email);
+    console.log('Current admin status:', isAdmin);
     
     setTitlePressCount(prev => {
       const newCount = prev + 1;
@@ -111,32 +113,49 @@ export default function PromptFormScreen({ navigation }: any) {
   };
 
   const checkAdminAccessHandler = async () => {
+    console.log('=== ADMIN ACCESS CHECK ===');
     console.log('Checking admin access for user:', user?.email);
+    console.log('User object:', user);
     
     try {
       const hasAccess = await checkAdminAccess();
       console.log('Admin access result:', hasAccess);
+      console.log('Admin emails whitelist:', ['drremotework@gmail.com', 'admin@aimusicpromptr.com']);
       
       if (hasAccess) {
+        console.log('✅ Admin access granted!');
         await setAdminStatus(true);
         Alert.alert(
           '🔓 Admin Access Granted',
-          `Welcome, admin! You now have access to administrative features.`,
+          `Welcome, admin! You now have access to administrative features.\n\nEmail: ${user?.email}`,
           [
             { text: 'Continue', onPress: () => {} },
-            { text: 'Open Admin Panel', onPress: () => navigation?.navigate('Admin') }
+            { 
+              text: 'Open Admin Panel', 
+              onPress: () => {
+                console.log('Navigating to Admin panel...');
+                console.log('Navigation object:', navigation);
+                if (navigation?.navigate) {
+                  navigation.navigate('Admin');
+                } else {
+                  console.error('Navigation not available!');
+                  Alert.alert('Error', 'Navigation not available. Please try refreshing the app.');
+                }
+              }
+            }
           ]
         );
       } else {
+        console.log('❌ Admin access denied');
         Alert.alert(
           '🚫 Access Denied',
-          'You are not authorized for admin access. Only whitelisted email addresses can access admin features.',
+          `You are not authorized for admin access.\n\nYour email: ${user?.email}\nOnly whitelisted email addresses can access admin features.\n\nWhitelisted emails:\n• drremotework@gmail.com\n• admin@aimusicpromptr.com`,
           [{ text: 'OK' }]
         );
       }
     } catch (error) {
       console.error('Admin access error:', error);
-      Alert.alert('Error', 'Failed to check admin access. Please try again.');
+      Alert.alert('Error', `Failed to check admin access: ${error.message}`);
     }
   };
 
@@ -342,6 +361,23 @@ export default function PromptFormScreen({ navigation }: any) {
           </View>
           <View style={styles.headerRight}>
             <ThemeToggle />
+            
+            {/* Debug admin button - remove this in production */}
+            <TouchableOpacity
+              style={[styles.userMenuButton, { backgroundColor: '#ff9999' }]}
+              onPress={() => {
+                Alert.alert(
+                  'Debug Info',
+                  `User: ${user?.email}\nAdmin: ${isAdmin}\nNavigation: ${navigation ? 'Available' : 'Not Available'}`,
+                  [
+                    { text: 'Test Admin Access', onPress: checkAdminAccessHandler },
+                    { text: 'OK' }
+                  ]
+                );
+              }}
+            >
+              <MaterialIcons name="bug-report" size={20} color="#000" />
+            </TouchableOpacity>
             
             {/* User menu - now with real authentication */}
             <TouchableOpacity
