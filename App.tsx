@@ -22,19 +22,20 @@ function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
   const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
 
-  // Debug logging
-  console.log('🔍 APP RENDER STATE:', {
+  // Enhanced debug logging
+  console.log('🔍 APP RENDER - Full state check:', {
     isSignedIn,
     userEmail: user?.email,
     isLoading,
     isMaintenanceMode,
     isAdmin,
-    maintenanceMessage
+    maintenanceMessage,
+    timestamp: new Date().toISOString()
   });
 
   // Show loading state
   if (isLoading) {
-    console.log('📱 Showing loading screen');
+    console.log('📱 RENDER DECISION: Loading screen');
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Loading...</Text>
@@ -45,7 +46,12 @@ function AppContent() {
   // CRITICAL FIX: Check maintenance mode for ALL users (authenticated and non-authenticated)
   // Only admins should bypass maintenance mode
   if (isMaintenanceMode && !isAdmin) {
-    console.log('🚧 Showing maintenance screen - maintenance active and user is not admin');
+    console.log('🚧 RENDER DECISION: Maintenance screen', {
+      isMaintenanceMode,
+      isAdmin,
+      isSignedIn,
+      userEmail: user?.email
+    });
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
@@ -57,12 +63,12 @@ function AppContent() {
 
   // Show auth screen if not signed in (and not in maintenance mode)
   if (!isSignedIn || !user) {
-    console.log('🔐 Showing auth screen - user not signed in');
+    console.log('🔐 RENDER DECISION: Auth screen');
     return <AuthScreen />;
   }
 
   // Show main app with navigation
-  console.log('📱 Showing main app with navigation');
+  console.log('📱 RENDER DECISION: Main app with navigation');
   return (
     <NavigationContainer>
       <Stack.Navigator 

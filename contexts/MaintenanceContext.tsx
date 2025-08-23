@@ -33,32 +33,43 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
 
   // CRITICAL FIX: Load maintenance state for ALL users, not just when db is available
   useEffect(() => {
+    console.log('🚀 MAINTENANCE PROVIDER INIT - Starting maintenance provider');
+    console.log('🚀 INIT STATE:', { isSignedIn, userEmail: user?.email, hasDb: !!db });
+    
     // Try to load from localStorage first (works for all users)
     loadMaintenanceFromStorage();
     
     // If database is available, load from database (authenticated users)
     if (db) {
+      console.log('🚀 DB AVAILABLE - Loading from database');
       loadMaintenanceState().catch(error => {
         console.error('Failed to load maintenance state:', error);
       });
+    } else {
+      console.log('🚀 NO DB - Only using localStorage');
     }
     
-    // Check maintenance state every 10 seconds for non-admin users
+    // Check maintenance state every 5 seconds for non-admin users (reduced interval for testing)
     const interval = setInterval(() => {
       if (!isAdmin) {
+        console.log('🔄 POLLING - Checking maintenance state (non-admin user)');
         // Try localStorage first, then database if available
         loadMaintenanceFromStorage();
         if (db) {
           loadMaintenanceState().catch(console.error);
         }
       }
-    }, 10000);
+    }, 5000); // Reduced to 5 seconds for testing
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('🚀 CLEANUP - Clearing maintenance polling interval');
+      clearInterval(interval);
+    };
   }, [isAdmin, db]);
 
   // Keep the admin check useEffect
   useEffect(() => {
+    console.log('👤 USER CHANGE - Checking admin access', { isSignedIn, userEmail: user?.email });
     // Reset admin status when user changes
     if (isSignedIn && user) {
       checkAdminAccess().catch(error => {
@@ -72,35 +83,50 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
 
   // Debug logging
   useEffect(() => {
-    console.log('🔧 Maintenance Debug:', {
+    console.log('🔧 MAINTENANCE STATE CHANGE:', {
       isMaintenanceMode,
       isAdmin,
       isSignedIn,
       userEmail: user?.email,
-      platform: Platform.OS
+      platform: Platform.OS,
+      timestamp: new Date().toISOString()
     });
   }, [isMaintenanceMode, isAdmin, isSignedIn, user?.email]);
 
   // NEW FUNCTION: Load maintenance state from localStorage (works for all users)
   const loadMaintenanceFromStorage = async () => {
     try {
+      console.log('💾 STORAGE LOAD - Attempting to load from storage');
       let storageData = null;
       
       if (Platform.OS === 'web') {
         const stored = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
+        console.log('💾 WEB STORAGE RAW:', stored);
         storageData = stored ? JSON.parse(stored) : null;
       } else {
         const stored = await AsyncStorage.getItem(MAINTENANCE_STORAGE_KEY);
+        console.log('💾 ASYNC STORAGE RAW:', stored);
         storageData = stored ? JSON.parse(stored) : null;
       }
       
       if (storageData) {
-        console.log('📱 Loaded maintenance state from storage:', storageData);
+        console.log('✅ STORAGE FOUND:', storageData);
+        console.log('🔄 UPDATING STATE FROM STORAGE:', {
+          currentMaintenance: isMaintenanceMode,
+          newMaintenance: storageData.enabled,
+          currentMessage: maintenanceMessage,
+          newMessage: storageData.message
+        });
+        
         setIsMaintenanceMode(storageData.enabled || false);
         setMaintenanceMessage(storageData.message || 'The app is currently under maintenance. Please check back later.');
+        
+        console.log('✅ STATE UPDATED FROM STORAGE');
+      } else {
+        console.log('❌ NO STORAGE DATA FOUND');
       }
     } catch (error) {
-      console.error('❌ Failed to load from storage:', error);
+      console.error('❌ STORAGE LOAD ERROR:', error);
     }
   };
 
