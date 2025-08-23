@@ -428,10 +428,13 @@ export default function PromptFormScreen({ navigation }: any) {
             {isAdmin && (
               <TouchableOpacity
                 style={styles.adminLogoutButton}
-                onPress={() => {
+                onPress={(e) => {
+                  e.stopPropagation(); // Prevent event bubbling
                   console.log('🔥 Admin logout button pressed');
                   handleAdminLogout();
                 }}
+                activeOpacity={0.7}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
                 <MaterialIcons name="logout" size={20} color="#ff4444" />
               </TouchableOpacity>
@@ -922,12 +925,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     padding: 8,
     borderRadius: 20,
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 2,
     borderColor: '#ff4444',
     minWidth: 40,
     minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#ff4444',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
   },
   adminPanelButton: {
     flexDirection: 'row',
