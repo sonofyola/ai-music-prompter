@@ -149,6 +149,30 @@ export default function AuthScreen() {
     );
   };
 
+  const handleSuperNuclearReset = async () => {
+    Alert.alert(
+      '🚀 SUPER NUCLEAR RESET',
+      'This is the ULTIMATE reset option. It will destroy ALL cached data multiple times and force several reloads. This is specifically designed to obliterate the sonofyola issue. Use only as last resort!',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🚀 SUPER NUCLEAR',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performSuperNuclearReset } = await import('../utils/authReset');
+              await performSuperNuclearReset();
+            } catch (error) {
+              console.error('❌ Super nuclear reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -266,6 +290,14 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={styles.troubleshootButtonText}>💥 Nuclear Reset</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#000000' }]}
+            onPress={handleSuperNuclearReset}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🚀 SUPER NUCLEAR</Text>
           </TouchableOpacity>
         </View>
 

@@ -306,22 +306,179 @@ export const performNuclearReset = async () => {
         const allLocalKeys = Object.keys(window.localStorage);
         console.log('💥 Nuking all localStorage keys:', allLocalKeys);
         allLocalKeys.forEach(key => window.localStorage.removeItem(key));
+        // Double-check with clear()
+        window.localStorage.clear();
       }
       
       if (window.sessionStorage) {
         const allSessionKeys = Object.keys(window.sessionStorage);
         console.log('💥 Nuking all sessionStorage keys:', allSessionKeys);
         allSessionKeys.forEach(key => window.sessionStorage.removeItem(key));
+        // Double-check with clear()
+        window.sessionStorage.clear();
+      }
+      
+      // Clear ALL cookies more aggressively
+      if (document && document.cookie) {
+        console.log('💥 Nuclear cookie destruction...');
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Also try clearing with different domain combinations
+        const hostname = window.location.hostname;
+        const domains = ['', hostname, `.${hostname}`, 'localhost', '.localhost'];
+        
+        document.cookie.split(";").forEach(function(c) {
+          const cookieName = c.replace(/^ +/, "").replace(/=.*/, "");
+          domains.forEach(domain => {
+            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${domain}`;
+            document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+          });
+        });
       }
       
       // Force multiple reloads with different cache busting
       setTimeout(() => {
         console.log('💥 Nuclear reload sequence initiated...');
-        window.location.href = window.location.origin + '?nuclear=1&t=' + Date.now();
+        // First reload with nuclear flag
+        window.location.href = window.location.origin + '?nuclear=1&sonofyola=clear&auth=reset&t=' + Date.now();
       }, 2000);
+      
+      // Backup reload in case the first one fails
+      setTimeout(() => {
+        console.log('💥 Backup nuclear reload...');
+        window.location.replace(window.location.origin + '?nuclear=2&force=true&t=' + Date.now());
+      }, 4000);
     }
     
   } catch (error) {
     console.error('💥 Nuclear reset error:', error);
+    // Emergency fallback
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        try {
+          window.location.reload();
+        } catch (e) {
+          window.location.href = window.location.href;
+        }
+      }, 3000);
+    }
+  }
+};
+
+// Super Nuclear - the most aggressive option possible
+export const performSuperNuclearReset = async () => {
+  try {
+    console.log('🚀 SUPER NUCLEAR RESET - MAXIMUM DESTRUCTION MODE');
+    
+    // Clear everything multiple times
+    for (let i = 0; i < 3; i++) {
+      console.log(`🚀 Destruction pass ${i + 1}/3`);
+      
+      if (typeof window !== 'undefined') {
+        // Clear storage
+        try { window.localStorage.clear(); } catch (e) {}
+        try { window.sessionStorage.clear(); } catch (e) {}
+        
+        // Clear cookies
+        if (document && document.cookie) {
+          document.cookie.split(";").forEach(function(c) { 
+            const cookieName = c.replace(/^ +/, "").replace(/=.*/, "");
+            // Clear with every possible combination
+            [
+              '',
+              window.location.hostname,
+              `.${window.location.hostname}`,
+              'localhost',
+              '.localhost',
+              '.basictech.com',
+              '.kiki.ai',
+              '.expo.dev'
+            ].forEach(domain => {
+              ['/', '/auth', '/login', '/oauth', '/app'].forEach(path => {
+                document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path};domain=${domain}`;
+                document.cookie = `${cookieName}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}`;
+              });
+            });
+          });
+        }
+        
+        // Clear IndexedDB
+        if (window.indexedDB) {
+          try {
+            const databases = await window.indexedDB.databases();
+            for (const db of databases) {
+              if (db.name) {
+                window.indexedDB.deleteDatabase(db.name);
+              }
+            }
+          } catch (e) {}
+        }
+        
+        // Clear caches
+        if ('caches' in window) {
+          try {
+            const cacheNames = await caches.keys();
+            for (const name of cacheNames) {
+              await caches.delete(name);
+            }
+          } catch (e) {}
+        }
+      }
+      
+      // Clear AsyncStorage
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.clear();
+      } catch (e) {}
+      
+      // Wait between passes
+      if (i < 2) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+    }
+    
+    console.log('🚀 Super nuclear destruction complete. Initiating reload sequence...');
+    
+    // Multiple reload attempts with different methods
+    if (typeof window !== 'undefined') {
+      // Method 1: Replace with cache busting
+      setTimeout(() => {
+        const url = new URL(window.location.origin);
+        url.searchParams.set('supernuclear', '1');
+        url.searchParams.set('sonofyola', 'destroyed');
+        url.searchParams.set('auth', 'obliterated');
+        url.searchParams.set('cache', 'busted');
+        url.searchParams.set('t', Date.now().toString());
+        url.searchParams.set('r', Math.random().toString());
+        window.location.replace(url.toString());
+      }, 1000);
+      
+      // Method 2: Hard reload
+      setTimeout(() => {
+        try {
+          window.location.reload();
+        } catch (e) {
+          window.location.href = window.location.href;
+        }
+      }, 3000);
+      
+      // Method 3: Navigate to origin
+      setTimeout(() => {
+        window.location.href = window.location.origin + '?final=true&t=' + Date.now();
+      }, 5000);
+    }
+    
+  } catch (error) {
+    console.error('🚀 Super nuclear reset error:', error);
+    // Ultimate fallback
+    if (typeof window !== 'undefined') {
+      try {
+        window.location.reload();
+      } catch (e) {
+        window.location.href = window.location.href;
+      }
+    }
   }
 };
