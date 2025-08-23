@@ -18,9 +18,13 @@ import MultiSelectField from '../components/MultiSelectField';
 import PickerField from '../components/PickerField';
 import ThemeToggle from '../components/ThemeToggle';
 import GeneratedPrompt from '../components/GeneratedPrompt';
+import TemplatesModal from '../components/TemplatesModal';
+import RandomTrackModal from '../components/RandomTrackModal';
+import PromptHistoryModal from '../components/PromptHistoryModal';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
+import { usePromptHistory } from '../contexts/PromptHistoryContext';
 
 // Types
 import { MusicPromptData } from '../types';
@@ -42,9 +46,11 @@ import {
   WEIRDNESS_LEVELS, 
   ERA_SUGGESTIONS 
 } from '../utils/promptFormatter';
+import { generateRandomTrackIdea } from '../utils/randomTrackGenerator';
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
+  const { savePrompt } = usePromptHistory();
   
   // Form state with full original parameters
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -66,6 +72,11 @@ export default function PromptFormScreen() {
     weirdness_level: 'conventional',
     general_freeform: '',
   });
+
+  // Modal states
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showRandomModal, setShowRandomModal] = useState(false);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
 
   // Generated prompt state
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -133,62 +144,45 @@ export default function PromptFormScreen() {
     }));
   };
 
-  const handleUseTemplate = (templateName: string) => {
-    const templates: Record<string, Partial<MusicPromptData>> = {
-      'Deep House Vibes': {
-        subject: 'Late night introspection',
-        genres_primary: ['House'],
-        genres_electronic: ['Deep House', 'Minimal House'],
-        mood: ['dreamy', 'introspective'],
-        tempo_bpm: '122',
-        key_scale: 'A minor',
-        energy: 'medium',
-        beat: ['four-on-the-floor', 'rolling hi-hats'],
-        bass: ['warm analog', 'deep sub'],
-        groove_swing: 'straight',
-        vocal_gender: 'female',
-        vocal_delivery: 'whispered',
-        era: '2000s deep house',
-        weirdness_level: 'slightly_experimental',
-      },
-      'Peak Time Techno': {
-        subject: 'Industrial machinery',
-        genres_primary: ['Techno'],
-        genres_electronic: ['Peak-Time Techno', 'Hard Techno'],
-        mood: ['intense', 'dark'],
-        tempo_bpm: '132',
-        key_scale: 'F minor',
-        energy: 'high',
-        beat: ['four-on-the-floor', 'minimal percussion'],
-        bass: ['punchy', 'distorted'],
-        groove_swing: 'straight',
-        vocal_gender: 'none',
-        vocal_delivery: '',
-        era: '1990s Berlin techno',
-        weirdness_level: 'moderately_weird',
-      },
-      'Liquid DnB Journey': {
-        subject: 'Flowing water',
-        genres_primary: ['Drum & Bass'],
-        genres_electronic: ['Liquid DnB', 'Atmospheric DnB'],
-        mood: ['peaceful', 'uplifting'],
-        tempo_bpm: '174',
-        key_scale: 'D major',
-        energy: 'evolving',
-        beat: ['rolling DnB', 'amen break'],
-        bass: ['warm analog', 'evolving'],
-        groove_swing: 'straight',
-        vocal_gender: 'female',
-        vocal_delivery: 'singing',
-        era: 'modern 2025',
-        weirdness_level: 'conventional',
-      },
-    };
+  const handleRandomSubject = () => {
+    const randomIdea = generateRandomTrackIdea();
+    setFormData(prev => ({ ...prev, subject: randomIdea.subject }));
+  };
 
-    const template = templates[templateName];
-    if (template) {
-      setFormData(prev => ({ ...prev, ...template }));
+  const handleSavePrompt = () => {
+    if (!generatedPrompt) {
+      Alert.alert('No Prompt', 'Please generate a prompt first before saving.');
+      return;
     }
+
+    Alert.prompt(
+      'Save Prompt',
+      'Enter a name for this prompt:',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Save',
+          onPress: async (name) => {
+            if (name && name.trim()) {
+              try {
+                await savePrompt(name.trim(), formData, generatedPrompt);
+                Alert.alert('Success', 'Prompt saved successfully!');
+              } catch (error) {
+                Alert.alert('Error', 'Failed to save prompt. Please try again.');
+              }
+            }
+          }
+        }
+      ],
+      'plain-text',
+      formData.subject || 'My Prompt'
+    );
+  };
+
+  const handleLoadFromHistory = (savedPrompt: any) => {
+    setFormData(savedPrompt.formData);
+    setGeneratedPrompt(savedPrompt.generatedPrompt);
+    setShowHistoryModal(false);
   };
 
   return (
@@ -204,6 +198,9 @@ export default function PromptFormScreen() {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </View>
           <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
+              <MaterialIcons name="history" size={24} color={colors.text} />
+            </TouchableOpacity>
             <ThemeToggle />
           </View>
         </View>
@@ -216,26 +213,32 @@ export default function PromptFormScreen() {
                 <MaterialIcons name="shuffle" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Random Track</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Templates', 'Choose a template:', [
-                { text: 'Deep House Vibes', onPress: () => handleUseTemplate('Deep House Vibes') },
-                { text: 'Peak Time Techno', onPress: () => handleUseTemplate('Peak Time Techno') },
-                { text: 'Liquid DnB Journey', onPress: () => handleUseTemplate('Liquid DnB Journey') },
-                { text: 'Cancel', style: 'cancel' },
-              ])}>
+              <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowTemplatesModal(true)}>
                 <MaterialIcons name="dashboard" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Templates</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowRandomModal(true)}>
+                <MaterialIcons name="casino" size={20} color={colors.background} />
+                <Text style={styles.quickActionText}>Ideas</Text>
               </TouchableOpacity>
             </View>
 
             {/* Subject/Theme */}
             <View style={styles.formSection}>
               <Text style={styles.sectionTitle}>Track Theme</Text>
-              <FormField
-                label="Subject/Theme"
-                value={formData.subject}
-                onChangeText={(value) => updateFormData('subject', value)}
-                placeholder="e.g., Lost love, Urban nightlife, Digital dreams"
-              />
+              <View style={styles.fieldWithDice}>
+                <View style={styles.fieldContainer}>
+                  <FormField
+                    label="Subject/Theme"
+                    value={formData.subject}
+                    onChangeText={(value) => updateFormData('subject', value)}
+                    placeholder="e.g., Lost love, Urban nightlife, Digital dreams"
+                  />
+                </View>
+                <TouchableOpacity style={styles.diceButton} onPress={handleRandomSubject}>
+                  <MaterialIcons name="casino" size={24} color={colors.primary} />
+                </TouchableOpacity>
+              </View>
             </View>
 
             {/* Genres */}
@@ -434,10 +437,43 @@ export default function PromptFormScreen() {
 
             {/* Generated Prompt */}
             {generatedPrompt && (
-              <GeneratedPrompt prompt={generatedPrompt} />
+              <View>
+                <GeneratedPrompt prompt={generatedPrompt} />
+                
+                {/* Save Prompt Button */}
+                <TouchableOpacity style={styles.saveButton} onPress={handleSavePrompt}>
+                  <MaterialIcons name="bookmark-add" size={20} color={colors.primary} />
+                  <Text style={styles.saveButtonText}>Save to History</Text>
+                </TouchableOpacity>
+              </View>
             )}
           </View>
         </ScrollView>
+
+        {/* Modals */}
+        <TemplatesModal
+          visible={showTemplatesModal}
+          onClose={() => setShowTemplatesModal(false)}
+          onSelectTemplate={(template) => {
+            setFormData(prev => ({ ...prev, ...template }));
+            setShowTemplatesModal(false);
+          }}
+        />
+
+        <RandomTrackModal
+          visible={showRandomModal}
+          onClose={() => setShowRandomModal(false)}
+          onSelectIdea={(subject) => {
+            setFormData(prev => ({ ...prev, subject }));
+            setShowRandomModal(false);
+          }}
+        />
+
+        <PromptHistoryModal
+          visible={showHistoryModal}
+          onClose={() => setShowHistoryModal(false)}
+          onSelectPrompt={handleLoadFromHistory}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -472,6 +508,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  headerButton: {
+    padding: 8,
+    marginRight: 8,
+  },
   scrollView: {
     flex: 1,
   },
@@ -481,7 +521,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   quickActions: {
     flexDirection: 'row',
     marginBottom: 24,
-    gap: 12,
+    gap: 8,
   },
   quickActionButton: {
     flex: 1,
@@ -490,13 +530,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.primary,
     paddingVertical: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     borderRadius: 12,
   },
   quickActionText: {
     color: colors.background,
     fontWeight: '600',
-    marginLeft: 8,
+    marginLeft: 6,
+    fontSize: 14,
   },
   formSection: {
     marginBottom: 24,
@@ -505,6 +546,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: colors.text,
+    marginBottom: 16,
+  },
+  fieldWithDice: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 12,
+  },
+  fieldContainer: {
+    flex: 1,
+  },
+  diceButton: {
+    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
     marginBottom: 16,
   },
   generateButton: {
@@ -516,7 +573,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 16,
     marginTop: 24,
-    marginBottom: 24,
+    marginBottom: 12,
   },
   generateButtonDisabled: {
     opacity: 0.6,
@@ -526,5 +583,24 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.background,
     marginLeft: 12,
+  },
+  saveButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.primary,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    marginTop: 12,
+    marginBottom: 24,
+  },
+  saveButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.primary,
+    marginLeft: 8,
   },
 });
