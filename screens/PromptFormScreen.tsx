@@ -353,6 +353,25 @@ export default function PromptFormScreen({ navigation }: any) {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* EMERGENCY TEST BUTTON - Should appear at very top */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          top: 100,
+          right: 20,
+          backgroundColor: 'red',
+          padding: 20,
+          zIndex: 99999,
+          elevation: 20,
+        }}
+        onPress={() => {
+          console.log('🚨 EMERGENCY TEST BUTTON PRESSED!');
+          Alert.alert('EMERGENCY TEST', 'This button works! Touch events are functional.');
+        }}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold' }}>EMERGENCY TEST</Text>
+      </TouchableOpacity>
+
       <KeyboardAvoidingView 
         style={styles.container} 
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
