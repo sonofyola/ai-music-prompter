@@ -16,97 +16,61 @@ export default function MaintenanceScreen({ message, onAdminAccess, showAdminAcc
   const { colors } = useTheme();
   const { checkAdminAccess, setAdminStatus, toggleMaintenanceMode } = useMaintenance();
   const { user } = useBasic();
-  const [titlePressCount, setTitlePressCount] = useState(0);
 
   const styles = createStyles(colors);
 
-  const handleTitlePress = async () => {
-    console.log('🔥 MAINTENANCE TITLE PRESSED! Count:', titlePressCount + 1);
-    console.log('🔥 Current user email:', user?.email);
-    
-    setTitlePressCount(prev => {
-      const newCount = prev + 1;
-      console.log('🔥 New count:', newCount);
-      
-      if (newCount === 7) {
-        console.log('🔥🔥🔥 7 CLICKS REACHED ON MAINTENANCE SCREEN! Checking admin access...');
-        checkAdminAccessHandler();
-        return 0; // Reset counter
-      }
-      
-      // Reset counter after 3 seconds of no presses
-      setTimeout(() => {
-        console.log('🔥 Resetting maintenance title press counter');
-        setTitlePressCount(0);
-      }, 3000);
-      
-      return newCount;
-    });
-  };
-
-  const checkAdminAccessHandler = async () => {
-    console.log('🚀 === ADMIN ACCESS CHECK FROM MAINTENANCE SCREEN ===');
-    console.log('🚀 Checking admin access for user:', user?.email);
-    
-    try {
-      const hasAccess = await checkAdminAccess();
-      console.log('🚀 Admin access result:', hasAccess);
-      
-      if (hasAccess) {
-        console.log('✅ Admin access granted from maintenance screen!');
-        await setAdminStatus(true);
-        
-        Alert.alert(
-          '🔓 Admin Access Granted',
-          `Welcome, admin! You now have access to administrative features.\n\nEmail: ${user?.email}\n\nMaintenance mode is currently ACTIVE. Would you like to disable it?`,
-          [
-            { text: 'Keep Maintenance Mode', style: 'cancel' },
-            { 
-              text: 'Disable Maintenance Mode', 
-              style: 'destructive',
-              onPress: async () => {
-                try {
-                  await toggleMaintenanceMode(false, 'Maintenance completed');
-                  Alert.alert('Success', 'Maintenance mode has been disabled. The app is now accessible to all users.');
-                } catch (error) {
-                  console.error('Failed to disable maintenance mode:', error);
-                  Alert.alert('Error', 'Failed to disable maintenance mode.');
-                }
-              }
+  const handleEmergencyDisable = async () => {
+    console.log('🚨 EMERGENCY DISABLE PRESSED!');
+    Alert.alert(
+      '🚨 Emergency Maintenance Disable',
+      'This will disable maintenance mode immediately. Are you sure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Disable Now', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              console.log('🚨 Attempting emergency disable...');
+              // Force disable maintenance mode
+              await toggleMaintenanceMode(false, 'Emergency disable');
+              Alert.alert('Success', 'Maintenance mode disabled!');
+            } catch (error) {
+              console.error('Emergency disable failed:', error);
+              Alert.alert('Error', 'Failed to disable maintenance mode.');
             }
-          ]
-        );
-      } else {
-        console.log('❌ Admin access denied from maintenance screen');
-        Alert.alert(
-          '🚫 Access Denied',
-          `You are not authorized for admin access.\n\nYour email: ${user?.email}\nOnly whitelisted email addresses can access admin features.`,
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('❌ Admin access error from maintenance screen:', error);
-      Alert.alert('Error', `Failed to check admin access: ${error.message}`);
-    }
+          }
+        }
+      ]
+    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* EMERGENCY DISABLE BUTTON */}
+      <TouchableOpacity
+        style={{
+          position: 'absolute',
+          top: 50,
+          right: 20,
+          backgroundColor: 'red',
+          padding: 15,
+          zIndex: 99999,
+          borderRadius: 8,
+        }}
+        onPress={handleEmergencyDisable}
+      >
+        <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 12 }}>
+          EMERGENCY{'\n'}DISABLE
+        </Text>
+      </TouchableOpacity>
+
       <View style={styles.content}>
-        <TouchableOpacity 
-          onPress={handleTitlePress}
-          style={[styles.titleButton, titlePressCount > 0 && styles.titleButtonPressed]}
-          activeOpacity={0.7}
-        >
-          <View style={styles.iconContainer}>
-            <MaterialIcons name="build" size={80} color={colors.primary} />
-          </View>
-          
-          <Text style={styles.title}>Under Maintenance</Text>
-          {titlePressCount > 0 && (
-            <Text style={styles.clickCounter}>({titlePressCount}/7)</Text>
-          )}
-        </TouchableOpacity>
+        <View style={styles.iconContainer}>
+          <MaterialIcons name="build" size={80} color={colors.primary} />
+        </View>
+        
+        <Text style={styles.title}>Under Maintenance</Text>
         
         <Text style={styles.message}>{message}</Text>
         
@@ -135,6 +99,21 @@ export default function MaintenanceScreen({ message, onAdminAccess, showAdminAcc
             <Text style={styles.adminButtonText}>Admin Access</Text>
           </TouchableOpacity>
         )}
+
+        {/* Additional emergency button in the main content */}
+        <TouchableOpacity
+          style={{
+            backgroundColor: '#ff4444',
+            padding: 16,
+            borderRadius: 8,
+            marginTop: 20,
+          }}
+          onPress={handleEmergencyDisable}
+        >
+          <Text style={{ color: 'white', fontWeight: 'bold', textAlign: 'center' }}>
+            🚨 EMERGENCY: DISABLE MAINTENANCE MODE
+          </Text>
+        </TouchableOpacity>
       </View>
       
       <View style={styles.footer}>
