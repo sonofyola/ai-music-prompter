@@ -1,7 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useBasic } from '@basictech/expo';
-import { useMaintenance } from './MaintenanceContext';
 
 interface UsageContextType {
   dailyUsage: number;
@@ -20,7 +19,6 @@ const DAILY_FREE_LIMIT = 3;
 
 export function UsageProvider({ children }: { children: React.ReactNode }) {
   const { user, db, isSignedIn } = useBasic();
-  const { isAdmin } = useMaintenance();
   const [dailyUsage, setDailyUsage] = useState(0);
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'unlimited'>('free');
@@ -36,18 +34,6 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       loadLocalUsage();
     }
   }, [isSignedIn, user, db]);
-
-  // Update subscription status when admin status changes
-  useEffect(() => {
-    if (isAdmin) {
-      setSubscriptionStatus('unlimited');
-    } else if (isSignedIn && user && db) {
-      // Reload user usage to get correct subscription status
-      loadUserUsage().catch(error => {
-        console.error('Failed to reload user usage:', error);
-      });
-    }
-  }, [isAdmin, isSignedIn, user, db]);
 
   const loadUserUsage = async () => {
     if (!db || !user) return;
@@ -69,13 +55,8 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           setDailyUsage(Number(userProfile.usage_count) || 0);
         }
         
-        // Admin users get unlimited access regardless of database status
-        if (isAdmin) {
-          setSubscriptionStatus('unlimited');
-        } else {
-          const status = String(userProfile.subscription_status) as 'free' | 'premium' | 'unlimited';
-          setSubscriptionStatus(status || 'free');
-        }
+        const status = String(userProfile.subscription_status) as 'free' | 'premium' | 'unlimited';
+        setSubscriptionStatus(status || 'free');
         
         setIsEmailCaptured(true); // Authenticated users have email
       } else {
@@ -192,14 +173,14 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
 
   // Admin users have unlimited access
   const effectiveSubscriptionStatus = isAdmin ? 'unlimited' : subscriptionStatus;
-  const canGenerate = effectiveSubscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
+  const canGenerate = subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
 
   return (
     <UsageContext.Provider value={{
       dailyUsage,
       canGenerate,
       isEmailCaptured,
-      subscriptionStatus: effectiveSubscriptionStatus,
+      subscriptionStatus,
       incrementGeneration,
       setEmailCaptured,
       upgradeToUnlimited,

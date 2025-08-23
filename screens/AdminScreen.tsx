@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform, TextInput, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import * as FileSystem from 'expo-file-system';
@@ -8,7 +8,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
-import { useMaintenance } from '../contexts/MaintenanceContext';
 import AutoresponderConfigComponent from '../components/AutoresponderConfig';
 import NotificationSettings from '../components/NotificationSettings';
 
@@ -32,8 +31,7 @@ interface AdminScreenProps {
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { subscriptionStatus, upgradeToUnlimited } = useUsage();
-  const { isMaintenanceMode, maintenanceMessage, toggleMaintenanceMode, isAdmin, setAdminStatus } = useMaintenance();
-  const { user } = useBasic();
+  const { user, signout } = useBasic();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -42,7 +40,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [manualUpgradeEmail, setManualUpgradeEmail] = useState('');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [unlimitedEmails, setUnlimitedEmails] = useState<string[]>([]);
-  const [customMaintenanceMessage, setCustomMaintenanceMessage] = useState(maintenanceMessage);
 
   // Enhanced email validation
   const isValidEmail = (email: string): boolean => {
@@ -339,21 +336,23 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
-  const handleLogout = () => {
-    console.log('🚨 LOGOUT BUTTON PRESSED!');
+  const handleLogout = async () => {
     Alert.alert(
-      'Logout Admin',
-      'Are you sure you want to logout and return to the main app?',
+      'Logout',
+      'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: () => {
-            console.log('🚨 LOGOUT CONFIRMED - Setting admin status to false');
-            setAdminStatus(false);
-            console.log('🚨 LOGOUT CONFIRMED - Calling onBackToApp');
-            onBackToApp();
+          onPress: async () => {
+            try {
+              await signout();
+              onBackToApp();
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           }
         }
       ]
@@ -393,38 +392,24 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* SIMPLIFIED HEADER WITH WORKING BUTTONS */}
+      {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity 
           onPress={onBackToApp} 
-          style={{
-            backgroundColor: colors.primary,
-            padding: 12,
-            borderRadius: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          style={styles.backButton}
         >
           <MaterialIcons name="arrow-back" size={20} color="#fff" />
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Back</Text>
+          <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
         
         <Text style={styles.title}>Admin Panel</Text>
         
         <TouchableOpacity 
           onPress={handleLogout} 
-          style={{
-            backgroundColor: colors.error,
-            padding: 12,
-            borderRadius: 8,
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 6,
-          }}
+          style={styles.logoutButton}
         >
           <MaterialIcons name="logout" size={20} color="#fff" />
-          <Text style={{ color: '#fff', fontWeight: '600' }}>Logout</Text>
+          <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
       </View>
 
@@ -492,7 +477,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
         {/* Email Management Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Email Management</Text>
+          <Text style={styles.sectionTitle}>📧 Email Management</Text>
           
           <View style={styles.statsGrid}>
             <View style={styles.statCard}>
@@ -607,23 +592,18 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         </View>
 
         {/* Admin-Only Sections */}
-        {isAdmin && (
-          <>
-            {/* Autoresponder Configuration Section */}
-            <View style={styles.section}>
-              <AutoresponderConfigComponent />
-            </View>
+        <View style={styles.section}>
+          <AutoresponderConfigComponent />
+        </View>
 
-            {/* Notification Settings Section */}
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>🔔 Admin Notification Settings</Text>
-              <Text style={styles.sectionSubtitle}>
-                Configure system-wide notification preferences (Admin Only)
-              </Text>
-              <NotificationSettings />
-            </View>
-          </>
-        )}
+        {/* Notification Settings Section */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🔔 Admin Notification Settings</Text>
+          <Text style={styles.sectionSubtitle}>
+            Configure system-wide notification preferences
+          </Text>
+          <NotificationSettings />
+        </View>
 
         {showValidationDetails && validationResult && (
           <View style={styles.detailsContainer}>
@@ -665,6 +645,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </View>
         )}
 
+        {/* Recent Emails List */}
         <View style={styles.emailList}>
           <Text style={styles.listTitle}>Recent Emails:</Text>
           {emails.slice(-10).reverse().map((record, index) => {
@@ -727,10 +708,34 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
+  backButton: {
+    backgroundColor: colors.primary,
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  backButtonText: {
+    color: '#fff',
+    fontWeight: '600',
+  },
   title: {
     fontSize: 20,
     fontWeight: '700',
     color: colors.text,
+  },
+  logoutButton: {
+    backgroundColor: colors.error,
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontWeight: '600',
   },
   content: {
     flex: 1,

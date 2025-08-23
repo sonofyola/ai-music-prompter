@@ -1,9 +1,8 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
-import { useMaintenance } from '../contexts/MaintenanceContext';
 
 interface SubscriptionStatusProps {
   onManagePress?: () => void;
@@ -15,14 +14,12 @@ export default function SubscriptionStatus({
   compact = false 
 }: SubscriptionStatusProps) {
   const { colors } = useTheme();
-  const { isAdmin } = useMaintenance();
   const { 
     subscriptionStatus, 
     dailyUsage,
   } = useUsage();
 
   const getStatusColor = () => {
-    if (isAdmin) return '#9C27B0'; // Purple for admin
     switch (subscriptionStatus) {
       case 'premium': return colors.success || '#4CAF50';
       case 'unlimited': return colors.success || '#4CAF50';
@@ -31,7 +28,6 @@ export default function SubscriptionStatus({
   };
 
   const getStatusText = () => {
-    if (isAdmin) return 'Admin';
     switch (subscriptionStatus) {
       case 'premium': return 'Premium';
       case 'unlimited': return 'Unlimited';
@@ -40,7 +36,6 @@ export default function SubscriptionStatus({
   };
 
   const getStatusIcon = () => {
-    if (isAdmin) return 'admin-panel-settings';
     switch (subscriptionStatus) {
       case 'premium': return 'star';
       case 'unlimited': return 'all-inclusive';
@@ -48,7 +43,7 @@ export default function SubscriptionStatus({
     }
   };
 
-  const isUnlimited = subscriptionStatus === 'unlimited' || isAdmin;
+  const isUnlimited = subscriptionStatus === 'unlimited';
   const showExpiryWarning = false;
 
   const styles = StyleSheet.create({
@@ -106,7 +101,7 @@ export default function SubscriptionStatus({
     },
     unlimitedText: {
       fontSize: compact ? 12 : 14,
-      color: isAdmin ? '#9C27B0' : (colors.success || '#4CAF50'),
+      color: colors.success || '#4CAF50',
       fontWeight: '600',
     },
     warningContainer: {
@@ -148,7 +143,7 @@ export default function SubscriptionStatus({
       <View style={styles.usageContainer}>
         {isUnlimited ? (
           <Text style={styles.unlimitedText}>
-            {isAdmin ? '🔓 Admin Access - Unlimited generations' : '✓ Unlimited generations'}
+            ✓ Unlimited generations
           </Text>
         ) : (
           <>

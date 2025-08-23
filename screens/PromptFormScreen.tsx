@@ -15,7 +15,6 @@ import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
 import { useUsage } from '../contexts/UsageContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
-import { useMaintenance } from '../contexts/MaintenanceContext';
 import { MusicPromptData } from '../types';
 import { formatMusicPrompt } from '../utils/promptFormatter';
 import { 
@@ -45,16 +44,31 @@ import PromptHistoryModal from '../components/PromptHistoryModal';
 import TemplatesModal from '../components/TemplatesModal';
 import EmailCaptureModal from '../components/EmailCaptureModal';
 
+// Admin email whitelist - only these emails can access admin features
+const ADMIN_EMAILS = [
+  'drremotework@gmail.com',
+  'admin@aimusicpromptr.com',
+];
+
 export default function PromptFormScreen({ navigation }: any) {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { isAdmin, setAdminStatus, checkAdminAccess } = useMaintenance();
   const { user, signout } = useBasic();
   const styles = createStyles(colors);
 
   // Admin access state
   const [titlePressCount, setTitlePressCount] = useState(0);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  // Check if current user is admin
+  const checkAdminAccess = (): boolean => {
+    if (!user?.email) return false;
+    const userEmail = user.email.toLowerCase().trim();
+    return ADMIN_EMAILS.some(adminEmail => 
+      adminEmail.toLowerCase().trim() === userEmail
+    );
+  };
 
   // Debug: Log admin status
   console.log('=== DEBUG INFO ===');
@@ -118,16 +132,15 @@ export default function PromptFormScreen({ navigation }: any) {
   const checkAdminAccessHandler = async () => {
     console.log('🚀 === ADMIN ACCESS CHECK ===');
     console.log('🚀 Checking admin access for user:', user?.email);
-    console.log('🚀 User object:', user);
     
     try {
-      const hasAccess = await checkAdminAccess();
+      const hasAccess = checkAdminAccess();
       console.log('🚀 Admin access result:', hasAccess);
-      console.log('🚀 Admin emails whitelist:', ['drremotework@gmail.com', 'admin@aimusicpromptr.com']);
+      console.log('🚀 Admin emails whitelist:', ADMIN_EMAILS);
       
       if (hasAccess) {
         console.log('✅ Admin access granted!');
-        await setAdminStatus(true);
+        setIsAdmin(true);
         Alert.alert(
           '🔓 Admin Access Granted',
           `Welcome, admin! You now have access to administrative features.\n\nEmail: ${user?.email}`,
@@ -137,7 +150,6 @@ export default function PromptFormScreen({ navigation }: any) {
               text: 'Open Admin Panel', 
               onPress: () => {
                 console.log('🚀 Navigating to Admin panel...');
-                console.log('🚀 Navigation object:', navigation);
                 if (navigation?.navigate) {
                   navigation.navigate('Admin');
                 } else {
@@ -164,9 +176,6 @@ export default function PromptFormScreen({ navigation }: any) {
 
   const handleUserLogout = () => {
     console.log('🚪🚪🚪 HANDLE USER LOGOUT CALLED!');
-    console.log('🚪 User object:', user);
-    console.log('🚪 User email:', user?.email);
-    console.log('🚪 Signout function:', typeof signout);
     
     Alert.alert(
       'Sign Out',
@@ -179,8 +188,8 @@ export default function PromptFormScreen({ navigation }: any) {
           onPress: async () => {
             try {
               console.log('🚪 Starting signout process...');
-              console.log('🚪 Signing out user:', user?.email);
               await signout();
+              setIsAdmin(false); // Reset admin status on logout
               console.log('✅ User signed out successfully');
             } catch (error) {
               console.error('❌ Logout error:', error);
@@ -201,14 +210,9 @@ export default function PromptFormScreen({ navigation }: any) {
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: async () => {
-            try {
-              await setAdminStatus(false);
-              Alert.alert('Logged Out', 'Admin access has been revoked.');
-            } catch (error) {
-              console.error('Admin logout error:', error);
-              Alert.alert('Error', 'Failed to logout from admin mode.');
-            }
+          onPress: () => {
+            setIsAdmin(false);
+            Alert.alert('Logged Out', 'Admin access has been revoked.');
           }
         }
       ]
