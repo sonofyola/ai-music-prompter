@@ -26,10 +26,69 @@ const MAINTENANCE_STORAGE_KEY = 'global_maintenance_mode';
 
 export function MaintenanceProvider({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, db } = useBasic();
-  // FORCE MAINTENANCE MODE FOR TESTING - but don't let it get overridden
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true);
-  const [maintenanceMessage, setMaintenanceMessage] = useState('🚧 TESTING: Maintenance mode is now active! This is a test.');
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false); // Back to false
+  const [maintenanceMessage, setMaintenanceMessage] = useState('The app is currently under maintenance. Please check back later.');
   const [isAdmin, setIsAdmin] = useState(false);
+
+  const loadMaintenanceState = async () => {
+    if (!db) return;
+    
+    try {
+      console.log('🔍 Loading maintenance state from database...');
+      
+      // CLEAR ANY OLD STORED DATA FIRST
+      if (Platform.OS === 'web') {
+        localStorage.removeItem('maintenanceMode');
+        localStorage.removeItem('maintenanceMessage');
+        console.log('🧹 Cleared old localStorage data');
+      } else {
+        await AsyncStorage.removeItem('maintenanceMode');
+        await AsyncStorage.removeItem('maintenanceMessage');
+        console.log('🧹 Cleared old AsyncStorage data');
+      }
+
+      // Get fresh data from database
+      const maintenanceRecords = await db.from('maintenance').getAll();
+      console.log('📊 Database maintenance records:', maintenanceRecords);
+      
+      if (maintenanceRecords && maintenanceRecords.length > 0) {
+        const maintenanceRecord = maintenanceRecords[0];
+        console.log('✅ Found maintenance record:', maintenanceRecord);
+        
+        setIsMaintenanceMode(maintenanceRecord.isActive || false);
+        setMaintenanceMessage(maintenanceRecord.message || 'The app is currently under maintenance. Please check back later.');
+        
+        console.log('🔧 Updated maintenance state:', {
+          isActive: maintenanceRecord.isActive,
+          message: maintenanceRecord.message
+        });
+      } else {
+        console.log('📝 No maintenance records found, using defaults');
+        setIsMaintenanceMode(false);
+        setMaintenanceMessage('The app is currently under maintenance. Please check back later.');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load maintenance state:', error);
+      // On error, default to maintenance mode OFF
+      setIsMaintenanceMode(false);
+    }
+  };
+
+  // Restore the useEffect but with cleared storage
+  useEffect(() => {
+    loadMaintenanceState().catch(error => {
+      console.error('Failed to load maintenance state:', error);
+    });
+    
+    // Check maintenance state every 10 seconds for non-admin users
+    const interval = setInterval(() => {
+      if (!isAdmin) {
+        loadMaintenanceState().catch(console.error);
+      }
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [isAdmin, db]);
 
   // Keep the admin check useEffect
   useEffect(() => {
@@ -85,67 +144,6 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       }
     }
     setIsAdmin(status);
-  };
-
-  const loadMaintenanceState = async () => {
-    try {
-      console.log('🔍 Loading maintenance state...');
-      
-      // Try database first (global across all users)
-      if (db) {
-        try {
-          const maintenanceRecords = await db.from('maintenance').getAll();
-          if (maintenanceRecords && maintenanceRecords.length > 0) {
-            // Get the most recent maintenance record
-            const latestRecord = maintenanceRecords.sort((a, b) => b.timestamp - a.timestamp)[0];
-            console.log('📊 Latest maintenance record from DB:', latestRecord);
-            
-            setIsMaintenanceMode(latestRecord.enabled || false);
-            setMaintenanceMessage(latestRecord.message || 'We\'re currently performing maintenance. Please check back soon!');
-            
-            // Also update local storage for faster loading
-            const storageData = {
-              enabled: latestRecord.enabled,
-              message: latestRecord.message,
-              timestamp: latestRecord.timestamp
-            };
-            
-            if (Platform.OS === 'web') {
-              localStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
-            } else {
-              await AsyncStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
-            }
-            
-            return;
-          }
-        } catch (dbError) {
-          console.log('⚠️ DB not available, trying local storage:', dbError.message);
-        }
-      }
-
-      // Fallback to local storage
-      let stored = null;
-      if (Platform.OS === 'web') {
-        stored = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
-      } else {
-        stored = await AsyncStorage.getItem(MAINTENANCE_STORAGE_KEY);
-      }
-      
-      console.log('💾 Local storage data:', stored);
-      
-      if (stored) {
-        const { enabled, message } = JSON.parse(stored);
-        console.log('✅ Parsed maintenance state:', { enabled, message });
-        setIsMaintenanceMode(enabled || false);
-        setMaintenanceMessage(message || 'We\'re currently performing maintenance. Please check back soon!');
-      } else {
-        console.log('❌ No maintenance data found, defaulting to disabled');
-        setIsMaintenanceMode(false);
-      }
-    } catch (error) {
-      console.error('💥 Error loading maintenance state:', error);
-      setIsMaintenanceMode(false); // Safe default
-    }
   };
 
   const toggleMaintenanceMode = async (enabled: boolean, message?: string) => {
