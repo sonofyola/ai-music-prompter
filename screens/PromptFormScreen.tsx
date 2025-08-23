@@ -366,24 +366,6 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
-            {/* Admin Panel Button - only shows when admin is active */}
-            {isAdmin && (
-              <TouchableOpacity
-                style={styles.adminPanelButton}
-                onPress={() => {
-                  console.log('🚀 Admin panel button pressed');
-                  if (navigation?.navigate) {
-                    navigation.navigate('Admin');
-                  } else {
-                    Alert.alert('Navigation Error', 'Unable to navigate to admin panel.');
-                  }
-                }}
-              >
-                <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
-                <Text style={styles.adminButtonText}>ADMIN</Text>
-              </TouchableOpacity>
-            )}
-            
             {/* User menu */}
             <TouchableOpacity
               style={styles.userMenuButton}
