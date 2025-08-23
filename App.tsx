@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -14,26 +16,11 @@ import SubscriptionScreen from './screens/SubscriptionScreen';
 import MaintenanceScreen from './components/MaintenanceScreen';
 import AuthScreen from './screens/AuthScreen';
 
-function AppContent() {
-  const { isSignedIn, user, isLoading, error } = useBasic();
-  const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
+const Stack = createStackNavigator();
 
-  // Show error state if there's a network error
-  if (error) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
-          Connection Error
-        </Text>
-        <Text style={{ fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
-          Unable to connect to the server. Please check your internet connection and try again.
-        </Text>
-        <Text style={{ fontSize: 12, color: '#666', textAlign: 'center' }}>
-          Error: {error.message || 'Network error occurred'}
-        </Text>
-      </View>
-    );
-  }
+function AppContent() {
+  const { isSignedIn, user, isLoading } = useBasic();
+  const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
 
   // Show loading state
   if (isLoading) {
@@ -60,8 +47,34 @@ function AppContent() {
     return <AuthScreen />;
   }
 
-  // Show main app - for now just the prompt form
-  return <PromptFormScreen navigation={null} />;
+  // Show main app with navigation
+  return (
+    <NavigationContainer>
+      <Stack.Navigator 
+        initialRouteName="Home"
+        screenOptions={{ 
+          headerShown: false,
+          gestureEnabled: true,
+        }}
+      >
+        <Stack.Screen name="Home" component={PromptFormScreen} />
+        <Stack.Screen 
+          name="Admin" 
+          component={AdminScreenWrapper} 
+        />
+        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
+// Wrapper component for AdminScreen to handle navigation
+function AdminScreenWrapper({ navigation }: any) {
+  return (
+    <AdminScreen 
+      onBackToApp={() => navigation.goBack()} 
+    />
+  );
 }
 
 // Error boundary component
