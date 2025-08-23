@@ -1,71 +1,68 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 export default function App() {
-  console.log('🚀 App component rendering...');
+  console.log('🚀 Minimal App rendering...');
   
   return (
-    <SafeAreaProvider>
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        backgroundColor: '#f0f0f0',
-        padding: 20 
+    <View style={{ 
+      flex: 1, 
+      justifyContent: 'center', 
+      alignItems: 'center', 
+      backgroundColor: '#ffffff',
+      padding: 20 
+    }}>
+      <Text style={{ 
+        fontSize: 32, 
+        fontWeight: 'bold', 
+        marginBottom: 30,
+        textAlign: 'center',
+        color: '#000000'
       }}>
-        <Text style={{ 
-          fontSize: 24, 
-          fontWeight: 'bold', 
+        🔧 MINIMAL TEST
+      </Text>
+      
+      <Text style={{ 
+        fontSize: 18, 
+        marginBottom: 30,
+        textAlign: 'center',
+        color: '#333333'
+      }}>
+        If you can see this text, React is working!
+      </Text>
+      
+      <TouchableOpacity 
+        style={{ 
+          backgroundColor: '#007AFF', 
+          padding: 20, 
+          borderRadius: 10,
           marginBottom: 20,
-          textAlign: 'center'
-        }}>
-          🔧 MINIMAL TEST APP
-        </Text>
-        
+          minWidth: 200
+        }}
+        onPress={() => {
+          console.log('✅ Button pressed successfully!');
+          Alert.alert('Success!', 'The button works perfectly!');
+        }}
+      >
         <Text style={{ 
-          fontSize: 16, 
-          marginBottom: 20,
-          textAlign: 'center'
+          color: 'white', 
+          textAlign: 'center', 
+          fontWeight: 'bold',
+          fontSize: 16
         }}>
-          If you can see this, React is working!
+          Test Button
         </Text>
-        
-        <TouchableOpacity 
-          style={{ 
-            backgroundColor: '#007AFF', 
-            padding: 15, 
-            borderRadius: 8,
-            marginBottom: 10
-          }}
-          onPress={() => {
-            console.log('Button pressed!');
-            Alert.alert('Success', 'Button works!');
-          }}
-        >
-          <Text style={{ 
-            color: 'white', 
-            textAlign: 'center', 
-            fontWeight: 'bold' 
-          }}>
-            Test Button
-          </Text>
-        </TouchableOpacity>
-        
-        <Text style={{ 
-          fontSize: 12, 
-          color: '#666',
-          textAlign: 'center',
-          marginTop: 20
-        }}>
-          Check the browser console for any error messages
-        </Text>
-      </View>
-    </SafeAreaProvider>
+      </TouchableOpacity>
+      
+      <Text style={{ 
+        fontSize: 14, 
+        color: '#666666',
+        textAlign: 'center',
+        marginTop: 20,
+        fontStyle: 'italic'
+      }}>
+        Check browser console for logs
+      </Text>
+    </View>
   );
 }
-
-// Export the global logout function as a placeholder
-export const triggerGlobalLogout = () => {
-  console.log('Global logout called');
-};
