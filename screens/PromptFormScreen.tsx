@@ -163,6 +163,11 @@ export default function PromptFormScreen({ navigation }: any) {
   };
 
   const handleUserLogout = () => {
+    console.log('🚪🚪🚪 HANDLE USER LOGOUT CALLED!');
+    console.log('🚪 User object:', user);
+    console.log('🚪 User email:', user?.email);
+    console.log('🚪 Signout function:', typeof signout);
+    
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out of your account?',
@@ -173,6 +178,7 @@ export default function PromptFormScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('🚪 Starting signout process...');
               console.log('🚪 Signing out user:', user?.email);
               await signout();
               console.log('✅ User signed out successfully');
@@ -393,8 +399,25 @@ export default function PromptFormScreen({ navigation }: any) {
             <TouchableOpacity
               style={styles.userLogoutButton}
               onPress={() => {
-                console.log('🔥 User logout button pressed');
-                handleUserLogout();
+                console.log('🔥🔥🔥 USER LOGOUT BUTTON PRESSED!');
+                console.log('🔥 Button onPress triggered');
+                console.log('🔥 About to call handleUserLogout');
+                
+                // Test if Alert works at all
+                Alert.alert(
+                  '🔵 BUTTON TEST',
+                  'The user logout button is working! This proves the button press is detected.',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Continue to Logout', 
+                      onPress: () => {
+                        console.log('🔥 User chose to continue to logout');
+                        handleUserLogout();
+                      }
+                    }
+                  ]
+                );
               }}
               activeOpacity={0.7}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
@@ -914,20 +937,15 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   adminLogoutButton: {
-    padding: 12,
+    padding: 8,
     borderRadius: 20,
-    backgroundColor: '#ffeeee',
-    borderWidth: 3,
-    borderColor: '#ff4444',
-    minWidth: 50,
-    minHeight: 50,
+    backgroundColor: '#e3f2fd',
+    borderWidth: 2,
+    borderColor: '#2196f3',
+    minWidth: 40,
+    minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#ff4444',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 5,
   },
   adminPanelButton: {
     flexDirection: 'row',
@@ -970,9 +988,9 @@ const createStyles = (colors: any) => StyleSheet.create({
   userLogoutButton: {
     padding: 8,
     borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    backgroundColor: '#e3f2fd',
+    borderWidth: 2,
+    borderColor: '#2196f3',
     minWidth: 40,
     minHeight: 40,
     alignItems: 'center',
