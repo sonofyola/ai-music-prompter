@@ -4,11 +4,11 @@
     "slug": "user-app-f9ba5f44",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/splash-icon.png",
     "userInterfaceStyle": "automatic",
     "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -55,17 +55,6 @@
       "orientation": "portrait"
     },
     "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/images/notification-icon.png",
-          "color": "#ffffff",
-          "sounds": [
-            "./assets/sounds/notification.wav"
-          ],
-          "mode": "production"
-        }
-      ],
       "expo-router"
     ],
     "extra": {
