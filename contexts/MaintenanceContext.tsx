@@ -121,7 +121,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     setMaintenanceMessage(newMessage);
     
     const maintenanceData = {
-      isActive: enabled,  // Use isActive instead of enabled
+      enabled: enabled,  // Match the database schema
       message: newMessage,
       timestamp,
       adminEmail: user?.email || 'unknown'
@@ -184,12 +184,12 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
         const maintenanceRecord = maintenanceRecords[0];
         console.log('✅ Found maintenance record:', maintenanceRecord);
         
-        // Use database values directly
-        const dbIsActive = maintenanceRecord.isActive || false;
+        // Use database values directly - match the schema field name
+        const dbIsActive = maintenanceRecord.enabled || false;
         const dbMessage = maintenanceRecord.message || 'The app is currently under maintenance. Please check back later.';
         
         console.log('🔧 Setting maintenance state from database:', {
-          isActive: dbIsActive,
+          enabled: dbIsActive,
           message: dbMessage
         });
         
