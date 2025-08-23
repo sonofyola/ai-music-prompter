@@ -79,8 +79,12 @@ function AppContent() {
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
-        onAdminAccess={() => {}}
-        showAdminAccess={false} // Never show admin access button - users must use the 7-click method
+        onAdminAccess={() => {
+          // Allow admin access attempt from maintenance screen
+          console.log('🔓 Admin access requested from maintenance screen');
+          // This will be handled by the 7-click method in the maintenance screen
+        }}
+        showAdminAccess={true} // Show admin access button for signed-in users
       />
     );
   }
