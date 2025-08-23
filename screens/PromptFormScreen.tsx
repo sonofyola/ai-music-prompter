@@ -480,97 +480,80 @@ export default function PromptFormScreen() {
         />
         
         {/* DEBUG: Test buttons to verify touch is working */}
-        <View style={{ flexDirection: 'row', gap: 5, marginTop: 10, padding: 10, backgroundColor: '#00ff0020', flexWrap: 'wrap' }}>
-          <TouchableOpacity 
-            style={{ backgroundColor: '#22aa22', padding: 8, borderRadius: 5 }}
-            onPress={() => {
-              console.log('🔘 DEBUG: Testing working logout approach');
-              handleUserLogout();
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 10 }}>TEST LOGOUT</Text>
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'column', gap: 10, marginTop: 10, padding: 15, backgroundColor: '#ff000030', borderWidth: 2, borderColor: '#ff0000' }}>
+          <Text style={{ color: '#ff0000', fontWeight: 'bold', textAlign: 'center' }}>🚨 LOGOUT DEBUG PANEL 🚨</Text>
           
+          {/* Super basic test - just increment a counter */}
           <TouchableOpacity 
-            style={{ backgroundColor: '#ff0000', padding: 8, borderRadius: 5 }}
+            style={{ backgroundColor: '#00ff00', padding: 15, borderRadius: 5, alignItems: 'center' }}
             onPress={() => {
-              console.log('🔘 SUPER SIMPLE TEST BUTTON PRESSED!');
-              Alert.alert('TEST', 'This button works! Touch is working.');
+              console.log('🟢 BASIC COUNTER TEST PRESSED!');
+              setTitlePressCount(prev => {
+                const newCount = prev + 1;
+                console.log('🟢 Counter incremented to:', newCount);
+                return newCount;
+              });
             }}
           >
-            <Text style={{ color: 'white', fontSize: 10 }}>TOUCH TEST</Text>
+            <Text style={{ color: 'black', fontSize: 14, fontWeight: 'bold' }}>
+              BASIC TEST (Count: {titlePressCount})
+            </Text>
           </TouchableOpacity>
-          
+
+          {/* Test that shows immediate alert */}
           <TouchableOpacity 
-            style={{ backgroundColor: '#ff8800', padding: 8, borderRadius: 5 }}
-            onPress={async () => {
-              console.log('🔘 DIRECT LOGOUT TEST!');
-              Alert.alert('Direct Logout', 'This will call signout() directly and reload', [
-                { text: 'Cancel' },
-                { 
-                  text: 'Do It', 
-                  onPress: async () => {
-                    try {
-                      console.log('🔄 Calling signout directly...');
-                      console.log('🔍 signout function type:', typeof signout);
-                      console.log('🔍 signout function:', signout);
-                      
-                      if (signout && typeof signout === 'function') {
-                        console.log('🔄 Executing signout...');
-                        await signout();
-                        console.log('✅ Signout completed');
-                      } else {
-                        console.log('❌ signout function not available');
-                        Alert.alert('Error', 'signout function not available');
-                        return;
-                      }
-                      
-                      console.log('🔄 Attempting reload...');
-                      if (typeof window !== 'undefined' && window.location) {
-                        console.log('🔄 Reloading page...');
-                        window.location.reload();
-                      } else {
-                        console.log('🔄 Not on web, showing alert...');
-                        Alert.alert('Logout Complete', 'Please restart the app.');
-                      }
-                    } catch (e) {
-                      console.error('❌ Direct logout error:', e);
-                      Alert.alert('Logout Error', `Error: ${e.message}`);
-                      // Try reload anyway
-                      if (typeof window !== 'undefined' && window.location) {
-                        window.location.reload();
-                      }
-                    }
-                  }
-                }
-              ]);
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 10 }}>DIRECT LOGOUT</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={{ backgroundColor: '#4444ff', padding: 8, borderRadius: 5 }}
+            style={{ backgroundColor: '#0088ff', padding: 15, borderRadius: 5, alignItems: 'center' }}
             onPress={() => {
-              console.log('🔘 DEBUG: Blue button pressed!');
-              setCurrentScreen('subscription');
+              console.log('🔵 IMMEDIATE ALERT TEST!');
+              Alert.alert('SUCCESS', 'This button definitely works!');
             }}
           >
-            <Text style={{ color: 'white', fontSize: 10 }}>TEST SUB</Text>
+            <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>IMMEDIATE ALERT TEST</Text>
           </TouchableOpacity>
-          
+
+          {/* Test the signout function exists */}
           <TouchableOpacity 
-            style={{ backgroundColor: '#8800ff', padding: 8, borderRadius: 5 }}
+            style={{ backgroundColor: '#ff8800', padding: 15, borderRadius: 5, alignItems: 'center' }}
             onPress={() => {
-              console.log('🔘 DEBUG: User info test');
-              console.log('🔍 Current user:', user);
-              console.log('🔍 User email:', user?.email);
-              console.log('🔍 User ID:', user?.id);
-              console.log('🔍 signout function:', typeof signout);
-              Alert.alert('User Info', `Email: ${user?.email || 'No email'}\\nID: ${user?.id || 'No ID'}\\nSignout: ${typeof signout}`);
+              console.log('🟠 FUNCTION CHECK TEST!');
+              console.log('🔍 signout type:', typeof signout);
+              console.log('🔍 signout value:', signout);
+              console.log('🔍 user:', user);
+              Alert.alert(
+                'Function Check', 
+                `signout type: ${typeof signout}\nuser email: ${user?.email || 'none'}\nuser id: ${user?.id || 'none'}`
+              );
             }}
           >
-            <Text style={{ color: 'white', fontSize: 10 }}>USER INFO</Text>
+            <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>CHECK FUNCTIONS</Text>
+          </TouchableOpacity>
+
+          {/* Minimal logout test */}
+          <TouchableOpacity 
+            style={{ backgroundColor: '#ff0000', padding: 15, borderRadius: 5, alignItems: 'center' }}
+            onPress={() => {
+              console.log('🔴 MINIMAL LOGOUT TEST!');
+              console.log('🔴 About to call signout...');
+              
+              if (!signout) {
+                console.log('❌ signout function is null/undefined');
+                Alert.alert('ERROR', 'signout function is not available');
+                return;
+              }
+              
+              console.log('🔴 signout function exists, calling it...');
+              signout()
+                .then(() => {
+                  console.log('✅ signout resolved successfully');
+                  Alert.alert('SUCCESS', 'signout() completed successfully');
+                })
+                .catch((error) => {
+                  console.error('❌ signout rejected:', error);
+                  Alert.alert('ERROR', `signout failed: ${error.message}`);
+                });
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>MINIMAL LOGOUT</Text>
           </TouchableOpacity>
         </View>
       </View>
