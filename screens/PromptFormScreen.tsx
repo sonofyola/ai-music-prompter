@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -18,15 +18,12 @@ import MultiSelectField from '../components/MultiSelectField';
 import PickerField from '../components/PickerField';
 import ThemeToggle from '../components/ThemeToggle';
 import GeneratedPrompt from '../components/GeneratedPrompt';
-import RandomTrackModal from '../components/RandomTrackModal';
-import TemplatesModal from '../components/TemplatesModal';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
 
 // Utils
-import { formatPrompt } from '../utils/promptFormatter';
-import { GENRES, MOODS, INSTRUMENTS, TEMPOS, KEYS, TIME_SIGNATURES } from '../utils/musicData';
+import { formatPrompt, GENRES, MOODS, INSTRUMENTS, TEMPOS, KEYS, TIME_SIGNATURES } from '../utils/promptFormatter';
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
@@ -48,10 +45,6 @@ export default function PromptFormScreen() {
     weirdness: 0,
     customPrompt: '',
   });
-
-  // Modal states
-  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
-  const [showRandomModal, setShowRandomModal] = useState(false);
 
   // Generated prompt state
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -77,12 +70,67 @@ export default function PromptFormScreen() {
   };
 
   const handleRandomTrack = () => {
-    setShowRandomModal(true);
+    // Generate random values for the form
+    const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
+    const randomMood = MOODS[Math.floor(Math.random() * MOODS.length)];
+    const randomTempo = TEMPOS[Math.floor(Math.random() * TEMPOS.length)];
+    const randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
+    const randomTimeSignature = TIME_SIGNATURES[Math.floor(Math.random() * TIME_SIGNATURES.length)];
+    
+    // Random instruments (1-3 instruments)
+    const shuffledInstruments = [...INSTRUMENTS].sort(() => 0.5 - Math.random());
+    const randomInstruments = shuffledInstruments.slice(0, Math.floor(Math.random() * 3) + 1);
+    
+    const randomWeirdness = Math.floor(Math.random() * 11);
+
+    setFormData(prev => ({
+      ...prev,
+      genre: randomGenre,
+      mood: randomMood,
+      tempo: randomTempo,
+      key: randomKey,
+      timeSignature: randomTimeSignature,
+      instruments: randomInstruments,
+      weirdness: randomWeirdness,
+    }));
   };
 
-  const applyRandomTrack = (randomData: any) => {
-    setFormData(prev => ({ ...prev, ...randomData }));
-    setShowRandomModal(false);
+  const handleUseTemplate = (templateName: string) => {
+    // Simple templates
+    const templates = {
+      'House Banger': {
+        genre: 'House',
+        mood: 'energetic',
+        tempo: 'Fast (120-140 BPM)',
+        key: 'A minor',
+        timeSignature: '4/4',
+        instruments: ['Synthesizer', 'Bass', 'Drums'],
+        weirdness: 3,
+      },
+      'Chill Ambient': {
+        genre: 'Ambient',
+        mood: 'peaceful',
+        tempo: 'Slow (70-90 BPM)',
+        key: 'F major',
+        timeSignature: '4/4',
+        instruments: ['Piano', 'Strings', 'Synthesizer'],
+        weirdness: 1,
+      },
+      'Hip Hop Beat': {
+        genre: 'Hip Hop',
+        mood: 'intense',
+        tempo: 'Moderate (90-120 BPM)',
+        key: 'C minor',
+        timeSignature: '4/4',
+        instruments: ['Bass', 'Drums', 'Synthesizer'],
+        weirdness: 2,
+      },
+    };
+
+    const template = templates[templateName as keyof typeof templates];
+    if (template) {
+      setFormData(prev => ({ ...prev, ...template }));
+    }
   };
 
   return (
@@ -98,9 +146,6 @@ export default function PromptFormScreen() {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => setShowTemplatesModal(true)} style={styles.headerButton}>
-              <MaterialIcons name="dashboard" size={24} color={colors.text} />
-            </TouchableOpacity>
             <ThemeToggle />
           </View>
         </View>
@@ -113,7 +158,12 @@ export default function PromptFormScreen() {
                 <MaterialIcons name="shuffle" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Random Track</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowTemplatesModal(true)}>
+              <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Templates', 'Choose a template:', [
+                { text: 'House Banger', onPress: () => handleUseTemplate('House Banger') },
+                { text: 'Chill Ambient', onPress: () => handleUseTemplate('Chill Ambient') },
+                { text: 'Hip Hop Beat', onPress: () => handleUseTemplate('Hip Hop Beat') },
+                { text: 'Cancel', style: 'cancel' },
+              ])}>
                 <MaterialIcons name="dashboard" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Templates</Text>
               </TouchableOpacity>
@@ -127,8 +177,10 @@ export default function PromptFormScreen() {
                 label="Genre"
                 value={formData.genre}
                 onValueChange={(value) => updateFormData('genre', value)}
-                items={GENRES}
-                placeholder="Select a genre"
+                options={[
+                  { label: 'Select a genre...', value: '' },
+                  ...GENRES.map(genre => ({ label: genre, value: genre }))
+                ]}
               />
 
               <FormField
@@ -142,16 +194,20 @@ export default function PromptFormScreen() {
                 label="Mood"
                 value={formData.mood}
                 onValueChange={(value) => updateFormData('mood', value)}
-                items={MOODS}
-                placeholder="Select a mood"
+                options={[
+                  { label: 'Select a mood...', value: '' },
+                  ...MOODS.map(mood => ({ label: mood, value: mood }))
+                ]}
               />
 
               <PickerField
                 label="Tempo"
                 value={formData.tempo}
                 onValueChange={(value) => updateFormData('tempo', value)}
-                items={TEMPOS}
-                placeholder="Select tempo"
+                options={[
+                  { label: 'Select tempo...', value: '' },
+                  ...TEMPOS.map(tempo => ({ label: tempo, value: tempo }))
+                ]}
               />
             </View>
 
@@ -162,23 +218,27 @@ export default function PromptFormScreen() {
                 label="Key"
                 value={formData.key}
                 onValueChange={(value) => updateFormData('key', value)}
-                items={KEYS}
-                placeholder="Select key"
+                options={[
+                  { label: 'Select key...', value: '' },
+                  ...KEYS.map(key => ({ label: key, value: key }))
+                ]}
               />
 
               <PickerField
                 label="Time Signature"
                 value={formData.timeSignature}
                 onValueChange={(value) => updateFormData('timeSignature', value)}
-                items={TIME_SIGNATURES}
-                placeholder="Select time signature"
+                options={[
+                  { label: 'Select time signature...', value: '' },
+                  ...TIME_SIGNATURES.map(sig => ({ label: sig, value: sig }))
+                ]}
               />
 
               <MultiSelectField
                 label="Instruments"
-                selectedItems={formData.instruments}
-                onSelectionChange={(items) => updateFormData('instruments', items)}
-                items={INSTRUMENTS}
+                values={formData.instruments}
+                onValuesChange={(items) => updateFormData('instruments', items)}
+                options={INSTRUMENTS}
                 placeholder="Select instruments"
               />
             </View>
@@ -281,29 +341,10 @@ export default function PromptFormScreen() {
 
             {/* Generated Prompt */}
             {generatedPrompt && (
-              <GeneratedPrompt 
-                prompt={generatedPrompt}
-                onEmailCapture={() => {}}
-              />
+              <GeneratedPrompt prompt={generatedPrompt} />
             )}
           </View>
         </ScrollView>
-
-        {/* Modals */}
-        <TemplatesModal
-          visible={showTemplatesModal}
-          onClose={() => setShowTemplatesModal(false)}
-          onApplyTemplate={(template) => {
-            setFormData(prev => ({ ...prev, ...template }));
-            setShowTemplatesModal(false);
-          }}
-        />
-
-        <RandomTrackModal
-          visible={showRandomModal}
-          onClose={() => setShowRandomModal(false)}
-          onApply={applyRandomTrack}
-        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
