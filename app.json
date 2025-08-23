@@ -54,9 +54,7 @@
       "display": "standalone",
       "orientation": "portrait"
     },
-    "plugins": [
-      "expo-router"
-    ],
+    "plugins": [],
     "extra": {
       "eas": {
         "projectId": "your-eas-project-id"
