@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
@@ -9,6 +9,15 @@ import { UsageProvider } from './contexts/UsageContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import PromptFormScreen from './screens/PromptFormScreen';
 import AuthScreen from './screens/AuthScreen';
+
+// Global logout handler that can be called from anywhere
+let globalLogoutHandler: (() => void) | null = null;
+
+export const triggerGlobalLogout = () => {
+  if (globalLogoutHandler) {
+    globalLogoutHandler();
+  }
+};
 
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
@@ -76,10 +85,41 @@ class ErrorBoundary extends React.Component<
 }
 
 export default function App() {
+  const [basicProviderKey, setBasicProviderKey] = useState(0);
+
+  // Set up global logout handler
+  React.useEffect(() => {
+    globalLogoutHandler = () => {
+      console.log('🔥 GLOBAL LOGOUT: Forcing BasicProvider remount');
+      
+      // Clear all storage
+      if (typeof window !== 'undefined') {
+        try { localStorage.clear(); } catch (e) {}
+        try { sessionStorage.clear(); } catch (e) {}
+        try {
+          document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+          });
+        } catch (e) {}
+      }
+      
+      // Force BasicProvider to remount with new key
+      setBasicProviderKey(prev => prev + 1);
+    };
+    
+    return () => {
+      globalLogoutHandler = null;
+    };
+  }, []);
+
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <BasicProvider project_id={schema.project_id} schema={schema as any}>
+        <BasicProvider 
+          key={basicProviderKey} // This forces complete remount
+          project_id={schema.project_id} 
+          schema={schema as any}
+        >
           <ThemeProvider>
             <NotificationProvider>
               <UsageProvider>
