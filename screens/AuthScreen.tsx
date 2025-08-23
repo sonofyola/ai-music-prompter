@@ -17,10 +17,26 @@ export default function AuthScreen() {
   const isStuckWithSonofyola = user?.email?.includes('sonofyola') || 
                                user?.name?.includes('sonofyola');
 
+  // Debug logging to see what user data we have
+  console.log('🔍 AuthScreen Debug:', {
+    user: user ? {
+      email: user.email,
+      name: user.name,
+      id: user.id,
+      // Log all user properties to see what's available
+      allProps: Object.keys(user)
+    } : null,
+    isStuckWithSonofyola,
+    isSignedIn,
+    isLoading
+  });
+
   const handleLogin = async () => {
     try {
       console.log('🔑 Starting login process...');
+      console.log('🔍 Current user before login:', user);
       await login();
+      console.log('🔍 User after login attempt:', user);
     } catch (error) {
       console.error('❌ Login error:', error);
       Alert.alert(
@@ -42,8 +58,8 @@ export default function AuthScreen() {
 
   const handleSonofyolaReset = async () => {
     Alert.alert(
-      'Reset Sonofyola Account',
-      'This will clear the cached sonofyola account and let you sign in with a different account. Continue?',
+      'Force Different User',
+      'This will clear any cached user data and let you sign in with a different account. This is specifically designed to fix the "sonofyola" login issue. Continue?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -52,7 +68,9 @@ export default function AuthScreen() {
           onPress: async () => {
             setIsResetting(true);
             try {
-              console.log('🧹 Resetting sonofyola account...');
+              console.log('🧹 Forcing different user login...');
+              console.log('🔍 Current user data:', user);
+              
               await signout();
               await performQuickAuthReset();
               
@@ -62,7 +80,9 @@ export default function AuthScreen() {
               }, 1000);
               
             } catch (error) {
-              console.error('❌ Sonofyola reset error:', error);
+              console.error('❌ Force different user error:', error);
+            } finally {
+              setIsResetting(false);
             }
           }
         }
@@ -141,6 +161,17 @@ export default function AuthScreen() {
           </Text>
         </View>
 
+        {/* Debug Section - Show current user data */}
+        {user && (
+          <View style={styles.debugSection}>
+            <Text style={styles.debugTitle}>🔍 Debug Info</Text>
+            <Text style={styles.debugText}>Email: {user.email || 'none'}</Text>
+            <Text style={styles.debugText}>Name: {user.name || 'none'}</Text>
+            <Text style={styles.debugText}>ID: {user.id || 'none'}</Text>
+            <Text style={styles.debugText}>Signed In: {isSignedIn ? 'Yes' : 'No'}</Text>
+          </View>
+        )}
+
         {/* Sonofyola Warning */}
         {isStuckWithSonofyola && (
           <View style={styles.warningSection}>
@@ -203,6 +234,15 @@ export default function AuthScreen() {
         {/* Troubleshooting Section */}
         <View style={styles.troubleshootSection}>
           <Text style={styles.troubleshootTitle}>Having issues?</Text>
+          
+          {/* Always show this button for sonofyola issues */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF3B30' }]}
+            onPress={handleSonofyolaReset}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🧹 Force Different User</Text>
+          </TouchableOpacity>
           
           <TouchableOpacity 
             style={styles.troubleshootButton}
@@ -320,6 +360,26 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 16,
+  },
+  debugSection: {
+    backgroundColor: '#F0F0F0',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#DDD',
+  },
+  debugTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 4,
+    fontFamily: 'monospace',
   },
   userStatus: {
     backgroundColor: colors.surface,
