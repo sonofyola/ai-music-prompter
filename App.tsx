@@ -33,7 +33,7 @@ function AppContent() {
     timestamp: new Date().toISOString()
   });
 
-  // Show loading state
+  // Show loading state - including while admin check is happening
   if (isLoading) {
     console.log('📱 RENDER DECISION: Loading screen');
     return (
@@ -43,7 +43,31 @@ function AppContent() {
     );
   }
 
-  // CRITICAL FIX: Check maintenance mode for ALL users (authenticated and non-authenticated)
+  // CRITICAL FIX: For signed-in users, wait a moment for admin check to complete
+  // This prevents the flash of maintenance screen for admins
+  if (isSignedIn && user?.email) {
+    // Give admin check a moment to complete (prevent flash)
+    const adminEmails = [
+      'drremotework@gmail.com',
+      'admin@aimusicpromptr.com',
+    ];
+    const userEmail = user.email.toLowerCase().trim();
+    const shouldBeAdmin = adminEmails.some(adminEmail => 
+      adminEmail.toLowerCase().trim() === userEmail
+    );
+    
+    // If user should be admin but isAdmin is still false, show loading briefly
+    if (shouldBeAdmin && !isAdmin) {
+      console.log('⏳ RENDER DECISION: Waiting for admin check to complete');
+      return (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <Text>Loading...</Text>
+        </View>
+      );
+    }
+  }
+
+  // Check maintenance mode for ALL users (authenticated and non-authenticated)
   // Only admins should bypass maintenance mode
   if (isMaintenanceMode && !isAdmin) {
     console.log('🚧 RENDER DECISION: Maintenance screen', {
