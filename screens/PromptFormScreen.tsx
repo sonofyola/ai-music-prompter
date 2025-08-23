@@ -355,6 +355,7 @@ export default function PromptFormScreen({ navigation }: any) {
             <TouchableOpacity 
               onPress={handleTitlePress}
               style={[styles.titleButton, titlePressCount > 0 && styles.titleButtonPressed]}
+              activeOpacity={0.7}
             >
               <Text style={styles.title}>🎵 AI Music Prompter</Text>
               {titlePressCount > 0 && (
@@ -694,10 +695,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
+    minHeight: 60,
   },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexShrink: 0,
   },
   backButton: {
     flexDirection: 'row',
@@ -864,20 +867,23 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
   },
   titleContainer: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 16,
+    justifyContent: 'flex-start',
+    paddingVertical: 8,
+    marginRight: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: '700',
     color: colors.text,
   },
   titleButton: {
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: 8,
     borderRadius: 8,
+    flex: 1,
   },
   titleButtonPressed: {
     backgroundColor: colors.primary + '20',
@@ -889,44 +895,54 @@ const createStyles = (colors: any) => StyleSheet.create({
     marginTop: 2,
   },
   userMenuButton: {
-    padding: 8,
+    padding: 6,
     borderRadius: 20,
     backgroundColor: colors.surface,
-    marginLeft: 8,
+    marginLeft: 4,
+    minWidth: 36,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   adminLogoutButton: {
-    padding: 8,
+    padding: 6,
     borderRadius: 20,
     backgroundColor: colors.surface,
-    marginLeft: 8,
+    marginLeft: 4,
+    minWidth: 36,
+    minHeight: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   debugButton: {
     backgroundColor: '#ff0000',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 8,
-    borderWidth: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginLeft: 4,
+    borderWidth: 1,
     borderColor: '#fff',
+    minWidth: 50,
   },
   debugButtonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 10,
   },
   adminPanelButton: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.primary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    marginLeft: 8,
-    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 6,
+    marginLeft: 4,
+    gap: 2,
+    minWidth: 60,
   },
   adminButtonText: {
     color: '#fff',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 10,
   },
 });
