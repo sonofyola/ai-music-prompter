@@ -78,7 +78,7 @@ export default function AuthScreen() {
           </Text>
         </View>
 
-        {/* Debug Section */}
+        {/* Debug Section - Always show for troubleshooting */}
         <View style={styles.debugSection}>
           <TouchableOpacity 
             style={styles.debugButton}
@@ -86,6 +86,11 @@ export default function AuthScreen() {
           >
             <Text style={styles.debugButtonText}>🔄 Complete Reset</Text>
           </TouchableOpacity>
+          {user && (
+            <Text style={styles.debugInfo}>
+              Current user: {user.email || user.name || 'Unknown'}
+            </Text>
+          )}
         </View>
 
         {/* Features Preview */}
@@ -219,6 +224,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
+  },
+  debugInfo: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginTop: 8,
+    textAlign: 'center',
   },
   featuresSection: {
     marginTop: 20,
