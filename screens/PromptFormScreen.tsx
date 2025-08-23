@@ -372,127 +372,127 @@ export default function PromptFormScreen({ navigation }: any) {
         <Text style={{ color: 'white', fontWeight: 'bold' }}>EMERGENCY TEST</Text>
       </TouchableOpacity>
 
-      <KeyboardAvoidingView 
-        style={styles.container} 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <TouchableOpacity 
-              onPress={handleTitlePress}
-              style={[styles.titleButton, titlePressCount > 0 && styles.titleButtonPressed]}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.title}>🎵 AI Music Prompter</Text>
-              {titlePressCount > 0 && (
-                <Text style={styles.clickCounter}>({titlePressCount}/7)</Text>
-              )}
-            </TouchableOpacity>
-          </View>
-          <View style={styles.headerRight}>
-            <ThemeToggle />
-            
-            {/* Prompt History Button */}
-            <TouchableOpacity
-              style={styles.historyButton}
-              onPress={() => {
-                console.log('🔥 History button pressed');
-                setShowHistoryModal(true);
-              }}
-            >
-              <MaterialIcons name="history" size={20} color={colors.text} />
-            </TouchableOpacity>
-
-            {/* Templates Button */}
-            <TouchableOpacity
-              style={styles.templatesButton}
-              onPress={() => {
-                console.log('🔥 Templates button pressed');
-                setShowTemplatesModal(true);
-              }}
-            >
-              <MaterialIcons name="library-books" size={20} color={colors.text} />
-            </TouchableOpacity>
-
-            {/* TEST: Simple button to verify touch events work in this area */}
-            <TouchableOpacity
-              style={styles.userLogoutButtonTest}
-              onPress={() => {
-                console.log('🔥🔥🔥 TEST BUTTON PRESSED!');
-                Alert.alert('SUCCESS!', 'Touch events work in this header area!');
-              }}
-              activeOpacity={0.3}
-            >
-              <Text style={styles.testButtonText}>TEST</Text>
-            </TouchableOpacity>
-
-            {/* Admin logout - only when admin is active */}
-            {isAdmin && (
-              <TouchableOpacity
-                style={styles.adminLogoutButton}
-                onPress={() => {
-                  console.log('🔥🔥🔥 RED ADMIN LOGOUT BUTTON PRESSED!');
-                  console.log('🔥 Admin status:', isAdmin);
-                  console.log('🔥 User:', user?.email);
-                  
-                  // Show immediate alert to test if button works at all
-                  Alert.alert(
-                    '🔴 RED BUTTON PRESSED!',
-                    'The red admin logout button is working! Do you want to logout from admin mode?',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { 
-                        text: 'Logout Admin', 
-                        style: 'destructive',
-                        onPress: handleAdminLogout
-                      }
-                    ]
-                  );
-                }}
-                activeOpacity={0.7}
-                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-              >
-                <MaterialIcons name="logout" size={24} color="#ff4444" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </View>
-
-        {/* SUPER OBVIOUS ADMIN STATUS BAR */}
-        {isAdmin && (
+      <View style={styles.header}>
+        <View style={styles.titleContainer}>
           <TouchableOpacity 
-            style={styles.adminIndicatorLarge}
+            onPress={handleTitlePress}
+            style={[styles.titleButton, titlePressCount > 0 && styles.titleButtonPressed]}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.title}>🎵 AI Music Prompter</Text>
+            {titlePressCount > 0 && (
+              <Text style={styles.clickCounter}>({titlePressCount}/7)</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+        <View style={styles.headerRight}>
+          <ThemeToggle />
+          
+          {/* Prompt History Button */}
+          <TouchableOpacity
+            style={styles.historyButton}
             onPress={() => {
-              console.log('🚀 Admin bar tapped - navigating to admin panel');
-              if (navigation?.navigate) {
-                navigation.navigate('Admin');
-              } else {
-                Alert.alert('Navigation Error', 'Unable to navigate to admin panel. Please try refreshing the app.');
-              }
+              console.log('🔥 History button pressed');
+              setShowHistoryModal(true);
             }}
           >
-            <MaterialIcons name="admin-panel-settings" size={24} color="#fff" />
-            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE - TAP TO OPEN ADMIN PANEL</Text>
-            <TouchableOpacity 
-              style={styles.logoutButtonInBar}
-              onPress={handleAdminLogout}
-            >
-              <MaterialIcons name="logout" size={16} color="#fff" />
-              <Text style={styles.logoutButtonText}>LOGOUT</Text>
-            </TouchableOpacity>
+            <MaterialIcons name="history" size={20} color={colors.text} />
           </TouchableOpacity>
-        )}
 
-        <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
+          {/* Templates Button */}
+          <TouchableOpacity
+            style={styles.templatesButton}
+            onPress={() => {
+              console.log('🔥 Templates button pressed');
+              setShowTemplatesModal(true);
+            }}
+          >
+            <MaterialIcons name="library-books" size={20} color={colors.text} />
+          </TouchableOpacity>
 
-        <View style={styles.subscriptionContainer}>
-          <SubscriptionStatus 
-            onManagePress={() => navigation?.navigate('Subscription')}
-            compact={true}
-          />
+          {/* TEST: Simple button to verify touch events work in this area */}
+          <TouchableOpacity
+            style={styles.userLogoutButtonTest}
+            onPress={() => {
+              console.log('🔥🔥🔥 TEST BUTTON PRESSED!');
+              Alert.alert('SUCCESS!', 'Touch events work in this header area!');
+            }}
+            activeOpacity={0.3}
+          >
+            <Text style={styles.testButtonText}>TEST</Text>
+          </TouchableOpacity>
+
+          {/* Admin logout - only when admin is active */}
+          {isAdmin && (
+            <TouchableOpacity
+              style={styles.adminLogoutButton}
+              onPress={() => {
+                console.log('🔥🔥🔥 RED ADMIN LOGOUT BUTTON PRESSED!');
+                console.log('🔥 Admin status:', isAdmin);
+                console.log('🔥 User:', user?.email);
+                
+                // Show immediate alert to test if button works at all
+                Alert.alert(
+                  '🔴 RED BUTTON PRESSED!',
+                  'The red admin logout button is working! Do you want to logout from admin mode?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { 
+                      text: 'Logout Admin', 
+                      style: 'destructive',
+                      onPress: handleAdminLogout
+                    }
+                  ]
+                );
+              }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <MaterialIcons name="logout" size={24} color="#ff4444" />
+            </TouchableOpacity>
+          )}
         </View>
+      </View>
 
-        <ScrollView style={styles.form} showsVerticalScrollIndicator={false}>
+      {/* SUPER OBVIOUS ADMIN STATUS BAR */}
+      {isAdmin && (
+        <TouchableOpacity 
+          style={styles.adminIndicatorLarge}
+          onPress={() => {
+            console.log('🚀 Admin bar tapped - navigating to admin panel');
+            if (navigation?.navigate) {
+              navigation.navigate('Admin');
+            } else {
+              Alert.alert('Navigation Error', 'Unable to navigate to admin panel. Please try refreshing the app.');
+            }
+          }}
+        >
+          <MaterialIcons name="admin-panel-settings" size={24} color="#fff" />
+          <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE - TAP TO OPEN ADMIN PANEL</Text>
+          <TouchableOpacity 
+            style={styles.logoutButtonInBar}
+            onPress={handleAdminLogout}
+          >
+            <MaterialIcons name="logout" size={16} color="#fff" />
+            <Text style={styles.logoutButtonText}>LOGOUT</Text>
+          </TouchableOpacity>
+        </TouchableOpacity>
+      )}
+
+      <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
+
+      <View style={styles.subscriptionContainer}>
+        <SubscriptionStatus 
+          onManagePress={() => navigation?.navigate('Subscription')}
+          compact={true}
+        />
+      </View>
+
+      <KeyboardAvoidingView 
+        style={styles.form} 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View style={styles.section}>
             <FormField
               label="Subject/Theme"
@@ -668,43 +668,43 @@ export default function PromptFormScreen({ navigation }: any) {
 
           <View style={styles.bottomSpacing} />
         </ScrollView>
+      </KeyboardAvoidingView>
 
-        {/* Modals */}
-        <UpgradeModal 
-          visible={showUpgradeModal} 
-          onClose={() => setShowUpgradeModal(false)}
-          onUpgradeSuccess={() => {
-            setShowUpgradeModal(false);
-            Alert.alert('Success!', 'You now have unlimited access to AI Music Prompter!');
+      {/* Modals */}
+      <UpgradeModal 
+        visible={showUpgradeModal} 
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgradeSuccess={() => {
+          setShowUpgradeModal(false);
+          Alert.alert('Success!', 'You now have unlimited access to AI Music Prompter!');
+        }}
+      />
+      
+      {showEmailCapture && (
+        <EmailCaptureModal 
+          visible={showEmailCapture} 
+          onClose={() => setShowEmailCapture(false)}
+          onEmailSubmitted={(email) => {
+            setShowEmailCapture(false);
+            generatePrompt();
           }}
         />
-        
-        {showEmailCapture && (
-          <EmailCaptureModal 
-            visible={showEmailCapture} 
-            onClose={() => setShowEmailCapture(false)}
-            onEmailSubmitted={(email) => {
-              setShowEmailCapture(false);
-              generatePrompt();
-            }}
-          />
-        )}
-        
-        <PromptHistoryModal 
-          visible={showHistoryModal} 
-          onClose={() => setShowHistoryModal(false)}
-          onLoadPrompt={loadFromHistory}
-          onSaveCurrentPrompt={saveCurrentPrompt}
-          currentFormData={formData}
-          currentGeneratedPrompt={generatedPrompt}
-        />
-        
-        <TemplatesModal 
-          visible={showTemplatesModal} 
-          onClose={() => setShowTemplatesModal(false)}
-          onSelectTemplate={loadTemplate}
-        />
-      </KeyboardAvoidingView>
+      )}
+      
+      <PromptHistoryModal 
+        visible={showHistoryModal} 
+        onClose={() => setShowHistoryModal(false)}
+        onLoadPrompt={loadFromHistory}
+        onSaveCurrentPrompt={saveCurrentPrompt}
+        currentFormData={formData}
+        currentGeneratedPrompt={generatedPrompt}
+      />
+      
+      <TemplatesModal 
+        visible={showTemplatesModal} 
+        onClose={() => setShowTemplatesModal(false)}
+        onSelectTemplate={loadTemplate}
+      />
     </SafeAreaView>
   );
 }
