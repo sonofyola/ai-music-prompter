@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
@@ -16,9 +16,12 @@ import PromptFormScreen from './screens/PromptFormScreen';
 
 // Add a reset flag
 let forceReset = false;
+// Add a reset counter
+let resetCounter = 0;
 
 export const triggerGlobalLogout = () => {
   console.log('🔥 Forcing complete reset...');
+  resetCounter++;
   forceReset = true;
   // Force a re-render by updating the component
   window.location?.reload?.(); // For web
@@ -69,8 +72,26 @@ function AppContent() {
 }
 
 export default function App() {
+  const [appKey, setAppKey] = useState(0);
+  
+  // Listen for reset events
+  React.useEffect(() => {
+    const checkReset = () => {
+      if (resetCounter > appKey) {
+        setAppKey(resetCounter);
+      }
+    };
+    
+    const interval = setInterval(checkReset, 100);
+    return () => clearInterval(interval);
+  }, [appKey]);
+
   return (
-    <BasicProvider project_id={schema.project_id} schema={schema}>
+    <BasicProvider 
+      key={`basic-provider-${appKey}`} 
+      project_id={schema.project_id} 
+      schema={schema}
+    >
       <AppContent />
     </BasicProvider>
   );
