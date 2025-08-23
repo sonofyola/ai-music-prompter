@@ -8,9 +8,29 @@ import { performCompleteAuthReset } from '../utils/authReset';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
-  const { login, isLoading } = useBasic();
+  const { login, signout, isLoading, user, isSignedIn } = useBasic();
 
   const styles = createStyles(colors);
+
+  const handleSignOut = async () => {
+    try {
+      console.log('🔓 Signing out...');
+      await signout();
+      console.log('✅ Signed out successfully');
+    } catch (error) {
+      console.error('❌ Error signing out:', error);
+    }
+  };
+
+  const handleCompleteReset = async () => {
+    try {
+      console.log('🧹 Performing complete reset...');
+      await signout();
+      await performCompleteAuthReset();
+    } catch (error) {
+      console.error('❌ Error during complete reset:', error);
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -24,6 +44,22 @@ export default function AuthScreen() {
           </Text>
         </View>
 
+        {/* Current User Status */}
+        {user && (
+          <View style={styles.userStatus}>
+            <Text style={styles.userStatusText}>
+              Currently signed in as: {user.email || user.name || 'Unknown User'}
+            </Text>
+            <TouchableOpacity 
+              style={styles.signOutButton}
+              onPress={handleSignOut}
+            >
+              <MaterialIcons name="logout" size={20} color={colors.primary} />
+              <Text style={styles.signOutButtonText}>Sign Out</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* Auth Section */}
         <View style={styles.authSection}>
           <TouchableOpacity 
@@ -33,7 +69,7 @@ export default function AuthScreen() {
           >
             <MaterialIcons name="login" size={24} color={colors.background} />
             <Text style={styles.loginButtonText}>
-              {isLoading ? 'Signing In...' : 'Sign In to Get Started'}
+              {isLoading ? 'Signing In...' : user ? 'Continue to App' : 'Sign In to Get Started'}
             </Text>
           </TouchableOpacity>
 
@@ -46,9 +82,9 @@ export default function AuthScreen() {
         <View style={styles.debugSection}>
           <TouchableOpacity 
             style={styles.debugButton}
-            onPress={performCompleteAuthReset}
+            onPress={handleCompleteReset}
           >
-            <Text style={styles.debugButtonText}>🔄 Reset Everything</Text>
+            <Text style={styles.debugButtonText}>🔄 Complete Reset</Text>
           </TouchableOpacity>
         </View>
 
@@ -85,23 +121,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.background,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingVertical: 16,
-  },
-  headerSpacer: {
-    width: 40,
   },
   content: {
     flex: 1,
     paddingHorizontal: 20,
     justifyContent: 'center',
-  },
-  logoContainer: {
-    alignItems: 'center',
-    marginBottom: 60,
   },
   title: {
     fontSize: 32,
@@ -118,20 +145,40 @@ const createStyles = (colors: any) => StyleSheet.create({
     lineHeight: 24,
     paddingHorizontal: 20,
   },
-  featuresContainer: {
-    marginBottom: 60,
+  userStatus: {
+    backgroundColor: colors.surface,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  feature: {
+  userStatusText: {
+    fontSize: 14,
+    color: colors.text,
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  signOutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.primary,
   },
-  featureText: {
-    fontSize: 16,
-    color: colors.text,
-    marginLeft: 16,
-    fontWeight: '500',
+  signOutButtonText: {
+    fontSize: 14,
+    color: colors.primary,
+    marginLeft: 6,
+    fontWeight: '600',
+  },
+  authSection: {
+    marginTop: 20,
+    alignItems: 'center',
   },
   loginButton: {
     flexDirection: 'row',
@@ -157,10 +204,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
-  },
-  authSection: {
-    marginTop: 20,
-    alignItems: 'center',
   },
   debugSection: {
     marginTop: 20,

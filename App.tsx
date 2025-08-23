@@ -15,6 +15,8 @@ import AuthScreen from './screens/AuthScreen';
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
 
+  console.log('🔐 Auth State:', { isSignedIn, user: user?.email || 'none', isLoading });
+
   if (isLoading) {
     return null; // You could add a loading screen here
   }
