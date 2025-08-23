@@ -395,34 +395,16 @@ export default function PromptFormScreen({ navigation }: any) {
               <MaterialIcons name="library-books" size={20} color={colors.text} />
             </TouchableOpacity>
 
-            {/* User Logout Button - always visible for authenticated users */}
+            {/* TEST: Simple button to verify touch events work in this area */}
             <TouchableOpacity
-              style={styles.userLogoutButton}
+              style={styles.userLogoutButtonTest}
               onPress={() => {
-                console.log('🔥🔥🔥 USER LOGOUT BUTTON PRESSED!');
-                console.log('🔥 Button onPress triggered');
-                console.log('🔥 About to call handleUserLogout');
-                
-                // Test if Alert works at all
-                Alert.alert(
-                  '🔵 BUTTON TEST',
-                  'The user logout button is working! This proves the button press is detected.',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { 
-                      text: 'Continue to Logout', 
-                      onPress: () => {
-                        console.log('🔥 User chose to continue to logout');
-                        handleUserLogout();
-                      }
-                    }
-                  ]
-                );
+                console.log('🔥🔥🔥 TEST BUTTON PRESSED!');
+                Alert.alert('SUCCESS!', 'Touch events work in this header area!');
               }}
-              activeOpacity={0.7}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              activeOpacity={0.3}
             >
-              <MaterialIcons name="logout" size={20} color={colors.textSecondary} />
+              <Text style={styles.testButtonText}>TEST</Text>
             </TouchableOpacity>
 
             {/* Admin logout - only when admin is active */}
@@ -995,5 +977,21 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  userLogoutButtonTest: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: '#e3f2fd',
+    borderWidth: 2,
+    borderColor: '#2196f3',
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  testButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
