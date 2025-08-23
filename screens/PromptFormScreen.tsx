@@ -366,23 +366,6 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
-            {/* SUPER OBVIOUS DEBUG BUTTON */}
-            <TouchableOpacity
-              style={styles.debugButton}
-              onPress={() => {
-                Alert.alert(
-                  '🔍 DEBUG INFO',
-                  `User Email: ${user?.email || 'Not signed in'}\nAdmin Status: ${isAdmin ? 'YES' : 'NO'}\nNavigation: ${navigation ? 'Available' : 'Not Available'}`,
-                  [
-                    { text: 'Force Admin Check', onPress: checkAdminAccessHandler },
-                    { text: 'OK' }
-                  ]
-                );
-              }}
-            >
-              <Text style={styles.debugButtonText}>DEBUG</Text>
-            </TouchableOpacity>
-            
             {/* Admin Panel Button - only shows when admin is active */}
             {isAdmin && (
               <TouchableOpacity
@@ -913,21 +896,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 36,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  debugButton: {
-    backgroundColor: '#ff0000',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 6,
-    marginLeft: 4,
-    borderWidth: 1,
-    borderColor: '#fff',
-    minWidth: 50,
-  },
-  debugButtonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 10,
   },
   adminPanelButton: {
     flexDirection: 'row',
