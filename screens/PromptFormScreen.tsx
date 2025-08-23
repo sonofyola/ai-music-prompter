@@ -43,6 +43,7 @@ import UpgradeModal from '../components/UpgradeModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import TemplatesModal from '../components/TemplatesModal';
 import EmailCaptureModal from '../components/EmailCaptureModal';
+import AdminScreen from './AdminScreen';
 
 // Admin email whitelist - only these emails can access admin features
 const ADMIN_EMAILS = [
@@ -50,12 +51,15 @@ const ADMIN_EMAILS = [
   'admin@aimusicpromptr.com',
 ];
 
-export default function PromptFormScreen({ navigation }: any) {
+export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
   const { user, signout } = useBasic();
   const styles = createStyles(colors);
+
+  // Navigation state
+  const [currentScreen, setCurrentScreen] = useState<'form' | 'admin'>('form');
 
   // Admin access state
   const [titlePressCount, setTitlePressCount] = useState(0);
@@ -150,12 +154,7 @@ export default function PromptFormScreen({ navigation }: any) {
               text: 'Open Admin Panel', 
               onPress: () => {
                 console.log('🚀 Navigating to Admin panel...');
-                if (navigation?.navigate) {
-                  navigation.navigate('Admin');
-                } else {
-                  console.error('❌ Navigation not available!');
-                  Alert.alert('Error', 'Navigation not available. Please try refreshing the app.');
-                }
+                setCurrentScreen('admin');
               }
             }
           ]
@@ -309,6 +308,15 @@ export default function PromptFormScreen({ navigation }: any) {
     setFormData(historyData);
     setShowHistoryModal(false);
   };
+
+  // Show admin screen if navigated there
+  if (currentScreen === 'admin') {
+    return (
+      <AdminScreen 
+        onBackToApp={() => setCurrentScreen('form')} 
+      />
+    );
+  }
 
   if (showPrompt) {
     return (
@@ -464,11 +472,7 @@ export default function PromptFormScreen({ navigation }: any) {
           style={styles.adminIndicatorLarge}
           onPress={() => {
             console.log('🚀 Admin bar tapped - navigating to admin panel');
-            if (navigation?.navigate) {
-              navigation.navigate('Admin');
-            } else {
-              Alert.alert('Navigation Error', 'Unable to navigate to admin panel. Please try refreshing the app.');
-            }
+            setCurrentScreen('admin');
           }}
         >
           <MaterialIcons name="admin-panel-settings" size={24} color="#fff" />
@@ -487,7 +491,10 @@ export default function PromptFormScreen({ navigation }: any) {
 
       <View style={styles.subscriptionContainer}>
         <SubscriptionStatus 
-          onManagePress={() => navigation?.navigate('Subscription')}
+          onManagePress={() => {
+            // For now, just show an alert since we don't have navigation
+            Alert.alert('Subscription', 'Subscription management coming soon!');
+          }}
           compact={true}
         />
       </View>

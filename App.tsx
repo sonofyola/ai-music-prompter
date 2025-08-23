@@ -1,8 +1,6 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { NavigationContainer } from '@react-navigation/native';
-import { createStackNavigator } from '@react-navigation/stack';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -10,11 +8,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { UsageProvider } from './contexts/UsageContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import PromptFormScreen from './screens/PromptFormScreen';
-import AdminScreen from './screens/AdminScreen';
-import SubscriptionScreen from './screens/SubscriptionScreen';
 import AuthScreen from './screens/AuthScreen';
-
-const Stack = createStackNavigator();
 
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
@@ -33,34 +27,8 @@ function AppContent() {
     return <AuthScreen />;
   }
 
-  // Show main app with navigation
-  return (
-    <NavigationContainer>
-      <Stack.Navigator 
-        initialRouteName="Home"
-        screenOptions={{ 
-          headerShown: false,
-          gestureEnabled: true,
-        }}
-      >
-        <Stack.Screen name="Home" component={PromptFormScreen} />
-        <Stack.Screen 
-          name="Admin" 
-          component={AdminScreenWrapper} 
-        />
-        <Stack.Screen name="Subscription" component={SubscriptionScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
-
-// Wrapper component for AdminScreen to handle navigation
-function AdminScreenWrapper({ navigation }: any) {
-  return (
-    <AdminScreen 
-      onBackToApp={() => navigation.goBack()} 
-    />
-  );
+  // Show main app
+  return <PromptFormScreen />;
 }
 
 // Error boundary component
