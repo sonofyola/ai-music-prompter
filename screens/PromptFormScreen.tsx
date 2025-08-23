@@ -362,6 +362,23 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
+            {/* Admin Panel Button - only shows when admin is active */}
+            {isAdmin && (
+              <TouchableOpacity
+                style={[styles.userMenuButton, { backgroundColor: colors.primary }]}
+                onPress={() => {
+                  console.log('Admin panel button pressed');
+                  if (navigation?.navigate) {
+                    navigation.navigate('Admin');
+                  } else {
+                    Alert.alert('Navigation Error', 'Unable to navigate to admin panel.');
+                  }
+                }}
+              >
+                <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
+              </TouchableOpacity>
+            )}
+            
             {/* Debug admin button - remove this in production */}
             <TouchableOpacity
               style={[styles.userMenuButton, { backgroundColor: '#ff9999' }]}
@@ -412,6 +429,15 @@ export default function PromptFormScreen({ navigation }: any) {
         {isAdmin && (
           <TouchableOpacity 
             style={styles.adminIndicatorLarge}
+            onPress={() => {
+              // Simple tap to go to admin panel
+              console.log('Admin bar tapped - navigating to admin panel');
+              if (navigation?.navigate) {
+                navigation.navigate('Admin');
+              } else {
+                Alert.alert('Navigation Error', 'Unable to navigate to admin panel. Please try refreshing the app.');
+              }
+            }}
             onLongPress={() => {
               Alert.alert(
                 'Admin Options',
@@ -426,7 +452,7 @@ export default function PromptFormScreen({ navigation }: any) {
             delayLongPress={1000}
           >
             <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
-            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE (Long press for options)</Text>
+            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE (Tap to open Admin Panel)</Text>
             <TouchableOpacity 
               style={styles.logoutButtonInBar}
               onPress={handleAdminLogout}
