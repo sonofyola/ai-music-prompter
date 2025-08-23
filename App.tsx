@@ -42,20 +42,20 @@ function AppContent() {
     );
   }
 
-  // If maintenance mode is active and user is not admin, show maintenance screen
-  // This should catch both non-authenticated users and authenticated non-admin users
+  // CRITICAL FIX: Check maintenance mode for ALL users (authenticated and non-authenticated)
+  // Only admins should bypass maintenance mode
   if (isMaintenanceMode && !isAdmin) {
     console.log('🚧 Showing maintenance screen - maintenance active and user is not admin');
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
         onAdminAccess={() => {}}
-        showAdminAccess={false}
+        showAdminAccess={!isSignedIn} // Show admin access button only for non-authenticated users
       />
     );
   }
 
-  // Show auth screen if not signed in
+  // Show auth screen if not signed in (and not in maintenance mode)
   if (!isSignedIn || !user) {
     console.log('🔐 Showing auth screen - user not signed in');
     return <AuthScreen />;
