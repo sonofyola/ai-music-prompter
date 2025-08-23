@@ -22,28 +22,49 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
 
+// Types
+import { MusicPromptData } from '../types';
+
 // Utils
-import { formatPrompt, GENRES, MOODS, INSTRUMENTS, TEMPOS, KEYS, TIME_SIGNATURES } from '../utils/promptFormatter';
+import { 
+  formatMusicPrompt,
+  PRIMARY_GENRES, 
+  ELECTRONIC_GENRES, 
+  MOODS, 
+  VOCAL_GENDERS, 
+  VOCAL_DELIVERIES, 
+  ENERGY_LEVELS, 
+  GROOVE_SWINGS, 
+  TIME_SIGNATURES, 
+  COMMON_KEYS, 
+  BEAT_STYLES, 
+  BASS_CHARACTERISTICS, 
+  WEIRDNESS_LEVELS, 
+  ERA_SUGGESTIONS 
+} from '../utils/promptFormatter';
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
   
-  // Form state
-  const [formData, setFormData] = useState({
-    genre: '',
-    subgenre: '',
-    mood: '',
-    tempo: '',
-    key: '',
-    timeSignature: '',
-    instruments: [] as string[],
-    vocals: '',
-    lyrics: '',
-    structure: '',
-    production: '',
-    reference: '',
-    weirdness: 0,
-    customPrompt: '',
+  // Form state with full original parameters
+  const [formData, setFormData] = useState<MusicPromptData>({
+    subject: '',
+    genres_primary: [],
+    genres_electronic: [],
+    mood: [],
+    tempo_bpm: '',
+    key_scale: '',
+    energy: '',
+    beat: [],
+    bass: [],
+    groove_swing: '',
+    vocal_gender: 'none',
+    vocal_delivery: '',
+    era: '',
+    master_notes: '',
+    length: '',
+    weirdness_level: 'conventional',
+    general_freeform: '',
   });
 
   // Generated prompt state
@@ -52,14 +73,14 @@ export default function PromptFormScreen() {
 
   const styles = createStyles(colors);
 
-  const updateFormData = (field: string, value: any) => {
+  const updateFormData = (field: keyof MusicPromptData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleGeneratePrompt = async () => {
     setIsGenerating(true);
     try {
-      const prompt = formatPrompt(formData);
+      const prompt = formatMusicPrompt(formData);
       setGeneratedPrompt(prompt);
     } catch (error) {
       console.error('Error generating prompt:', error);
@@ -70,64 +91,101 @@ export default function PromptFormScreen() {
   };
 
   const handleRandomTrack = () => {
-    // Generate random values for the form
-    const randomGenre = GENRES[Math.floor(Math.random() * GENRES.length)];
-    const randomMood = MOODS[Math.floor(Math.random() * MOODS.length)];
-    const randomTempo = TEMPOS[Math.floor(Math.random() * TEMPOS.length)];
-    const randomKey = KEYS[Math.floor(Math.random() * KEYS.length)];
-    const randomTimeSignature = TIME_SIGNATURES[Math.floor(Math.random() * TIME_SIGNATURES.length)];
+    // Generate comprehensive random values
+    const randomPrimaryGenres = PRIMARY_GENRES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    const randomElectronicGenres = ELECTRONIC_GENRES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 3) + 1);
+    const randomMoods = MOODS.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    const randomBeats = BEAT_STYLES.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
+    const randomBass = BASS_CHARACTERISTICS.sort(() => 0.5 - Math.random()).slice(0, Math.floor(Math.random() * 2) + 1);
     
-    // Random instruments (1-3 instruments)
-    const shuffledInstruments = [...INSTRUMENTS].sort(() => 0.5 - Math.random());
-    const randomInstruments = shuffledInstruments.slice(0, Math.floor(Math.random() * 3) + 1);
-    
-    const randomWeirdness = Math.floor(Math.random() * 11);
+    const randomBPM = Math.floor(Math.random() * 100) + 80; // 80-180 BPM
+    const randomKey = COMMON_KEYS[Math.floor(Math.random() * COMMON_KEYS.length)];
+    const randomEnergy = ENERGY_LEVELS[Math.floor(Math.random() * ENERGY_LEVELS.length)].value;
+    const randomGroove = GROOVE_SWINGS[Math.floor(Math.random() * GROOVE_SWINGS.length)].value;
+    const randomVocalGender = VOCAL_GENDERS[Math.floor(Math.random() * VOCAL_GENDERS.length)].value;
+    const randomVocalDelivery = VOCAL_DELIVERIES[Math.floor(Math.random() * VOCAL_DELIVERIES.length)].value;
+    const randomEra = ERA_SUGGESTIONS[Math.floor(Math.random() * ERA_SUGGESTIONS.length)];
+    const randomWeirdness = WEIRDNESS_LEVELS[Math.floor(Math.random() * WEIRDNESS_LEVELS.length)].value;
+
+    const subjects = [
+      'Lost love', 'Urban nightlife', 'Digital dreams', 'Ocean waves', 'Neon lights',
+      'Midnight drive', 'Cosmic journey', 'Underground culture', 'Future nostalgia',
+      'Electric storm', 'Desert mirage', 'City rain', 'Quantum reality', 'Time travel'
+    ];
+    const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
 
     setFormData(prev => ({
       ...prev,
-      genre: randomGenre,
-      mood: randomMood,
-      tempo: randomTempo,
-      key: randomKey,
-      timeSignature: randomTimeSignature,
-      instruments: randomInstruments,
-      weirdness: randomWeirdness,
+      subject: randomSubject,
+      genres_primary: randomPrimaryGenres,
+      genres_electronic: randomElectronicGenres,
+      mood: randomMoods,
+      tempo_bpm: randomBPM.toString(),
+      key_scale: randomKey,
+      energy: randomEnergy,
+      beat: randomBeats,
+      bass: randomBass,
+      groove_swing: randomGroove,
+      vocal_gender: randomVocalGender,
+      vocal_delivery: randomVocalDelivery,
+      era: randomEra,
+      weirdness_level: randomWeirdness,
     }));
   };
 
   const handleUseTemplate = (templateName: string) => {
-    // Simple templates
-    const templates = {
-      'House Banger': {
-        genre: 'House',
-        mood: 'energetic',
-        tempo: 'Fast (120-140 BPM)',
-        key: 'A minor',
-        timeSignature: '4/4',
-        instruments: ['Synthesizer', 'Bass', 'Drums'],
-        weirdness: 3,
+    const templates: Record<string, Partial<MusicPromptData>> = {
+      'Deep House Vibes': {
+        subject: 'Late night introspection',
+        genres_primary: ['House'],
+        genres_electronic: ['Deep House', 'Minimal House'],
+        mood: ['dreamy', 'introspective'],
+        tempo_bpm: '122',
+        key_scale: 'A minor',
+        energy: 'medium',
+        beat: ['four-on-the-floor', 'rolling hi-hats'],
+        bass: ['warm analog', 'deep sub'],
+        groove_swing: 'straight',
+        vocal_gender: 'female',
+        vocal_delivery: 'whispered',
+        era: '2000s deep house',
+        weirdness_level: 'slightly_experimental',
       },
-      'Chill Ambient': {
-        genre: 'Ambient',
-        mood: 'peaceful',
-        tempo: 'Slow (70-90 BPM)',
-        key: 'F major',
-        timeSignature: '4/4',
-        instruments: ['Piano', 'Strings', 'Synthesizer'],
-        weirdness: 1,
+      'Peak Time Techno': {
+        subject: 'Industrial machinery',
+        genres_primary: ['Techno'],
+        genres_electronic: ['Peak-Time Techno', 'Hard Techno'],
+        mood: ['intense', 'dark'],
+        tempo_bpm: '132',
+        key_scale: 'F minor',
+        energy: 'high',
+        beat: ['four-on-the-floor', 'minimal percussion'],
+        bass: ['punchy', 'distorted'],
+        groove_swing: 'straight',
+        vocal_gender: 'none',
+        vocal_delivery: '',
+        era: '1990s Berlin techno',
+        weirdness_level: 'moderately_weird',
       },
-      'Hip Hop Beat': {
-        genre: 'Hip Hop',
-        mood: 'intense',
-        tempo: 'Moderate (90-120 BPM)',
-        key: 'C minor',
-        timeSignature: '4/4',
-        instruments: ['Bass', 'Drums', 'Synthesizer'],
-        weirdness: 2,
+      'Liquid DnB Journey': {
+        subject: 'Flowing water',
+        genres_primary: ['Drum & Bass'],
+        genres_electronic: ['Liquid DnB', 'Atmospheric DnB'],
+        mood: ['peaceful', 'uplifting'],
+        tempo_bpm: '174',
+        key_scale: 'D major',
+        energy: 'evolving',
+        beat: ['rolling DnB', 'amen break'],
+        bass: ['warm analog', 'evolving'],
+        groove_swing: 'straight',
+        vocal_gender: 'female',
+        vocal_delivery: 'singing',
+        era: 'modern 2025',
+        weirdness_level: 'conventional',
       },
     };
 
-    const template = templates[templateName as keyof typeof templates];
+    const template = templates[templateName];
     if (template) {
       setFormData(prev => ({ ...prev, ...template }));
     }
@@ -159,9 +217,9 @@ export default function PromptFormScreen() {
                 <Text style={styles.quickActionText}>Random Track</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickActionButton} onPress={() => Alert.alert('Templates', 'Choose a template:', [
-                { text: 'House Banger', onPress: () => handleUseTemplate('House Banger') },
-                { text: 'Chill Ambient', onPress: () => handleUseTemplate('Chill Ambient') },
-                { text: 'Hip Hop Beat', onPress: () => handleUseTemplate('Hip Hop Beat') },
+                { text: 'Deep House Vibes', onPress: () => handleUseTemplate('Deep House Vibes') },
+                { text: 'Peak Time Techno', onPress: () => handleUseTemplate('Peak Time Techno') },
+                { text: 'Liquid DnB Journey', onPress: () => handleUseTemplate('Liquid DnB Journey') },
                 { text: 'Cancel', style: 'cancel' },
               ])}>
                 <MaterialIcons name="dashboard" size={20} color={colors.background} />
@@ -169,157 +227,192 @@ export default function PromptFormScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Form Fields */}
+            {/* Subject/Theme */}
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Basic Information</Text>
-              
-              <PickerField
-                label="Genre"
-                value={formData.genre}
-                onValueChange={(value) => updateFormData('genre', value)}
-                options={[
-                  { label: 'Select a genre...', value: '' },
-                  ...GENRES.map(genre => ({ label: genre, value: genre }))
-                ]}
-              />
-
+              <Text style={styles.sectionTitle}>Track Theme</Text>
               <FormField
-                label="Subgenre (Optional)"
-                value={formData.subgenre}
-                onChangeText={(value) => updateFormData('subgenre', value)}
-                placeholder="e.g., Progressive House, Melodic Dubstep"
-              />
-
-              <PickerField
-                label="Mood"
-                value={formData.mood}
-                onValueChange={(value) => updateFormData('mood', value)}
-                options={[
-                  { label: 'Select a mood...', value: '' },
-                  ...MOODS.map(mood => ({ label: mood, value: mood }))
-                ]}
-              />
-
-              <PickerField
-                label="Tempo"
-                value={formData.tempo}
-                onValueChange={(value) => updateFormData('tempo', value)}
-                options={[
-                  { label: 'Select tempo...', value: '' },
-                  ...TEMPOS.map(tempo => ({ label: tempo, value: tempo }))
-                ]}
+                label="Subject/Theme"
+                value={formData.subject}
+                onChangeText={(value) => updateFormData('subject', value)}
+                placeholder="e.g., Lost love, Urban nightlife, Digital dreams"
               />
             </View>
 
+            {/* Genres */}
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Musical Elements</Text>
+              <Text style={styles.sectionTitle}>Genres</Text>
               
-              <PickerField
-                label="Key"
-                value={formData.key}
-                onValueChange={(value) => updateFormData('key', value)}
-                options={[
-                  { label: 'Select key...', value: '' },
-                  ...KEYS.map(key => ({ label: key, value: key }))
-                ]}
-              />
-
-              <PickerField
-                label="Time Signature"
-                value={formData.timeSignature}
-                onValueChange={(value) => updateFormData('timeSignature', value)}
-                options={[
-                  { label: 'Select time signature...', value: '' },
-                  ...TIME_SIGNATURES.map(sig => ({ label: sig, value: sig }))
-                ]}
+              <MultiSelectField
+                label="Primary Genres"
+                values={formData.genres_primary}
+                onValuesChange={(items) => updateFormData('genres_primary', items)}
+                options={PRIMARY_GENRES}
+                placeholder="Select primary genres"
+                maxSelections={3}
               />
 
               <MultiSelectField
-                label="Instruments"
-                values={formData.instruments}
-                onValuesChange={(items) => updateFormData('instruments', items)}
-                options={INSTRUMENTS}
-                placeholder="Select instruments"
+                label="Electronic Subgenres"
+                values={formData.genres_electronic}
+                onValuesChange={(items) => updateFormData('genres_electronic', items)}
+                options={ELECTRONIC_GENRES}
+                placeholder="Select electronic subgenres"
+                maxSelections={4}
               />
             </View>
 
+            {/* Mood & Energy */}
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Additional Details</Text>
+              <Text style={styles.sectionTitle}>Mood & Energy</Text>
+              
+              <MultiSelectField
+                label="Mood"
+                values={formData.mood}
+                onValuesChange={(items) => updateFormData('mood', items)}
+                options={MOODS}
+                placeholder="Select moods"
+                maxSelections={3}
+              />
+
+              <PickerField
+                label="Energy Level"
+                value={formData.energy}
+                onValueChange={(value) => updateFormData('energy', value)}
+                options={[
+                  { label: 'Select energy level...', value: '' },
+                  ...ENERGY_LEVELS
+                ]}
+              />
+            </View>
+
+            {/* Technical Specs */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Technical Specifications</Text>
               
               <FormField
-                label="Vocals (Optional)"
-                value={formData.vocals}
-                onChangeText={(value) => updateFormData('vocals', value)}
-                placeholder="e.g., Male vocals, Female harmonies, Vocoder"
-                multiline
+                label="Tempo (BPM)"
+                value={formData.tempo_bpm}
+                onChangeText={(value) => updateFormData('tempo_bpm', value)}
+                placeholder="e.g., 128, 174, 85"
+                keyboardType="numeric"
+              />
+
+              <PickerField
+                label="Key/Scale"
+                value={formData.key_scale}
+                onValueChange={(value) => updateFormData('key_scale', value)}
+                options={[
+                  { label: 'Select key...', value: '' },
+                  ...COMMON_KEYS.map(key => ({ label: key, value: key }))
+                ]}
+              />
+
+              <PickerField
+                label="Groove/Swing"
+                value={formData.groove_swing}
+                onValueChange={(value) => updateFormData('groove_swing', value)}
+                options={[
+                  { label: 'Select groove...', value: '' },
+                  ...GROOVE_SWINGS
+                ]}
+              />
+            </View>
+
+            {/* Rhythm & Bass */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Rhythm & Bass</Text>
+              
+              <MultiSelectField
+                label="Beat Styles"
+                values={formData.beat}
+                onValuesChange={(items) => updateFormData('beat', items)}
+                options={BEAT_STYLES}
+                placeholder="Select beat styles"
+                maxSelections={3}
+              />
+
+              <MultiSelectField
+                label="Bass Characteristics"
+                values={formData.bass}
+                onValuesChange={(items) => updateFormData('bass', items)}
+                options={BASS_CHARACTERISTICS}
+                placeholder="Select bass characteristics"
+                maxSelections={3}
+              />
+            </View>
+
+            {/* Vocals */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Vocals</Text>
+              
+              <PickerField
+                label="Vocal Gender"
+                value={formData.vocal_gender}
+                onValueChange={(value) => updateFormData('vocal_gender', value)}
+                options={VOCAL_GENDERS}
+              />
+
+              <PickerField
+                label="Vocal Delivery"
+                value={formData.vocal_delivery}
+                onValueChange={(value) => updateFormData('vocal_delivery', value)}
+                options={VOCAL_DELIVERIES}
+              />
+            </View>
+
+            {/* Production & Style */}
+            <View style={styles.formSection}>
+              <Text style={styles.sectionTitle}>Production & Style</Text>
+              
+              <PickerField
+                label="Era/Style"
+                value={formData.era}
+                onValueChange={(value) => updateFormData('era', value)}
+                options={[
+                  { label: 'Select era...', value: '' },
+                  ...ERA_SUGGESTIONS.map(era => ({ label: era, value: era }))
+                ]}
               />
 
               <FormField
-                label="Lyrics Theme (Optional)"
-                value={formData.lyrics}
-                onChangeText={(value) => updateFormData('lyrics', value)}
-                placeholder="e.g., Love, Adventure, Nostalgia"
-                multiline
+                label="Track Length"
+                value={formData.length}
+                onChangeText={(value) => updateFormData('length', value)}
+                placeholder="e.g., 3:30, Radio edit, Extended club mix"
               />
 
               <FormField
-                label="Song Structure (Optional)"
-                value={formData.structure}
-                onChangeText={(value) => updateFormData('structure', value)}
-                placeholder="e.g., Intro-Verse-Chorus-Verse-Chorus-Bridge-Chorus-Outro"
-                multiline
-              />
-
-              <FormField
-                label="Production Style (Optional)"
-                value={formData.production}
-                onChangeText={(value) => updateFormData('production', value)}
-                placeholder="e.g., Lo-fi, Polished, Raw, Ambient"
-                multiline
-              />
-
-              <FormField
-                label="Reference Track (Optional)"
-                value={formData.reference}
-                onChangeText={(value) => updateFormData('reference', value)}
-                placeholder="e.g., Similar to 'Song Name' by Artist"
+                label="Master Notes"
+                value={formData.master_notes}
+                onChangeText={(value) => updateFormData('master_notes', value)}
+                placeholder="e.g., Loud and punchy, Warm analog feel, Clean digital"
                 multiline
               />
             </View>
 
-            {/* Weirdness Slider */}
+            {/* Creativity Level */}
             <View style={styles.formSection}>
               <Text style={styles.sectionTitle}>Creativity Level</Text>
-              <View style={styles.sliderContainer}>
-                <Text style={styles.sliderLabel}>Weirdness: {formData.weirdness}/10</Text>
-                <View style={styles.sliderTrack}>
-                  <View style={[styles.sliderFill, { width: `${formData.weirdness * 10}%` }]} />
-                  <TouchableOpacity
-                    style={[styles.sliderThumb, { left: `${formData.weirdness * 10}%` }]}
-                    onPressIn={() => {
-                      const newValue = formData.weirdness >= 10 ? 0 : formData.weirdness + 1;
-                      updateFormData('weirdness', newValue);
-                    }}
-                  />
-                </View>
-                <Text style={styles.sliderDescription}>
-                  {formData.weirdness <= 3 ? 'Traditional' : 
-                   formData.weirdness <= 6 ? 'Creative' : 
-                   formData.weirdness <= 8 ? 'Experimental' : 'Avant-garde'}
-                </Text>
-              </View>
+              
+              <PickerField
+                label="Weirdness Level"
+                value={formData.weirdness_level}
+                onValueChange={(value) => updateFormData('weirdness_level', value)}
+                options={WEIRDNESS_LEVELS}
+              />
             </View>
 
-            {/* Custom Prompt */}
+            {/* Freeform */}
             <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Custom Additions</Text>
+              <Text style={styles.sectionTitle}>Additional Notes</Text>
+              
               <FormField
-                label="Additional Prompt Text (Optional)"
-                value={formData.customPrompt}
-                onChangeText={(value) => updateFormData('customPrompt', value)}
-                placeholder="Add any specific details or requirements..."
+                label="General Freeform"
+                value={formData.general_freeform}
+                onChangeText={(value) => updateFormData('general_freeform', value)}
+                placeholder="Add any specific details, references, or creative direction..."
                 multiline
-                numberOfLines={3}
+                numberOfLines={4}
               />
             </View>
 
@@ -379,10 +472,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
-  headerButton: {
-    padding: 8,
-    marginLeft: 8,
-  },
   scrollView: {
     flex: 1,
   },
@@ -417,42 +506,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginBottom: 16,
-  },
-  sliderContainer: {
-    marginTop: 8,
-  },
-  sliderLabel: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  sliderTrack: {
-    height: 6,
-    backgroundColor: colors.border,
-    borderRadius: 3,
-    position: 'relative',
-    marginBottom: 8,
-  },
-  sliderFill: {
-    height: '100%',
-    backgroundColor: colors.primary,
-    borderRadius: 3,
-  },
-  sliderThumb: {
-    position: 'absolute',
-    top: -6,
-    width: 18,
-    height: 18,
-    backgroundColor: colors.primary,
-    borderRadius: 9,
-    marginLeft: -9,
-  },
-  sliderDescription: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginTop: 4,
   },
   generateButton: {
     flexDirection: 'row',
