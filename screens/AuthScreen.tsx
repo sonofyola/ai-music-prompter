@@ -1,11 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
-import ThemeToggle from '../components/ThemeToggle';
-import DebugScreen from './DebugScreen';
 import { performCompleteAuthReset } from '../utils/authReset';
 
 export default function AuthScreen() {
@@ -144,6 +142,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 16,
     marginBottom: 20,
+  },
+  loginButtonDisabled: {
+    opacity: 0.6,
   },
   loginButtonText: {
     fontSize: 18,

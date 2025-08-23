@@ -24,6 +24,7 @@ export interface SavedPrompt {
   formData: MusicPromptData;
   generatedPrompt: string;
   createdAt: string;
+  userId?: string;
 }
 
 export interface PromptTemplate {

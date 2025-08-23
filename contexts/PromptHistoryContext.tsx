@@ -1,14 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MusicPromptData } from '../types';
-
-export interface SavedPrompt {
-  id: string;
-  name: string;
-  formData: MusicPromptData;
-  generatedPrompt: string;
-  createdAt: string;
-}
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { useBasic } from '@basictech/expo';
+import { MusicPromptData, SavedPrompt } from '../types';
 
 interface PromptHistoryContextType {
   prompts: SavedPrompt[];
@@ -16,65 +8,119 @@ interface PromptHistoryContextType {
   deletePrompt: (id: string) => Promise<void>;
   clearHistory: () => Promise<void>;
   loadPrompts: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const PromptHistoryContext = createContext<PromptHistoryContextType | undefined>(undefined);
 
 export function PromptHistoryProvider({ children }: { children: React.ReactNode }) {
   const [prompts, setPrompts] = useState<SavedPrompt[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const { db, user, isSignedIn } = useBasic();
+
+  const loadPrompts = useCallback(async () => {
+    if (!db || !user) return;
+    
+    setIsLoading(true);
+    try {
+      const userPrompts = await db.from('prompt_history').getAll();
+      
+      // Filter prompts for current user and parse the data
+      const filteredPrompts = userPrompts
+        .filter((prompt: any) => prompt.user_id === user.id)
+        .map((prompt: any) => ({
+          id: String(prompt.id),
+          name: String(prompt.name),
+          formData: JSON.parse(String(prompt.form_data)),
+          generatedPrompt: String(prompt.generated_prompt),
+          createdAt: String(prompt.created_at),
+          userId: String(prompt.user_id),
+        }))
+        .sort((a: SavedPrompt, b: SavedPrompt) => 
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      
+      setPrompts(filteredPrompts);
+    } catch (error) {
+      console.error('Error loading prompts from database:', error);
+      setPrompts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [db, user]);
 
   useEffect(() => {
-    loadPrompts();
-  }, []);
-
-  const loadPrompts = async () => {
-    try {
-      const stored = await AsyncStorage.getItem('promptHistory');
-      if (stored) {
-        setPrompts(JSON.parse(stored));
-      }
-    } catch (error) {
-      console.error('Error loading prompts from local storage:', error);
+    if (isSignedIn && db && user) {
+      loadPrompts();
+    } else {
       setPrompts([]);
     }
-  };
+  }, [isSignedIn, db, user, loadPrompts]);
 
   const savePrompt = async (name: string, formData: MusicPromptData, generatedPrompt: string) => {
-    const newPrompt: SavedPrompt = {
-      id: Date.now().toString(),
-      name,
-      formData,
-      generatedPrompt,
-      createdAt: new Date().toISOString(),
-    };
+    if (!db || !user) {
+      throw new Error('Database not available or user not signed in');
+    }
 
     try {
-      const updatedPrompts = [newPrompt, ...prompts];
-      setPrompts(updatedPrompts);
-      await AsyncStorage.setItem('promptHistory', JSON.stringify(updatedPrompts));
+      const promptData = {
+        name,
+        form_data: JSON.stringify(formData),
+        generated_prompt: generatedPrompt,
+        created_at: new Date().toISOString(),
+        user_id: user.id,
+      };
+
+      const savedPrompt = await db.from('prompt_history').add(promptData);
+      
+      if (savedPrompt) {
+        const newPrompt: SavedPrompt = {
+          id: String(savedPrompt.id),
+          name: String(savedPrompt.name),
+          formData: JSON.parse(String(savedPrompt.form_data)),
+          generatedPrompt: String(savedPrompt.generated_prompt),
+          createdAt: String(savedPrompt.created_at),
+          userId: String(savedPrompt.user_id),
+        };
+        
+        setPrompts(prev => [newPrompt, ...prev]);
+      }
     } catch (error) {
-      console.error('Error saving prompt to local storage:', error);
+      console.error('Error saving prompt to database:', error);
       throw error;
     }
   };
 
   const deletePrompt = async (id: string) => {
+    if (!db) {
+      throw new Error('Database not available');
+    }
+
     try {
-      const updatedPrompts = prompts.filter(p => p.id !== id);
-      setPrompts(updatedPrompts);
-      await AsyncStorage.setItem('promptHistory', JSON.stringify(updatedPrompts));
+      await db.from('prompt_history').delete(id);
+      setPrompts(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error('Error deleting prompt from local storage:', error);
+      console.error('Error deleting prompt from database:', error);
       throw error;
     }
   };
 
   const clearHistory = async () => {
+    if (!db || !user) {
+      throw new Error('Database not available or user not signed in');
+    }
+
     try {
+      // Get all user prompts and delete them
+      const userPrompts = prompts.filter(p => p.userId === user.id);
+      
+      for (const prompt of userPrompts) {
+        await db.from('prompt_history').delete(prompt.id);
+      }
+      
       setPrompts([]);
-      await AsyncStorage.removeItem('promptHistory');
     } catch (error) {
-      console.error('Error clearing prompts from local storage:', error);
+      console.error('Error clearing prompts from database:', error);
       throw error;
     }
   };
@@ -86,6 +132,7 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
       deletePrompt,
       clearHistory,
       loadPrompts,
+      isLoading,
     }}>
       {children}
     </PromptHistoryContext.Provider>

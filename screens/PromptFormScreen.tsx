@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
+import { useBasic } from '@basictech/expo';
 
 // Components
 import FormField from '../components/FormField';
@@ -51,6 +52,7 @@ import { generateRandomTrackIdea } from '../utils/randomTrackGenerator';
 export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { savePrompt } = usePromptHistory();
+  const { signout, user } = useBasic();
   
   // Form state with full original parameters
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -179,10 +181,32 @@ export default function PromptFormScreen() {
     );
   };
 
-  const handleLoadFromHistory = (savedPrompt: any) => {
-    setFormData(savedPrompt.formData);
-    setGeneratedPrompt(savedPrompt.generatedPrompt);
+  const handleLoadFromHistory = (formData: MusicPromptData) => {
+    setFormData(formData);
     setShowHistoryModal(false);
+  };
+
+  const handleSaveCurrentPrompt = async (name: string) => {
+    if (!generatedPrompt) {
+      Alert.alert('No Prompt', 'Please generate a prompt first before saving.');
+      return;
+    }
+
+    try {
+      await savePrompt(name, formData, generatedPrompt);
+      Alert.alert('Success', 'Prompt saved successfully!');
+    } catch (error) {
+      Alert.alert('Error', 'Failed to save prompt. Please try again.');
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signout();
+    } catch (error) {
+      console.error('Error signing out:', error);
+      Alert.alert('Error', 'Failed to sign out. Please try again.');
+    }
   };
 
   return (
@@ -195,11 +219,21 @@ export default function PromptFormScreen() {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <MaterialIcons name="auto-awesome" size={28} color={colors.primary} />
-            <Text style={styles.headerTitle}>AI Music Prompter</Text>
+            <View>
+              <Text style={styles.headerTitle}>AI Music Prompter</Text>
+              {user && (
+                <Text style={styles.userIndicator}>
+                  {user.name || user.email || 'Signed In'}
+                </Text>
+              )}
+            </View>
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
               <MaterialIcons name="history" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={handleSignOut} style={styles.headerButton}>
+              <MaterialIcons name="logout" size={24} color={colors.text} />
             </TouchableOpacity>
             <ThemeToggle />
           </View>
@@ -437,15 +471,7 @@ export default function PromptFormScreen() {
 
             {/* Generated Prompt */}
             {generatedPrompt && (
-              <View>
-                <GeneratedPrompt prompt={generatedPrompt} />
-                
-                {/* Save Prompt Button */}
-                <TouchableOpacity style={styles.saveButton} onPress={handleSavePrompt}>
-                  <MaterialIcons name="bookmark-add" size={20} color={colors.primary} />
-                  <Text style={styles.saveButtonText}>Save to History</Text>
-                </TouchableOpacity>
-              </View>
+              <GeneratedPrompt prompt={generatedPrompt} />
             )}
           </View>
         </ScrollView>
@@ -472,7 +498,10 @@ export default function PromptFormScreen() {
         <PromptHistoryModal
           visible={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
-          onSelectPrompt={handleLoadFromHistory}
+          onLoadPrompt={handleLoadFromHistory}
+          onSaveCurrentPrompt={handleSaveCurrentPrompt}
+          currentFormData={formData}
+          currentGeneratedPrompt={generatedPrompt}
         />
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -503,6 +532,12 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.text,
     marginLeft: 12,
+  },
+  userIndicator: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginLeft: 12,
+    fontStyle: 'italic',
   },
   headerRight: {
     flexDirection: 'row',
