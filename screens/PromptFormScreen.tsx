@@ -55,7 +55,7 @@ export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { user } = useBasic();
+  const { user, signout } = useBasic();
   const styles = createStyles(colors);
 
   // Navigation state
@@ -164,6 +164,28 @@ export default function PromptFormScreen() {
           onPress: () => {
             setIsAdmin(false);
             Alert.alert('Logged Out', 'Admin access has been revoked.');
+          }
+        }
+      ]
+    );
+  };
+
+  const handleUserLogout = async () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Logout', 
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await signout();
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
           }
         }
       ]
@@ -348,6 +370,18 @@ export default function PromptFormScreen() {
           >
             <MaterialIcons name="library-books" size={20} color={colors.text} />
           </TouchableOpacity>
+
+          {/* User Logout Button - for regular users */}
+          {!isAdmin && (
+            <TouchableOpacity
+              style={styles.userLogoutButton}
+              onPress={handleUserLogout}
+              activeOpacity={0.7}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <MaterialIcons name="logout" size={20} color={colors.text} />
+            </TouchableOpacity>
+          )}
 
           {/* Admin logout - only when admin is active */}
           {isAdmin && (
@@ -836,6 +870,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: '#e3f2fd',
     borderWidth: 2,
     borderColor: '#2196f3',
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userLogoutButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
     minWidth: 40,
     minHeight: 40,
     alignItems: 'center',
