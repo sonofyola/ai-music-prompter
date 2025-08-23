@@ -173,10 +173,11 @@ export default function PromptFormScreen({ navigation }: any) {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('🚪 Signing out user:', user?.email);
               await signout();
-              navigation.replace('Auth');
+              console.log('✅ User signed out successfully');
             } catch (error) {
-              console.error('Logout error:', error);
+              console.error('❌ Logout error:', error);
               Alert.alert('Error', 'Failed to sign out. Please try again.');
             }
           }
@@ -386,6 +387,19 @@ export default function PromptFormScreen({ navigation }: any) {
               }}
             >
               <MaterialIcons name="library-books" size={20} color={colors.text} />
+            </TouchableOpacity>
+
+            {/* User Logout Button - always visible for authenticated users */}
+            <TouchableOpacity
+              style={styles.userLogoutButton}
+              onPress={() => {
+                console.log('🔥 User logout button pressed');
+                handleUserLogout();
+              }}
+              activeOpacity={0.7}
+              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+            >
+              <MaterialIcons name="logout" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
 
             {/* Admin logout - only when admin is active */}
@@ -943,6 +957,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   templatesButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  userLogoutButton: {
     padding: 8,
     borderRadius: 20,
     backgroundColor: colors.surface,
