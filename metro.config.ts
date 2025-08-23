@@ -21,25 +21,13 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
-// Web-specific configuration to handle CORS properly
-if (config.server) {
-  config.server.enhanceMiddleware = (middleware, server) => {
-    return (req, res, next) => {
-      // Set CORS headers for all requests
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-      res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With');
-      
-      // Handle preflight requests
-      if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-      }
-      
-      return middleware(req, res, next);
-    };
-  };
-}
+// Simplified server configuration to avoid CORS conflicts
+config.server = {
+  port: 8081,
+  host: '0.0.0.0',
+};
+
+// Remove any custom middleware that might cause CORS issues
+delete config.server?.enhanceMiddleware;
 
 module.exports = wrapWithReanimatedMetroConfig(config);

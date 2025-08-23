@@ -65,7 +65,8 @@
           ],
           "mode": "production"
         }
-      ]
+      ],
+      "expo-router"
     ],
     "extra": {
       "eas": {
