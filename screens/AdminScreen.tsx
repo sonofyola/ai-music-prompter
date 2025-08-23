@@ -340,6 +340,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   };
 
   const handleLogout = () => {
+    console.log('🚨 LOGOUT BUTTON PRESSED!');
     Alert.alert(
       'Logout Admin',
       'Are you sure you want to logout and return to the main app?',
@@ -349,7 +350,9 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           text: 'Logout', 
           style: 'destructive',
           onPress: () => {
+            console.log('🚨 LOGOUT CONFIRMED - Setting admin status to false');
             setAdminStatus(false);
+            console.log('🚨 LOGOUT CONFIRMED - Calling onBackToApp');
             onBackToApp();
           }
         }
@@ -395,6 +398,23 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <MaterialIcons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title}>Admin Panel</Text>
+        
+        {/* TEST BUTTON */}
+        <TouchableOpacity 
+          onPress={() => {
+            console.log('🧪 TEST BUTTON PRESSED IN ADMIN!');
+            Alert.alert('Test', 'Admin test button works!');
+          }}
+          style={{
+            backgroundColor: 'green',
+            padding: 10,
+            borderRadius: 5,
+            marginRight: 10,
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: 12 }}>TEST</Text>
+        </TouchableOpacity>
+        
         <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
           <MaterialIcons name="logout" size={20} color={colors.error} />
           <Text style={styles.logoutButtonText}>Logout</Text>
