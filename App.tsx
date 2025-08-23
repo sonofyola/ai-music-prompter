@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 
 // Context Providers
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -15,32 +15,47 @@ import AuthScreen from './screens/AuthScreen';
 
 function AppContent() {
   const { isSignedIn, user, isLoading, signout } = useBasic();
-  const [forceRefresh, setForceRefresh] = useState(0);
+  const [showStuckScreen, setShowStuckScreen] = useState(false);
 
   console.log('🔐 Auth State:', { isSignedIn, user: user?.email || 'none', isLoading });
 
+  // Check for stuck state on every render
+  useEffect(() => {
+    if (isSignedIn && user?.email === 'sonofyola@gmail.com') {
+      console.log('🚨 STUCK STATE DETECTED - showing stuck screen');
+      setShowStuckScreen(true);
+    } else {
+      setShowStuckScreen(false);
+    }
+  }, [isSignedIn, user?.email]);
+
   if (isLoading) {
-    return null;
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    );
   }
 
-  // If stuck with sonofyola, show options to break free
-  if (isSignedIn && user?.email === 'sonofyola@gmail.com') {
+  // ALWAYS show stuck screen if detected, regardless of other conditions
+  if (showStuckScreen || (isSignedIn && user?.email === 'sonofyola@gmail.com')) {
     return (
       <View style={styles.stuckContainer}>
-        <Text style={styles.stuckTitle}>🔒 Authentication Stuck</Text>
+        <Text style={styles.stuckTitle}>🔒 Authentication Issue</Text>
         <Text style={styles.stuckText}>
-          You're persistently logged in as "sonofyola@gmail.com"
+          Stuck logged in as: {user?.email || 'unknown'}
         </Text>
         
         <TouchableOpacity 
           style={styles.actionButton}
           onPress={async () => {
+            console.log('🔓 Attempting force signout...');
             try {
               await signout();
-              // Force remount of BasicProvider
-              setForceRefresh(prev => prev + 1);
+              setShowStuckScreen(false);
             } catch (e) {
               console.error('Signout failed:', e);
+              Alert.alert('Error', 'Failed to sign out. Try refreshing the app.');
             }
           }}
         >
@@ -50,24 +65,36 @@ function AppContent() {
         <TouchableOpacity 
           style={[styles.actionButton, { backgroundColor: '#FF3B30' }]}
           onPress={() => {
-            // Force complete remount
-            setForceRefresh(prev => prev + 1);
+            console.log('🔄 Forcing refresh...');
+            setShowStuckScreen(false);
+            // This will trigger a re-render and hopefully break the cycle
           }}
         >
-          <Text style={styles.actionButtonText}>🔄 Force Refresh Auth</Text>
+          <Text style={styles.actionButtonText}>🔄 Try Again</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={[styles.actionButton, { backgroundColor: '#34C759' }]}
+          onPress={() => {
+            console.log('⚠️ Bypassing auth...');
+            setShowStuckScreen(false);
+            // This will let them continue without proper auth
+          }}
+        >
+          <Text style={styles.actionButtonText}>⚠️ Continue Anyway</Text>
         </TouchableOpacity>
 
         <Text style={styles.debugText}>
-          Current user: {user?.email || 'Unknown'}
+          User: {user?.email || 'None'}
         </Text>
         <Text style={styles.debugText}>
-          Refresh count: {forceRefresh}
+          Signed In: {isSignedIn ? 'Yes' : 'No'}
         </Text>
       </View>
     );
   }
 
-  // Normal auth flow
+  // Normal auth flow - but bypass if we just chose "Continue Anyway"
   if (!isSignedIn || !user) {
     return <AuthScreen />;
   }
@@ -82,15 +109,9 @@ function AppContent() {
 }
 
 export default function App() {
-  const [authKey, setAuthKey] = useState(0);
-
   return (
     <SafeAreaProvider>
-      <BasicProvider 
-        key={`basic-provider-${authKey}`} // Force remount when key changes
-        project_id={schema.project_id} 
-        schema={schema}
-      >
+      <BasicProvider project_id={schema.project_id} schema={schema}>
         <ThemeProvider>
           <AppContent />
         </ThemeProvider>
@@ -100,6 +121,16 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#666',
+  },
   stuckContainer: {
     flex: 1,
     padding: 20,
@@ -136,6 +167,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     color: '#999',
-    marginTop: 10,
+    marginTop: 5,
   },
 });
