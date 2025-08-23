@@ -13,6 +13,9 @@ import AuthScreen from './screens/AuthScreen';
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
 
+  // Debug logging
+  console.log('🔍 Auth State:', { isSignedIn, user: user?.email, isLoading });
+
   // Show loading state
   if (isLoading) {
     return (
@@ -24,10 +27,12 @@ function AppContent() {
 
   // Show auth screen if not signed in
   if (!isSignedIn || !user) {
+    console.log('📱 Showing AuthScreen');
     return <AuthScreen />;
   }
 
   // Show main app
+  console.log('📱 Showing PromptFormScreen');
   return <PromptFormScreen />;
 }
 

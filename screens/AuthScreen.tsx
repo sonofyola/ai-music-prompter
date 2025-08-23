@@ -6,7 +6,7 @@ import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from '../components/ThemeToggle';
 
-export default function AuthScreen({ navigation }: any) {
+export default function AuthScreen() {
   const { colors } = useTheme();
   const { user, login, isLoading, isSignedIn, db } = useBasic();
   const styles = createStyles(colors);
@@ -15,9 +15,8 @@ export default function AuthScreen({ navigation }: any) {
     if (isSignedIn && user) {
       // User is authenticated, create/update their profile
       initializeUserProfile();
-      navigation.replace('PromptForm');
     }
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user, db]);
 
   const initializeUserProfile = async () => {
     if (!db || !user) return;
@@ -37,20 +36,22 @@ export default function AuthScreen({ navigation }: any) {
           created_at: new Date().toISOString(),
           stripe_customer_id: '',
         });
-        console.log('Created new user profile for:', user.email);
+        console.log('✅ Created new user profile for:', user.email);
       } else {
-        console.log('User profile exists for:', user.email);
+        console.log('✅ User profile exists for:', user.email);
       }
     } catch (error) {
-      console.error('Error initializing user profile:', error);
+      console.error('❌ Error initializing user profile:', error);
     }
   };
 
   const handleLogin = async () => {
     try {
+      console.log('🔄 Starting login process...');
       await login();
+      console.log('✅ Login successful');
     } catch (error) {
-      console.error('Login error:', error);
+      console.error('❌ Login error:', error);
       Alert.alert('Login Error', 'Failed to sign in. Please try again.');
     }
   };

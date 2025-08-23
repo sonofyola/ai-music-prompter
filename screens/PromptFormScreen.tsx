@@ -181,10 +181,12 @@ export default function PromptFormScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              console.log('🔄 Starting logout process...');
               await signout();
+              console.log('✅ Logout successful');
             } catch (error) {
-              console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+              console.error('❌ Logout error:', error);
+              Alert.alert('Error', `Failed to logout: ${error?.message || 'Unknown error'}`);
             }
           }
         }
