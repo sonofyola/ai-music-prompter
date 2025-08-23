@@ -482,3 +482,196 @@ export const performSuperNuclearReset = async () => {
     }
   }
 };
+
+// Project-level reset - forces Basic Tech to start completely fresh
+export const performProjectReset = async () => {
+  try {
+    console.log('🏗️ PROJECT RESET - Forcing Basic Tech to start fresh');
+    
+    // First, perform super nuclear reset to clear all local data
+    await performSuperNuclearReset();
+    
+    // Add project-specific reset parameters to the URL
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        console.log('🏗️ Forcing project-level reset...');
+        
+        const url = new URL(window.location.origin);
+        url.searchParams.set('project_reset', '1');
+        url.searchParams.set('force_new_session', 'true');
+        url.searchParams.set('clear_project_cache', 'true');
+        url.searchParams.set('sonofyola_override', 'true');
+        url.searchParams.set('basic_tech_reset', 'true');
+        url.searchParams.set('t', Date.now().toString());
+        url.searchParams.set('r', Math.random().toString());
+        
+        console.log('🏗️ Redirecting with project reset parameters...');
+        window.location.replace(url.toString());
+      }, 2000);
+    }
+    
+  } catch (error) {
+    console.error('🏗️ Project reset error:', error);
+    // Fallback to super nuclear
+    await performSuperNuclearReset();
+  }
+};
+
+// Ultimate reset - creates a completely new session context
+export const performUltimateReset = async () => {
+  try {
+    console.log('🌟 ULTIMATE RESET - Creating completely new session context');
+    
+    // Clear everything multiple times
+    for (let i = 0; i < 5; i++) {
+      console.log(`🌟 Ultimate destruction pass ${i + 1}/5`);
+      
+      if (typeof window !== 'undefined') {
+        // Clear all storage
+        try { window.localStorage.clear(); } catch (e) {}
+        try { window.sessionStorage.clear(); } catch (e) {}
+        
+        // Clear all cookies with maximum aggression
+        if (document && document.cookie) {
+          document.cookie.split(";").forEach(function(c) { 
+            const cookieName = c.replace(/^ +/, "").replace(/=.*/, "");
+            
+            // Clear with every possible domain/path combination
+            const domains = [
+              '', 
+              window.location.hostname,
+              `.${window.location.hostname}`,
+              'localhost', 
+              '.localhost',
+              '.basictech.com',
+              '.kiki.ai',
+              '.kiki.dev',
+              '.expo.dev',
+              'project-de0e3374.dev.kiki.dev',
+              '.project-de0e3374.dev.kiki.dev'
+            ];
+            
+            const paths = ['/', '/auth', '/login', '/oauth', '/app', '/api', '/session'];
+            
+            domains.forEach(domain => {
+              paths.forEach(path => {
+                // Multiple expiration strategies
+                const expirations = [
+                  'Thu, 01 Jan 1970 00:00:00 GMT',
+                  'Thu, 01 Jan 1970 00:00:01 GMT',
+                  'Wed, 31 Dec 1969 23:59:59 GMT'
+                ];
+                
+                expirations.forEach(expires => {
+                  document.cookie = `${cookieName}=;expires=${expires};path=${path};domain=${domain}`;
+                  document.cookie = `${cookieName}=;expires=${expires};path=${path}`;
+                  document.cookie = `${cookieName}=deleted;expires=${expires};path=${path};domain=${domain}`;
+                  document.cookie = `${cookieName}=deleted;expires=${expires};path=${path}`;
+                });
+              });
+            });
+          });
+        }
+        
+        // Clear IndexedDB with extreme prejudice
+        if (window.indexedDB) {
+          try {
+            const databases = await window.indexedDB.databases();
+            for (const db of databases) {
+              if (db.name) {
+                // Try multiple deletion methods
+                window.indexedDB.deleteDatabase(db.name);
+                
+                // Force close any open connections
+                try {
+                  const openReq = window.indexedDB.open(db.name);
+                  openReq.onsuccess = () => {
+                    openReq.result.close();
+                    window.indexedDB.deleteDatabase(db.name);
+                  };
+                } catch (e) {}
+              }
+            }
+          } catch (e) {}
+        }
+        
+        // Clear all caches
+        if ('caches' in window) {
+          try {
+            const cacheNames = await caches.keys();
+            for (const name of cacheNames) {
+              await caches.delete(name);
+            }
+          } catch (e) {}
+        }
+        
+        // Clear service workers
+        if ('serviceWorker' in navigator) {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+              await registration.unregister();
+            }
+          } catch (e) {}
+        }
+      }
+      
+      // Clear AsyncStorage
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.clear();
+      } catch (e) {}
+      
+      // Wait between passes
+      if (i < 4) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+    }
+    
+    console.log('🌟 Ultimate destruction complete. Creating new session context...');
+    
+    // Force complete page reload with maximum cache busting and session reset
+    if (typeof window !== 'undefined') {
+      setTimeout(() => {
+        const url = new URL(window.location.origin);
+        
+        // Add every possible reset parameter
+        url.searchParams.set('ultimate_reset', '1');
+        url.searchParams.set('new_session', 'true');
+        url.searchParams.set('force_fresh', 'true');
+        url.searchParams.set('clear_all', 'true');
+        url.searchParams.set('sonofyola_destroyed', 'true');
+        url.searchParams.set('basic_tech_reset', 'true');
+        url.searchParams.set('project_reset', 'true');
+        url.searchParams.set('auth_reset', 'true');
+        url.searchParams.set('cache_bust', Date.now().toString());
+        url.searchParams.set('session_id', Math.random().toString(36));
+        url.searchParams.set('reset_id', Math.random().toString(36));
+        url.searchParams.set('timestamp', new Date().toISOString());
+        
+        console.log('🌟 Initiating ultimate reload with new session context...');
+        window.location.replace(url.toString());
+      }, 1000);
+      
+      // Backup reload methods
+      setTimeout(() => {
+        try {
+          window.location.reload();
+        } catch (e) {
+          window.location.href = window.location.origin + '?fallback=true&t=' + Date.now();
+        }
+      }, 3000);
+      
+      setTimeout(() => {
+        window.location.href = window.location.origin;
+      }, 5000);
+    }
+    
+  } catch (error) {
+    console.error('🌟 Ultimate reset error:', error);
+    // Final fallback
+    if (typeof window !== 'undefined') {
+      window.location.href = window.location.origin + '?emergency=true';
+    }
+  }
+};

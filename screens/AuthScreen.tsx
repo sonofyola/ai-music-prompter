@@ -173,6 +173,54 @@ export default function AuthScreen() {
     );
   };
 
+  const handleProjectReset = async () => {
+    Alert.alert(
+      '🏗️ Project Reset',
+      'This will force Basic Tech to start completely fresh by resetting the project-level session. This specifically targets server-side cached authentication data.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🏗️ Project Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performProjectReset } = await import('../utils/authReset');
+              await performProjectReset();
+            } catch (error) {
+              console.error('❌ Project reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleUltimateReset = async () => {
+    Alert.alert(
+      '🌟 ULTIMATE RESET',
+      'This is the FINAL BOSS of resets. It will destroy everything 5 times, clear all possible caches, cookies, and storage, then create a completely new session context. This is specifically designed to break free from persistent server-side authentication issues.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🌟 ULTIMATE RESET',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performUltimateReset } = await import('../utils/authReset');
+              await performUltimateReset();
+            } catch (error) {
+              console.error('❌ Ultimate reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -298,6 +346,22 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={styles.troubleshootButtonText}>🚀 SUPER NUCLEAR</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#2E8B57' }]}
+            onPress={handleProjectReset}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🏗️ Project Reset</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FFD700', borderWidth: 3, borderColor: '#FF4500' }]}
+            onPress={handleUltimateReset}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { color: '#000000', fontWeight: 'bold' }]}>🌟 ULTIMATE RESET</Text>
           </TouchableOpacity>
         </View>
 
