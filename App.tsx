@@ -56,7 +56,7 @@ function AppContent() {
       <MaintenanceScreen 
         message={maintenanceMessage}
         onAdminAccess={() => {}}
-        showAdminAccess={!isSignedIn} // Show admin access button only for non-authenticated users
+        showAdminAccess={false} // Never show admin access button - users must use the 7-click method
       />
     );
   }

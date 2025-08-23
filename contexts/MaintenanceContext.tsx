@@ -31,6 +31,15 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
   const [maintenanceMessage, setMaintenanceMessage] = useState('The app is currently under maintenance. Please check back later.');
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // Add this debug log at the top
+  console.log('🚀 MAINTENANCE PROVIDER RENDER:', {
+    isSignedIn,
+    userEmail: user?.email,
+    isAdmin,
+    isMaintenanceMode,
+    timestamp: new Date().toISOString()
+  });
+
   // CRITICAL FIX: Load maintenance state for ALL users, not just when db is available
   useEffect(() => {
     console.log('🚀 MAINTENANCE PROVIDER INIT - Starting maintenance provider');
@@ -67,19 +76,29 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     };
   }, [isAdmin, db]);
 
-  // Keep the admin check useEffect
+  // Keep the admin check useEffect but fix the logic
   useEffect(() => {
     console.log('👤 USER CHANGE - Checking admin access', { isSignedIn, userEmail: user?.email });
-    // Reset admin status when user changes
-    if (isSignedIn && user) {
-      checkAdminAccess().catch(error => {
-        console.error('Failed to check admin access:', error);
-        setIsAdmin(false);
+    
+    if (isSignedIn && user?.email) {
+      // Check admin access immediately when user is available
+      const userEmail = user.email.toLowerCase().trim();
+      const hasAdminAccess = ADMIN_EMAILS.some(adminEmail => 
+        adminEmail.toLowerCase().trim() === userEmail
+      );
+      
+      console.log('👤 ADMIN CHECK RESULT:', {
+        userEmail,
+        hasAdminAccess,
+        adminEmails: ADMIN_EMAILS
       });
+      
+      setIsAdmin(hasAdminAccess);
     } else {
+      console.log('👤 NO USER - Setting admin to false');
       setIsAdmin(false);
     }
-  }, [isSignedIn, user]);
+  }, [isSignedIn, user?.email]);
 
   // Debug logging
   useEffect(() => {
@@ -133,6 +152,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
   const checkAdminAccess = async (): Promise<boolean> => {
     try {
       if (!user?.email) {
+        console.log('❌ ADMIN CHECK - No user email');
         setIsAdmin(false);
         return false;
       }
@@ -142,24 +162,36 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
         adminEmail.toLowerCase().trim() === userEmail
       );
 
+      console.log('✅ ADMIN CHECK - Result:', {
+        userEmail,
+        hasAdminAccess,
+        adminEmails: ADMIN_EMAILS
+      });
+
       setIsAdmin(hasAdminAccess);
       return hasAdminAccess;
     } catch (error) {
-      console.error('Error checking admin access:', error);
+      console.error('❌ ADMIN CHECK - Error:', error);
       setIsAdmin(false);
       return false;
     }
   };
 
   const setAdminStatus = async (status: boolean) => {
+    console.log('🔧 SET ADMIN STATUS - Request:', { status, currentAdmin: isAdmin, userEmail: user?.email });
+    
     if (status) {
       // Only allow admin status if user has admin access
       const hasAccess = await checkAdminAccess();
       if (!hasAccess) {
+        console.log('❌ SET ADMIN STATUS - Access denied');
         throw new Error('Access denied: You are not authorized for admin access.');
       }
+      console.log('✅ SET ADMIN STATUS - Access granted');
     }
+    
     setIsAdmin(status);
+    console.log('🔧 SET ADMIN STATUS - Updated to:', status);
   };
 
   const toggleMaintenanceMode = async (enabled: boolean, message?: string) => {
