@@ -26,28 +26,28 @@ const MAINTENANCE_STORAGE_KEY = 'global_maintenance_mode';
 
 export function MaintenanceProvider({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, db } = useBasic();
-  // FORCE MAINTENANCE MODE BACK ON FOR TESTING
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true);
-  const [maintenanceMessage, setMaintenanceMessage] = useState('🚧 TESTING: Maintenance mode is forced ON!');
+  // Start with false, let database override
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
+  const [maintenanceMessage, setMaintenanceMessage] = useState('The app is currently under maintenance. Please check back later.');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  // KEEP THE USEEFFECT COMMENTED OUT FOR NOW
-  /*
+  // Enable the useEffect to load from database
   useEffect(() => {
-    loadMaintenanceState().catch(error => {
-      console.error('Failed to load maintenance state:', error);
-    });
+    if (db) {
+      loadMaintenanceState().catch(error => {
+        console.error('Failed to load maintenance state:', error);
+      });
+    }
     
     // Check maintenance state every 10 seconds for non-admin users
     const interval = setInterval(() => {
-      if (!isAdmin) {
+      if (!isAdmin && db) {
         loadMaintenanceState().catch(console.error);
       }
     }, 10000);
 
     return () => clearInterval(interval);
   }, [isAdmin, db]);
-  */
 
   // Keep the admin check useEffect
   useEffect(() => {
@@ -156,6 +156,42 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     } catch (error) {
       console.error('💥 Error saving maintenance state:', error);
       throw error;
+    }
+  };
+
+  const loadMaintenanceState = async () => {
+    if (!db) return;
+    
+    try {
+      console.log('🔍 Loading maintenance state from database...');
+      
+      // Get fresh data from database ONLY - don't use stored data
+      const maintenanceRecords = await db.from('maintenance').getAll();
+      console.log('📊 Database maintenance records:', maintenanceRecords);
+      
+      if (maintenanceRecords && maintenanceRecords.length > 0) {
+        const maintenanceRecord = maintenanceRecords[0];
+        console.log('✅ Found maintenance record:', maintenanceRecord);
+        
+        // Use database values directly
+        const dbIsActive = maintenanceRecord.isActive || false;
+        const dbMessage = maintenanceRecord.message || 'The app is currently under maintenance. Please check back later.';
+        
+        console.log('🔧 Setting maintenance state from database:', {
+          isActive: dbIsActive,
+          message: dbMessage
+        });
+        
+        setIsMaintenanceMode(dbIsActive);
+        setMaintenanceMessage(dbMessage);
+      } else {
+        console.log('📝 No maintenance records found, defaulting to OFF');
+        setIsMaintenanceMode(false);
+        setMaintenanceMessage('The app is currently under maintenance. Please check back later.');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load maintenance state:', error);
+      // On error, don't change current state
     }
   };
 
