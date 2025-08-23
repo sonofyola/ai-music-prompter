@@ -359,6 +359,69 @@ export default function AuthScreen() {
     );
   };
 
+  const handleDeleteSonofyola = async () => {
+    Alert.alert(
+      '🗑️ Delete Sonofyola Account',
+      'This will search the database for any sonofyola accounts and delete them completely. This should break the link between your admin email and the sonofyola account. This works even if you\'re currently stuck with the sonofyola account.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🗑️ Delete Sonofyola',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              console.log('🗑️ Starting forced sonofyola account deletion...');
+              
+              const { forceDeleteSonofyolaAccount } = await import('../utils/authReset');
+              const result = await forceDeleteSonofyolaAccount();
+              
+              if (result.success) {
+                Alert.alert(
+                  '🎉 Sonofyola Deleted!',
+                  `Successfully deleted ${result.deletedCount} sonofyola records from the database. The app will now reset completely to break the account link.`,
+                  [
+                    {
+                      text: 'Complete Reset',
+                      onPress: () => {
+                        // The forceDeleteSonofyolaAccount already triggers a reset
+                        console.log('🎉 Sonofyola deletion and reset complete!');
+                      }
+                    }
+                  ]
+                );
+              } else {
+                Alert.alert(
+                  'Deletion Result',
+                  result.error || 'No sonofyola accounts found to delete. The account may have already been removed.',
+                  [
+                    {
+                      text: 'Try Reset Anyway',
+                      onPress: async () => {
+                        const { performSuperNuclearReset } = await import('../utils/authReset');
+                        await performSuperNuclearReset();
+                      }
+                    },
+                    { text: 'OK', style: 'cancel' }
+                  ]
+                );
+              }
+            } catch (error) {
+              console.error('❌ Delete sonofyola error:', error);
+              Alert.alert(
+                'Error',
+                `Failed to delete sonofyola account: ${error.message}. Try the other reset options.`,
+                [{ text: 'OK' }]
+              );
+            } finally {
+              setIsResetting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -452,6 +515,14 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={styles.troubleshootButtonText}>🔬 Account Diagnostic</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF1744', borderWidth: 2, borderColor: '#000' }]}
+            onPress={handleDeleteSonofyola}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold' }]}>🗑️ DELETE SONOFYOLA</Text>
           </TouchableOpacity>
 
           <TouchableOpacity 

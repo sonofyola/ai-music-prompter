@@ -728,3 +728,181 @@ export const performAccountUnlinkReset = async () => {
     await performUltimateReset();
   }
 };
+
+// Delete sonofyola account from database
+export const deleteSonofyolaAccount = async (db: any) => {
+  try {
+    console.log('🗑️ SONOFYOLA ACCOUNT DELETION - Searching for and deleting sonofyola account');
+    
+    if (!db) {
+      console.error('❌ No database connection available');
+      return { success: false, error: 'No database connection' };
+    }
+    
+    let deletedAccounts = 0;
+    let errors = [];
+    
+    // Search and delete from user_profiles table
+    try {
+      console.log('🔍 Searching user_profiles table for sonofyola accounts...');
+      const userProfiles = await db.from('user_profiles').getAll();
+      
+      if (userProfiles && userProfiles.length > 0) {
+        for (const profile of userProfiles) {
+          const email = profile.email?.toLowerCase() || '';
+          const id = profile.id || '';
+          
+          // Check if this is a sonofyola account
+          if (email.includes('sonofyola') || id.includes('sonofyola')) {
+            console.log(`🗑️ Found sonofyola account in user_profiles: ${email} (ID: ${id})`);
+            try {
+              await db.from('user_profiles').delete(profile.id);
+              console.log(`✅ Deleted user_profile: ${email}`);
+              deletedAccounts++;
+            } catch (deleteError) {
+              console.error(`❌ Failed to delete user_profile ${email}:`, deleteError);
+              errors.push(`user_profiles: ${email} - ${deleteError.message}`);
+            }
+          }
+        }
+      } else {
+        console.log('📝 No user profiles found');
+      }
+    } catch (error) {
+      console.error('❌ Error searching user_profiles:', error);
+      errors.push(`user_profiles search: ${error.message}`);
+    }
+    
+    // Search and delete from prompt_history table (sonofyola's prompts)
+    try {
+      console.log('🔍 Searching prompt_history table for sonofyola data...');
+      const promptHistory = await db.from('prompt_history').getAll();
+      
+      if (promptHistory && promptHistory.length > 0) {
+        for (const prompt of promptHistory) {
+          const userId = prompt.user_id?.toLowerCase() || '';
+          const name = prompt.name?.toLowerCase() || '';
+          
+          // Check if this belongs to sonofyola
+          if (userId.includes('sonofyola') || name.includes('sonofyola')) {
+            console.log(`🗑️ Found sonofyola prompt: ${prompt.name} (User: ${userId})`);
+            try {
+              await db.from('prompt_history').delete(prompt.id);
+              console.log(`✅ Deleted prompt: ${prompt.name}`);
+              deletedAccounts++;
+            } catch (deleteError) {
+              console.error(`❌ Failed to delete prompt ${prompt.name}:`, deleteError);
+              errors.push(`prompt_history: ${prompt.name} - ${deleteError.message}`);
+            }
+          }
+        }
+      } else {
+        console.log('📝 No prompt history found');
+      }
+    } catch (error) {
+      console.error('❌ Error searching prompt_history:', error);
+      errors.push(`prompt_history search: ${error.message}`);
+    }
+    
+    // Search and delete from collected_emails table
+    try {
+      console.log('🔍 Searching collected_emails table for sonofyola emails...');
+      const collectedEmails = await db.from('collected_emails').getAll();
+      
+      if (collectedEmails && collectedEmails.length > 0) {
+        for (const emailRecord of collectedEmails) {
+          const email = emailRecord.email?.toLowerCase() || '';
+          
+          // Check if this is a sonofyola email
+          if (email.includes('sonofyola')) {
+            console.log(`🗑️ Found sonofyola email: ${email}`);
+            try {
+              await db.from('collected_emails').delete(emailRecord.id);
+              console.log(`✅ Deleted email record: ${email}`);
+              deletedAccounts++;
+            } catch (deleteError) {
+              console.error(`❌ Failed to delete email ${email}:`, deleteError);
+              errors.push(`collected_emails: ${email} - ${deleteError.message}`);
+            }
+          }
+        }
+      } else {
+        console.log('📝 No collected emails found');
+      }
+    } catch (error) {
+      console.error('❌ Error searching collected_emails:', error);
+      errors.push(`collected_emails search: ${error.message}`);
+    }
+    
+    console.log(`🗑️ Sonofyola deletion complete. Deleted ${deletedAccounts} records.`);
+    
+    if (errors.length > 0) {
+      console.log('⚠️ Some errors occurred:', errors);
+    }
+    
+    return {
+      success: true,
+      deletedCount: deletedAccounts,
+      errors: errors
+    };
+    
+  } catch (error) {
+    console.error('🗑️ Sonofyola account deletion failed:', error);
+    return {
+      success: false,
+      error: error.message,
+      deletedCount: 0
+    };
+  }
+};
+
+// Alternative sonofyola deletion that works even when stuck with sonofyola account
+export const forceDeleteSonofyolaAccount = async () => {
+  try {
+    console.log('🗑️ FORCE DELETE SONOFYOLA - Attempting deletion even while stuck');
+    
+    // Try to get Basic Tech instance directly
+    const { useBasic } = await import('@basictech/expo');
+    
+    // Get current database connection (even if it's the sonofyola account)
+    const basicInstance = useBasic();
+    const { db } = basicInstance;
+    
+    if (!db) {
+      console.error('❌ No database connection available');
+      return { success: false, error: 'No database connection available' };
+    }
+    
+    console.log('💾 Using current database connection to delete sonofyola...');
+    
+    // Use the current connection (even if it's sonofyola) to delete sonofyola accounts
+    const result = await deleteSonofyolaAccount(db);
+    
+    if (result.success && result.deletedCount > 0) {
+      console.log('🎉 Sonofyola accounts deleted! Now performing complete reset...');
+      
+      // After successful deletion, perform complete reset
+      await performSuperNuclearReset();
+      
+      return {
+        success: true,
+        message: `Deleted ${result.deletedCount} sonofyola records and performed complete reset`,
+        deletedCount: result.deletedCount
+      };
+    } else {
+      return {
+        success: false,
+        error: result.error || 'No sonofyola accounts found to delete',
+        deletedCount: result.deletedCount || 0
+      };
+    }
+    
+  } catch (error) {
+    console.error('🗑️ Force delete sonofyola failed:', error);
+    return {
+      success: false,
+      error: error.message,
+      deletedCount: 0
+    };
+  }
+};
