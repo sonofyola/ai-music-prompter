@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
-import { performCompleteAuthReset, performQuickAuthReset } from '../utils/authReset';
+import { performCompleteAuthReset, performQuickAuthReset, performNuclearReset } from '../utils/authReset';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
@@ -12,6 +12,10 @@ export default function AuthScreen() {
   const [isResetting, setIsResetting] = useState(false);
 
   const styles = createStyles(colors);
+
+  // Check if we're stuck with sonofyola
+  const isStuckWithSonofyola = user?.email?.includes('sonofyola') || 
+                               user?.name?.includes('sonofyola');
 
   const handleLogin = async () => {
     try {
@@ -34,6 +38,36 @@ export default function AuthScreen() {
     } catch (error) {
       console.error('❌ Sign out error:', error);
     }
+  };
+
+  const handleSonofyolaReset = async () => {
+    Alert.alert(
+      'Reset Sonofyola Account',
+      'This will clear the cached sonofyola account and let you sign in with a different account. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              console.log('🧹 Resetting sonofyola account...');
+              await signout();
+              await performQuickAuthReset();
+              
+              // Give it a moment then try to clear more aggressively
+              setTimeout(async () => {
+                await performCompleteAuthReset();
+              }, 1000);
+              
+            } catch (error) {
+              console.error('❌ Sonofyola reset error:', error);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleQuickReset = async () => {
@@ -72,6 +106,29 @@ export default function AuthScreen() {
     );
   };
 
+  const handleNuclearReset = async () => {
+    Alert.alert(
+      '💥 Nuclear Reset',
+      'This is the most aggressive reset option. It will clear EVERYTHING and force multiple reloads. Only use if nothing else works. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '💥 Nuclear Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              await performNuclearReset();
+            } catch (error) {
+              console.error('❌ Nuclear reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -83,6 +140,26 @@ export default function AuthScreen() {
             Generate perfect prompts for AI music tools like Suno, Riffusion, and MusicGen
           </Text>
         </View>
+
+        {/* Sonofyola Warning */}
+        {isStuckWithSonofyola && (
+          <View style={styles.warningSection}>
+            <MaterialIcons name="warning" size={24} color="#FF3B30" />
+            <Text style={styles.warningTitle}>Account Issue Detected</Text>
+            <Text style={styles.warningText}>
+              You&apos;re stuck with the &quot;sonofyola&quot; account. Use the reset button below to clear this and sign in with a different account.
+            </Text>
+            <TouchableOpacity 
+              style={styles.warningButton}
+              onPress={handleSonofyolaReset}
+              disabled={isResetting}
+            >
+              <Text style={styles.warningButtonText}>
+                🧹 Reset Sonofyola Account
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Current User Status */}
         {user && (
@@ -142,6 +219,14 @@ export default function AuthScreen() {
           >
             <Text style={styles.troubleshootButtonText}>🧹 Complete Reset</Text>
           </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#8E44AD' }]}
+            onPress={handleNuclearReset}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>💥 Nuclear Reset</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Features Preview */}
@@ -200,6 +285,41 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
     lineHeight: 24,
     paddingHorizontal: 20,
+  },
+  warningSection: {
+    backgroundColor: '#FFF3CD',
+    borderColor: '#FF3B30',
+    borderWidth: 2,
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  warningTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FF3B30',
+    marginTop: 8,
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  warningText: {
+    fontSize: 14,
+    color: '#856404',
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  warningButton: {
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  warningButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 16,
   },
   userStatus: {
     backgroundColor: colors.surface,

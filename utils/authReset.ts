@@ -4,53 +4,116 @@ export const performCompleteAuthReset = async () => {
     
     // Clear all browser storage
     if (typeof window !== 'undefined') {
-      // Clear localStorage
+      // Clear localStorage - be extra aggressive with Basic Tech keys
       if (window.localStorage) {
         console.log('🧹 Clearing localStorage...');
+        
+        // Get all keys first
+        const allKeys = Object.keys(window.localStorage);
+        console.log('🔍 Found localStorage keys:', allKeys);
+        
+        // Clear everything
         window.localStorage.clear();
+        
+        // Double-check by removing specific keys that might persist
+        const basicTechKeys = [
+          'basic-auth', 'basic-token', 'basic-user', 'basic-session',
+          'kiki-auth', 'kiki-token', 'kiki-user', 'kiki-session',
+          'auth-token', 'user-session', 'login-data',
+          'basic_auth_token', 'basic_user_data', 'basic_session_data',
+          'basictech-auth', 'basictech-user', 'basictech-session',
+          'bt-auth', 'bt-user', 'bt-session',
+          // Add more specific keys that might contain "sonofyola"
+          'sonofyola', 'user-sonofyola', 'auth-sonofyola',
+          // Basic Tech specific patterns
+          'basic-pds', 'basic-did', 'basic-handle',
+          'kiki-pds', 'kiki-did', 'kiki-handle',
+          // OAuth and session keys
+          'oauth-state', 'oauth-token', 'oauth-user',
+          'session-state', 'session-token', 'session-user'
+        ];
+        
+        basicTechKeys.forEach(key => {
+          window.localStorage.removeItem(key);
+          console.log(`🧹 Removed ${key} from localStorage`);
+        });
       }
       
       // Clear sessionStorage
       if (window.sessionStorage) {
         console.log('🧹 Clearing sessionStorage...');
+        const allKeys = Object.keys(window.sessionStorage);
+        console.log('🔍 Found sessionStorage keys:', allKeys);
         window.sessionStorage.clear();
       }
       
-      // Clear IndexedDB
+      // Clear IndexedDB more aggressively
       if (window.indexedDB) {
         try {
           console.log('🧹 Clearing IndexedDB...');
+          
+          // Get all databases
           const databases = await window.indexedDB.databases();
-          await Promise.all(
-            databases.map(db => {
-              if (db.name) {
-                return new Promise((resolve) => {
+          console.log('🔍 Found IndexedDB databases:', databases.map(db => db.name));
+          
+          // Delete each database
+          for (const db of databases) {
+            if (db.name) {
+              try {
+                await new Promise((resolve, reject) => {
                   const deleteReq = window.indexedDB.deleteDatabase(db.name!);
-                  deleteReq.onsuccess = () => resolve(true);
-                  deleteReq.onerror = () => resolve(false); // Don't fail on error
-                  deleteReq.onblocked = () => resolve(false);
+                  deleteReq.onsuccess = () => {
+                    console.log(`🧹 Deleted IndexedDB: ${db.name}`);
+                    resolve(true);
+                  };
+                  deleteReq.onerror = () => reject(deleteReq.error);
+                  deleteReq.onblocked = () => {
+                    console.log(`⚠️ IndexedDB deletion blocked: ${db.name}`);
+                    resolve(false);
+                  };
                 });
+              } catch (e) {
+                console.log(`❌ Failed to delete IndexedDB ${db.name}:`, e);
               }
-            })
-          );
+            }
+          }
         } catch (e) {
-          console.log('🧹 IndexedDB clear failed (this is often normal):', e);
+          console.log('🧹 IndexedDB clear failed:', e);
         }
       }
       
-      // Clear cookies more thoroughly
+      // Clear cookies more aggressively - target specific domains
       if (document && document.cookie) {
         console.log('🧹 Clearing cookies...');
         const cookies = document.cookie.split(";");
+        console.log('🔍 Found cookies:', cookies);
         
         for (let cookie of cookies) {
           const eqPos = cookie.indexOf("=");
           const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
           
-          // Clear for current domain and path
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=${window.location.hostname}`;
-          document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;domain=.${window.location.hostname}`;
+          // Clear for multiple domain and path combinations
+          const domains = [
+            '',
+            window.location.hostname,
+            `.${window.location.hostname}`,
+            'localhost',
+            '.localhost',
+            '.basictech.com',
+            '.kiki.ai',
+            '.expo.dev'
+          ];
+          
+          const paths = ['/', '/auth', '/login', '/oauth'];
+          
+          domains.forEach(domain => {
+            paths.forEach(path => {
+              const cookieString = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=${path}${domain ? `;domain=${domain}` : ''}`;
+              document.cookie = cookieString;
+            });
+          });
+          
+          console.log(`🧹 Cleared cookie: ${name}`);
         }
       }
       
@@ -58,8 +121,10 @@ export const performCompleteAuthReset = async () => {
       if ('serviceWorker' in navigator) {
         try {
           const registrations = await navigator.serviceWorker.getRegistrations();
-          await Promise.all(registrations.map(registration => registration.unregister()));
-          console.log('🧹 Service workers cleared');
+          for (const registration of registrations) {
+            await registration.unregister();
+            console.log('🧹 Unregistered service worker:', registration.scope);
+          }
         } catch (e) {
           console.log('🧹 Service worker clear failed:', e);
         }
@@ -69,8 +134,11 @@ export const performCompleteAuthReset = async () => {
       if ('caches' in window) {
         try {
           const cacheNames = await caches.keys();
-          await Promise.all(cacheNames.map(name => caches.delete(name)));
-          console.log('🧹 Caches cleared');
+          console.log('🔍 Found caches:', cacheNames);
+          for (const name of cacheNames) {
+            await caches.delete(name);
+            console.log(`🧹 Deleted cache: ${name}`);
+          }
         } catch (e) {
           console.log('🧹 Cache clear failed:', e);
         }
@@ -81,7 +149,14 @@ export const performCompleteAuthReset = async () => {
     try {
       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
       console.log('🧹 Clearing AsyncStorage...');
+      
+      // Get all keys first to see what's there
+      const allKeys = await AsyncStorage.getAllKeys();
+      console.log('🔍 Found AsyncStorage keys:', allKeys);
+      
+      // Clear everything
       await AsyncStorage.clear();
+      console.log('✅ AsyncStorage cleared');
     } catch (e) {
       console.log('🧹 AsyncStorage not available or already cleared');
     }
@@ -90,14 +165,13 @@ export const performCompleteAuthReset = async () => {
     try {
       const SecureStore = require('expo-secure-store');
       const secureStoreKeys = [
-        'auth-token',
-        'user-data', 
-        'session-data',
-        'basic-auth',
-        'kiki-auth',
-        'basic_auth_token',
-        'basic_user_data',
-        'basic_session_data'
+        'auth-token', 'user-data', 'session-data',
+        'basic-auth', 'kiki-auth', 'basic_auth_token',
+        'basic_user_data', 'basic_session_data',
+        'sonofyola', 'user-sonofyola', 'auth-sonofyola',
+        'basic-pds', 'basic-did', 'basic-handle',
+        'kiki-pds', 'kiki-did', 'kiki-handle',
+        'oauth-state', 'oauth-token', 'oauth-user'
       ];
       
       for (const key of secureStoreKeys) {
@@ -114,14 +188,28 @@ export const performCompleteAuthReset = async () => {
     
     console.log('✅ Complete auth reset performed');
     
-    // Force reload with cache busting
+    // Force reload with aggressive cache busting
     if (typeof window !== 'undefined' && window.location) {
       setTimeout(() => {
-        console.log('🔄 Forcing page reload...');
+        console.log('🔄 Forcing page reload with cache busting...');
+        
+        // Clear any remaining browser cache
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+        
+        // Force hard reload with multiple cache busting parameters
         const url = new URL(window.location.href);
         url.searchParams.set('reset', Date.now().toString());
-        window.location.href = url.toString();
-      }, 1000);
+        url.searchParams.set('clear', 'true');
+        url.searchParams.set('auth', 'reset');
+        url.searchParams.set('user', 'clear');
+        
+        // Use replace to avoid back button issues
+        window.location.replace(url.toString());
+      }, 1500);
     }
     
   } catch (error) {
@@ -130,6 +218,7 @@ export const performCompleteAuthReset = async () => {
     // Fallback: try to reload anyway
     if (typeof window !== 'undefined' && window.location) {
       setTimeout(() => {
+        console.log('🔄 Fallback reload...');
         window.location.reload();
       }, 2000);
     }
@@ -141,18 +230,43 @@ export const performQuickAuthReset = async () => {
   try {
     console.log('🔄 Starting quick auth reset...');
     
-    // Clear only auth-related items
+    // Clear only auth-related items but be thorough about sonofyola
     if (typeof window !== 'undefined') {
       const authKeys = [
         'basic-auth', 'basic-token', 'basic-user', 'basic-session',
         'kiki-auth', 'kiki-token', 'kiki-user', 'kiki-session',
-        'auth-token', 'user-session', 'login-data'
+        'auth-token', 'user-session', 'login-data',
+        // Specifically target sonofyola
+        'sonofyola', 'user-sonofyola', 'auth-sonofyola',
+        // Basic Tech PDS/DID keys
+        'basic-pds', 'basic-did', 'basic-handle',
+        'kiki-pds', 'kiki-did', 'kiki-handle'
       ];
       
       authKeys.forEach(key => {
-        if (window.localStorage) window.localStorage.removeItem(key);
-        if (window.sessionStorage) window.sessionStorage.removeItem(key);
+        if (window.localStorage) {
+          window.localStorage.removeItem(key);
+          console.log(`🔄 Removed ${key} from localStorage`);
+        }
+        if (window.sessionStorage) {
+          window.sessionStorage.removeItem(key);
+          console.log(`🔄 Removed ${key} from sessionStorage`);
+        }
       });
+      
+      // Also check for any keys containing "sonofyola"
+      if (window.localStorage) {
+        const allKeys = Object.keys(window.localStorage);
+        allKeys.forEach(key => {
+          if (key.toLowerCase().includes('sonofyola') || 
+              key.toLowerCase().includes('basic') ||
+              key.toLowerCase().includes('kiki') ||
+              key.toLowerCase().includes('auth')) {
+            window.localStorage.removeItem(key);
+            console.log(`🔄 Removed suspicious key: ${key}`);
+          }
+        });
+      }
     }
     
     // Clear AsyncStorage auth items
@@ -160,10 +274,12 @@ export const performQuickAuthReset = async () => {
       const AsyncStorage = require('@react-native-async-storage/async-storage').default;
       const authKeys = [
         'basic-auth', 'basic-token', 'basic-user', 'basic-session',
-        'auth-token', 'user-session', 'login-data'
+        'auth-token', 'user-session', 'login-data',
+        'sonofyola', 'user-sonofyola', 'auth-sonofyola'
       ];
       
       await AsyncStorage.multiRemove(authKeys);
+      console.log('🔄 AsyncStorage auth keys cleared');
     } catch (e) {
       console.log('🔄 AsyncStorage quick clear completed');
     }
@@ -172,5 +288,40 @@ export const performQuickAuthReset = async () => {
     
   } catch (error) {
     console.error('❌ Error during quick auth reset:', error);
+  }
+};
+
+// Nuclear option - clears EVERYTHING and forces multiple reloads
+export const performNuclearReset = async () => {
+  try {
+    console.log('💥 NUCLEAR RESET - This will clear EVERYTHING');
+    
+    // First, perform complete reset
+    await performCompleteAuthReset();
+    
+    // Additional nuclear options
+    if (typeof window !== 'undefined') {
+      // Clear ALL localStorage and sessionStorage keys
+      if (window.localStorage) {
+        const allLocalKeys = Object.keys(window.localStorage);
+        console.log('💥 Nuking all localStorage keys:', allLocalKeys);
+        allLocalKeys.forEach(key => window.localStorage.removeItem(key));
+      }
+      
+      if (window.sessionStorage) {
+        const allSessionKeys = Object.keys(window.sessionStorage);
+        console.log('💥 Nuking all sessionStorage keys:', allSessionKeys);
+        allSessionKeys.forEach(key => window.sessionStorage.removeItem(key));
+      }
+      
+      // Force multiple reloads with different cache busting
+      setTimeout(() => {
+        console.log('💥 Nuclear reload sequence initiated...');
+        window.location.href = window.location.origin + '?nuclear=1&t=' + Date.now();
+      }, 2000);
+    }
+    
+  } catch (error) {
+    console.error('💥 Nuclear reset error:', error);
   }
 };
