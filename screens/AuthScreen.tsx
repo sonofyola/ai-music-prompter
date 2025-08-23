@@ -1,15 +1,19 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from '../components/ThemeToggle';
+import DebugScreen from './DebugScreen';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
   const { user, login, isLoading, isSignedIn, db } = useBasic();
   const styles = createStyles(colors);
+  
+  // Add debug mode state
+  const [showDebug, setShowDebug] = useState(false);
 
   useEffect(() => {
     if (isSignedIn && user) {
@@ -56,10 +60,17 @@ export default function AuthScreen() {
     }
   };
 
+  // Show debug screen if requested
+  if (showDebug) {
+    return <DebugScreen />;
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <View style={styles.headerSpacer} />
+        <TouchableOpacity onPress={() => setShowDebug(true)}>
+          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Debug</Text>
+        </TouchableOpacity>
         <ThemeToggle />
       </View>
 

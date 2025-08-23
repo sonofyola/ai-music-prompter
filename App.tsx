@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
@@ -14,39 +14,36 @@ import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import AuthScreen from './screens/AuthScreen';
 import PromptFormScreen from './screens/PromptFormScreen';
 
-// Global logout handler for debugging
-let globalLogoutHandler: (() => void) | null = null;
+// Add a reset flag
+let forceReset = false;
 
 export const triggerGlobalLogout = () => {
-  console.log('🔥 Global logout triggered');
-  if (globalLogoutHandler) {
-    globalLogoutHandler();
-  } else {
-    console.log('❌ No global logout handler available');
-  }
+  console.log('🔥 Forcing complete reset...');
+  forceReset = true;
+  // Force a re-render by updating the component
+  window.location?.reload?.(); // For web
 };
 
 function AppContent() {
   const { isSignedIn, user, isLoading, signout } = useBasic();
 
-  // Set up global logout handler
-  React.useEffect(() => {
-    globalLogoutHandler = async () => {
-      try {
-        console.log('🔄 Executing global logout...');
-        if (signout) {
-          await signout();
-          console.log('✅ Global logout completed');
-        }
-      } catch (error) {
-        console.error('❌ Global logout error:', error);
-      }
-    };
-
-    return () => {
-      globalLogoutHandler = null;
-    };
-  }, [signout]);
+  // Force reset mechanism
+  if (forceReset) {
+    return (
+      <View style={styles.resetContainer}>
+        <Text style={styles.resetText}>🔄 Resetting App...</Text>
+        <TouchableOpacity 
+          style={styles.resetButton}
+          onPress={() => {
+            forceReset = false;
+            window.location?.reload?.();
+          }}
+        >
+          <Text style={styles.resetButtonText}>Complete Reset</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -89,5 +86,29 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 18,
     color: '#666',
+  },
+  resetContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    padding: 20,
+  },
+  resetText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  resetButton: {
+    backgroundColor: '#FF3B30',
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+  },
+  resetButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
