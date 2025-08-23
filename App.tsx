@@ -14,42 +14,61 @@ import PromptFormScreen from './screens/PromptFormScreen';
 import AuthScreen from './screens/AuthScreen';
 
 function AppContent() {
-  const { isSignedIn, user, isLoading } = useBasic();
-  const [bypassAuth, setBypassAuth] = useState(false);
+  const { isSignedIn, user, isLoading, signout } = useBasic();
+  const [forceRefresh, setForceRefresh] = useState(0);
 
-  console.log('🔐 Auth State:', { isSignedIn, user: user?.email || 'none', isLoading, bypassAuth });
+  console.log('🔐 Auth State:', { isSignedIn, user: user?.email || 'none', isLoading });
 
   if (isLoading) {
-    return null; // You could add a loading screen here
+    return null;
   }
 
-  // Show bypass option if stuck with sonofyola
-  if (!bypassAuth && isSignedIn && user?.email === 'sonofyola@gmail.com') {
+  // If stuck with sonofyola, show options to break free
+  if (isSignedIn && user?.email === 'sonofyola@gmail.com') {
     return (
-      <View style={styles.bypassContainer}>
-        <Text style={styles.bypassTitle}>Authentication Issue Detected</Text>
-        <Text style={styles.bypassText}>
-          You're stuck logged in as "sonofyola@gmail.com". This is a persistent auth issue.
+      <View style={styles.stuckContainer}>
+        <Text style={styles.stuckTitle}>🔒 Authentication Stuck</Text>
+        <Text style={styles.stuckText}>
+          You're persistently logged in as "sonofyola@gmail.com"
         </Text>
-        <Text style={styles.bypassText}>
-          You can either:
-        </Text>
+        
         <TouchableOpacity 
-          style={styles.bypassButton}
-          onPress={() => setBypassAuth(true)}
+          style={styles.actionButton}
+          onPress={async () => {
+            try {
+              await signout();
+              // Force remount of BasicProvider
+              setForceRefresh(prev => prev + 1);
+            } catch (e) {
+              console.error('Signout failed:', e);
+            }
+          }}
         >
-          <Text style={styles.bypassButtonText}>Continue with Limited Features</Text>
+          <Text style={styles.actionButtonText}>🔓 Force Sign Out</Text>
         </TouchableOpacity>
-        <Text style={styles.bypassNote}>
-          (History and favorites will be disabled)
+
+        <TouchableOpacity 
+          style={[styles.actionButton, { backgroundColor: '#FF3B30' }]}
+          onPress={() => {
+            // Force complete remount
+            setForceRefresh(prev => prev + 1);
+          }}
+        >
+          <Text style={styles.actionButtonText}>🔄 Force Refresh Auth</Text>
+        </TouchableOpacity>
+
+        <Text style={styles.debugText}>
+          Current user: {user?.email || 'Unknown'}
         </Text>
-        <AuthScreen />
+        <Text style={styles.debugText}>
+          Refresh count: {forceRefresh}
+        </Text>
       </View>
     );
   }
 
-  // Proper auth flow for monetization
-  if (!bypassAuth && (!isSignedIn || !user)) {
+  // Normal auth flow
+  if (!isSignedIn || !user) {
     return <AuthScreen />;
   }
 
@@ -63,9 +82,15 @@ function AppContent() {
 }
 
 export default function App() {
+  const [authKey, setAuthKey] = useState(0);
+
   return (
     <SafeAreaProvider>
-      <BasicProvider project_id={schema.project_id} schema={schema}>
+      <BasicProvider 
+        key={`basic-provider-${authKey}`} // Force remount when key changes
+        project_id={schema.project_id} 
+        schema={schema}
+      >
         <ThemeProvider>
           <AppContent />
         </ThemeProvider>
@@ -75,43 +100,42 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  bypassContainer: {
+  stuckContainer: {
     flex: 1,
     padding: 20,
     justifyContent: 'center',
     backgroundColor: '#f5f5f5',
   },
-  bypassTitle: {
+  stuckTitle: {
     fontSize: 24,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
     color: '#333',
   },
-  bypassText: {
+  stuckText: {
     fontSize: 16,
     textAlign: 'center',
-    marginBottom: 15,
+    marginBottom: 30,
     color: '#666',
     lineHeight: 22,
   },
-  bypassButton: {
+  actionButton: {
     backgroundColor: '#007AFF',
     padding: 15,
     borderRadius: 10,
-    marginVertical: 20,
+    marginVertical: 10,
   },
-  bypassButtonText: {
+  actionButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
     textAlign: 'center',
   },
-  bypassNote: {
-    fontSize: 14,
+  debugText: {
+    fontSize: 12,
     textAlign: 'center',
     color: '#999',
-    fontStyle: 'italic',
-    marginBottom: 30,
+    marginTop: 10,
   },
 });
