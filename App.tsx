@@ -21,7 +21,11 @@ function AppContent() {
     return null; // You could add a loading screen here
   }
 
-  // Bypass authentication - always show the main app
+  // Proper auth flow for monetization
+  if (!isSignedIn || !user) {
+    return <AuthScreen />;
+  }
+
   return (
     <ThemeProvider>
       <NotificationProvider>
