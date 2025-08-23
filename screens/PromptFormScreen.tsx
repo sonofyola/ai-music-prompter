@@ -55,7 +55,7 @@ export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
   const { savePrompt } = usePromptHistory();
-  const { user, signout } = useBasic();
+  const { user } = useBasic();
   const styles = createStyles(colors);
 
   // Navigation state
@@ -73,12 +73,6 @@ export default function PromptFormScreen() {
       adminEmail.toLowerCase().trim() === userEmail
     );
   };
-
-  // Debug: Log admin status
-  console.log('=== DEBUG INFO ===');
-  console.log('Admin Status:', isAdmin);
-  console.log('User Email:', user?.email);
-  console.log('User Object:', user);
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -108,16 +102,10 @@ export default function PromptFormScreen() {
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
 
   const handleTitlePress = async () => {
-    console.log('🔥 TITLE PRESSED! Count:', titlePressCount + 1);
-    console.log('🔥 Current user email:', user?.email);
-    console.log('🔥 Current admin status:', isAdmin);
-    
     setTitlePressCount(prev => {
       const newCount = prev + 1;
-      console.log('🔥 New count:', newCount);
       
       if (newCount === 7) {
-        console.log('🔥🔥🔥 7 CLICKS REACHED! Checking admin access...');
         // Check if user has admin access
         checkAdminAccessHandler();
         return 0; // Reset counter
@@ -125,7 +113,6 @@ export default function PromptFormScreen() {
       
       // Reset counter after 3 seconds of no presses
       setTimeout(() => {
-        console.log('🔥 Resetting title press counter');
         setTitlePressCount(0);
       }, 3000);
       
@@ -134,16 +121,10 @@ export default function PromptFormScreen() {
   };
 
   const checkAdminAccessHandler = async () => {
-    console.log('🚀 === ADMIN ACCESS CHECK ===');
-    console.log('🚀 Checking admin access for user:', user?.email);
-    
     try {
       const hasAccess = checkAdminAccess();
-      console.log('🚀 Admin access result:', hasAccess);
-      console.log('🚀 Admin emails whitelist:', ADMIN_EMAILS);
       
       if (hasAccess) {
-        console.log('✅ Admin access granted!');
         setIsAdmin(true);
         Alert.alert(
           '🔓 Admin Access Granted',
@@ -153,14 +134,12 @@ export default function PromptFormScreen() {
             { 
               text: 'Open Admin Panel', 
               onPress: () => {
-                console.log('🚀 Navigating to Admin panel...');
                 setCurrentScreen('admin');
               }
             }
           ]
         );
       } else {
-        console.log('❌ Admin access denied');
         Alert.alert(
           '🚫 Access Denied',
           `You are not authorized for admin access.\n\nYour email: ${user?.email}\nOnly whitelisted email addresses can access admin features.\n\nWhitelisted emails:\n• drremotework@gmail.com\n• admin@aimusicpromptr.com`,
@@ -171,33 +150,6 @@ export default function PromptFormScreen() {
       console.error('❌ Admin access error:', error);
       Alert.alert('Error', `Failed to check admin access: ${error.message}`);
     }
-  };
-
-  const handleUserLogout = () => {
-    console.log('🚪🚪🚪 HANDLE USER LOGOUT CALLED!');
-    
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out of your account?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('🚪 Starting signout process...');
-              await signout();
-              setIsAdmin(false); // Reset admin status on logout
-              console.log('✅ User signed out successfully');
-            } catch (error) {
-              console.error('❌ Logout error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
-          }
-        }
-      ]
-    );
   };
 
   const handleAdminLogout = () => {
@@ -365,25 +317,6 @@ export default function PromptFormScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* EMERGENCY TEST BUTTON - Should appear at very top */}
-      <TouchableOpacity
-        style={{
-          position: 'absolute',
-          top: 100,
-          right: 20,
-          backgroundColor: 'red',
-          padding: 20,
-          zIndex: 99999,
-          elevation: 20,
-        }}
-        onPress={() => {
-          console.log('🚨 EMERGENCY TEST BUTTON PRESSED!');
-          Alert.alert('EMERGENCY TEST', 'This button works! Touch events are functional.');
-        }}
-      >
-        <Text style={{ color: 'white', fontWeight: 'bold' }}>EMERGENCY TEST</Text>
-      </TouchableOpacity>
-
       <View style={styles.header}>
         <View style={styles.titleContainer}>
           <TouchableOpacity 
@@ -403,10 +336,7 @@ export default function PromptFormScreen() {
           {/* Prompt History Button */}
           <TouchableOpacity
             style={styles.historyButton}
-            onPress={() => {
-              console.log('🔥 History button pressed');
-              setShowHistoryModal(true);
-            }}
+            onPress={() => setShowHistoryModal(true)}
           >
             <MaterialIcons name="history" size={20} color={colors.text} />
           </TouchableOpacity>
@@ -414,49 +344,16 @@ export default function PromptFormScreen() {
           {/* Templates Button */}
           <TouchableOpacity
             style={styles.templatesButton}
-            onPress={() => {
-              console.log('🔥 Templates button pressed');
-              setShowTemplatesModal(true);
-            }}
+            onPress={() => setShowTemplatesModal(true)}
           >
             <MaterialIcons name="library-books" size={20} color={colors.text} />
-          </TouchableOpacity>
-
-          {/* TEST: Simple button to verify touch events work in this area */}
-          <TouchableOpacity
-            style={styles.userLogoutButtonTest}
-            onPress={() => {
-              console.log('🔥🔥🔥 TEST BUTTON PRESSED!');
-              Alert.alert('SUCCESS!', 'Touch events work in this header area!');
-            }}
-            activeOpacity={0.3}
-          >
-            <Text style={styles.testButtonText}>TEST</Text>
           </TouchableOpacity>
 
           {/* Admin logout - only when admin is active */}
           {isAdmin && (
             <TouchableOpacity
               style={styles.adminLogoutButton}
-              onPress={() => {
-                console.log('🔥🔥🔥 RED ADMIN LOGOUT BUTTON PRESSED!');
-                console.log('🔥 Admin status:', isAdmin);
-                console.log('🔥 User:', user?.email);
-                
-                // Show immediate alert to test if button works at all
-                Alert.alert(
-                  '🔴 RED BUTTON PRESSED!',
-                  'The red admin logout button is working! Do you want to logout from admin mode?',
-                  [
-                    { text: 'Cancel', style: 'cancel' },
-                    { 
-                      text: 'Logout Admin', 
-                      style: 'destructive',
-                      onPress: handleAdminLogout
-                    }
-                  ]
-                );
-              }}
+              onPress={handleAdminLogout}
               activeOpacity={0.7}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             >
@@ -466,14 +363,11 @@ export default function PromptFormScreen() {
         </View>
       </View>
 
-      {/* SUPER OBVIOUS ADMIN STATUS BAR */}
+      {/* Admin Status Bar */}
       {isAdmin && (
         <TouchableOpacity 
           style={styles.adminIndicatorLarge}
-          onPress={() => {
-            console.log('🚀 Admin bar tapped - navigating to admin panel');
-            setCurrentScreen('admin');
-          }}
+          onPress={() => setCurrentScreen('admin')}
         >
           <MaterialIcons name="admin-panel-settings" size={24} color="#fff" />
           <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE - TAP TO OPEN ADMIN PANEL</Text>
@@ -492,7 +386,6 @@ export default function PromptFormScreen() {
       <View style={styles.subscriptionContainer}>
         <SubscriptionStatus 
           onManagePress={() => {
-            // For now, just show an alert since we don't have navigation
             Alert.alert('Subscription', 'Subscription management coming soon!');
           }}
           compact={true}
@@ -937,17 +830,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     marginTop: 1,
   },
-  userMenuButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    minWidth: 40,
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   adminLogoutButton: {
     padding: 8,
     borderRadius: 20,
@@ -958,22 +840,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  adminPanelButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.primary,
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 8,
-    gap: 4,
-    minWidth: 70,
-    minHeight: 40,
-  },
-  adminButtonText: {
-    color: '#fff',
-    fontWeight: '700',
-    fontSize: 11,
   },
   historyButton: {
     padding: 8,
@@ -996,32 +862,5 @@ const createStyles = (colors: any) => StyleSheet.create({
     minHeight: 40,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  userLogoutButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: '#e3f2fd',
-    borderWidth: 2,
-    borderColor: '#2196f3',
-    minWidth: 40,
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  userLogoutButtonTest: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: '#e3f2fd',
-    borderWidth: 2,
-    borderColor: '#2196f3',
-    minWidth: 40,
-    minHeight: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  testButtonText: {
-    color: '#ffffff',
-    fontSize: 12,
-    fontWeight: 'bold',
   },
 });
