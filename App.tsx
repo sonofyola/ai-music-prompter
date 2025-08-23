@@ -21,11 +21,14 @@ function AppContent() {
     return null; // You could add a loading screen here
   }
 
+  // Temporary bypass for development - remove this when auth is fixed
+  const BYPASS_AUTH = true; // Set to false to re-enable auth
+
   return (
     <ThemeProvider>
       <NotificationProvider>
         <PromptHistoryProvider>
-          {isSignedIn && user ? <PromptFormScreen /> : <AuthScreen />}
+          {(BYPASS_AUTH || (isSignedIn && user)) ? <PromptFormScreen /> : <AuthScreen />}
         </PromptHistoryProvider>
       </NotificationProvider>
     </ThemeProvider>
