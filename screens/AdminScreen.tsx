@@ -72,8 +72,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       if (storedEmails) {
         setEmails(JSON.parse(storedEmails));
       }
-    } catch {
-      console.error('Error loading emails');
+    } catch (error) {
+      console.error('Error loading emails:', error);
     }
   };
 
@@ -83,8 +83,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       if (storedUnlimitedEmails) {
         setUnlimitedEmails(JSON.parse(storedUnlimitedEmails));
       }
-    } catch {
-      console.error('Error loading unlimited emails');
+    } catch (error) {
+      console.error('Error loading unlimited emails:', error);
     }
   };
 
@@ -359,35 +359,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
-  const handleMaintenanceToggle = async (enabled: boolean) => {
-    try {
-      await toggleMaintenanceMode(enabled, customMaintenanceMessage);
-      Alert.alert(
-        'Maintenance Mode',
-        enabled 
-          ? 'Maintenance mode has been enabled. Users will see the maintenance screen.'
-          : 'Maintenance mode has been disabled. Users can now access the app normally.',
-        [{ text: 'OK' }]
-      );
-    } catch (error) {
-      Alert.alert('Error', 'Failed to toggle maintenance mode. Please try again.');
-    }
-  };
-
-  const updateMaintenanceMessage = async () => {
-    if (!customMaintenanceMessage.trim()) {
-      Alert.alert('Message Required', 'Please enter a maintenance message.');
-      return;
-    }
-
-    try {
-      await toggleMaintenanceMode(isMaintenanceMode, customMaintenanceMessage);
-      Alert.alert('Success', 'Maintenance message has been updated.');
-    } catch (error) {
-      Alert.alert('Error', 'Failed to update maintenance message. Please try again.');
-    }
-  };
-
   const styles = createStyles(colors);
 
   return (
@@ -425,53 +396,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             <Text style={styles.adminStatusSubtext}>
               You have full administrative privileges
             </Text>
-          </View>
-        </View>
-
-        {/* Maintenance Mode Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🔧 Maintenance Mode</Text>
-          
-          <View style={styles.maintenanceContainer}>
-            <View style={styles.maintenanceToggleRow}>
-              <View style={styles.maintenanceToggleInfo}>
-                <Text style={styles.maintenanceToggleTitle}>
-                  {isMaintenanceMode ? '🔴 Maintenance Active' : '🟢 App Online'}
-                </Text>
-                <Text style={styles.maintenanceToggleSubtitle}>
-                  {isMaintenanceMode 
-                    ? 'Users see maintenance screen (admins can still access)'
-                    : 'App is accessible to all users'
-                  }
-                </Text>
-              </View>
-              <Switch
-                value={isMaintenanceMode}
-                onValueChange={handleMaintenanceToggle}
-                trackColor={{ false: colors.border, true: colors.primary }}
-                thumbColor={isMaintenanceMode ? '#fff' : colors.textSecondary}
-              />
-            </View>
-
-            <View style={styles.maintenanceMessageContainer}>
-              <Text style={styles.maintenanceMessageLabel}>Maintenance Message:</Text>
-              <TextInput
-                style={styles.maintenanceMessageInput}
-                value={customMaintenanceMessage}
-                onChangeText={setCustomMaintenanceMessage}
-                placeholder="Enter maintenance message for users..."
-                placeholderTextColor={colors.textTertiary}
-                multiline
-                numberOfLines={3}
-              />
-              <TouchableOpacity 
-                style={styles.updateMessageButton}
-                onPress={updateMaintenanceMessage}
-              >
-                <MaterialIcons name="update" size={16} color="#fff" />
-                <Text style={styles.updateMessageButtonText}>Update Message</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
 
@@ -591,7 +515,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </TouchableOpacity>
         </View>
 
-        {/* Admin-Only Sections */}
+        {/* Autoresponder Configuration Section */}
         <View style={styles.section}>
           <AutoresponderConfigComponent />
         </View>
@@ -605,6 +529,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <NotificationSettings />
         </View>
 
+        {/* Validation Details */}
         {showValidationDetails && validationResult && (
           <View style={styles.detailsContainer}>
             <Text style={styles.detailsTitle}>📋 Validation Details</Text>
@@ -779,62 +704,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     marginTop: 4,
-  },
-  maintenanceContainer: {
-    gap: 16,
-  },
-  maintenanceToggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-  },
-  maintenanceToggleInfo: {
-    flex: 1,
-    marginRight: 16,
-  },
-  maintenanceToggleTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  maintenanceToggleSubtitle: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 2,
-  },
-  maintenanceMessageContainer: {
-    gap: 8,
-  },
-  maintenanceMessageLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  maintenanceMessageInput: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    padding: 12,
-    fontSize: 14,
-    color: colors.text,
-    backgroundColor: colors.background,
-    textAlignVertical: 'top',
-  },
-  updateMessageButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    gap: 6,
-  },
-  updateMessageButtonText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 14,
   },
   statsGrid: {
     flexDirection: 'row',
