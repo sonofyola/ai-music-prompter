@@ -412,15 +412,20 @@ export default function PromptFormScreen() {
           {/* User Logout Button - for regular users */}
           {!isAdmin && (
             <TouchableOpacity
-              style={[styles.userLogoutButton, { backgroundColor: '#ff000020' }]} // DEBUG: Red background
+              style={[styles.userLogoutButton, { backgroundColor: '#ff000050' }]} // DEBUG: More visible red background
               onPress={() => {
-                console.log('🔘 Logout button touched!');
+                console.log('🔘 LOGOUT BUTTON TOUCHED!');
+                console.log('🔍 User object:', user);
+                console.log('🔍 Signout function:', signout);
+                console.log('🔍 Is admin:', isAdmin);
+                Alert.alert('DEBUG', 'Logout button was pressed! Check console for details.');
                 handleUserLogout();
               }}
               activeOpacity={0.7}
-              hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
             >
               <MaterialIcons name="logout" size={20} color={colors.text} />
+              <Text style={{ fontSize: 8, color: colors.text }}>LOGOUT</Text>
             </TouchableOpacity>
           )}
 
@@ -475,25 +480,97 @@ export default function PromptFormScreen() {
         />
         
         {/* DEBUG: Test buttons to verify touch is working */}
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, padding: 10, backgroundColor: '#00ff0020' }}>
+        <View style={{ flexDirection: 'row', gap: 5, marginTop: 10, padding: 10, backgroundColor: '#00ff0020', flexWrap: 'wrap' }}>
           <TouchableOpacity 
-            style={{ backgroundColor: '#22aa22', padding: 10, borderRadius: 5 }}
+            style={{ backgroundColor: '#22aa22', padding: 8, borderRadius: 5 }}
             onPress={() => {
               console.log('🔘 DEBUG: Testing working logout approach');
               handleUserLogout();
             }}
           >
-            <Text style={{ color: 'white', fontSize: 12 }}>TEST LOGOUT</Text>
+            <Text style={{ color: 'white', fontSize: 10 }}>TEST LOGOUT</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={{ backgroundColor: '#4444ff', padding: 10, borderRadius: 5 }}
+            style={{ backgroundColor: '#ff0000', padding: 8, borderRadius: 5 }}
+            onPress={() => {
+              console.log('🔘 SUPER SIMPLE TEST BUTTON PRESSED!');
+              Alert.alert('TEST', 'This button works! Touch is working.');
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 10 }}>TOUCH TEST</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={{ backgroundColor: '#ff8800', padding: 8, borderRadius: 5 }}
+            onPress={async () => {
+              console.log('🔘 DIRECT LOGOUT TEST!');
+              Alert.alert('Direct Logout', 'This will call signout() directly and reload', [
+                { text: 'Cancel' },
+                { 
+                  text: 'Do It', 
+                  onPress: async () => {
+                    try {
+                      console.log('🔄 Calling signout directly...');
+                      console.log('🔍 signout function type:', typeof signout);
+                      console.log('🔍 signout function:', signout);
+                      
+                      if (signout && typeof signout === 'function') {
+                        console.log('🔄 Executing signout...');
+                        await signout();
+                        console.log('✅ Signout completed');
+                      } else {
+                        console.log('❌ signout function not available');
+                        Alert.alert('Error', 'signout function not available');
+                        return;
+                      }
+                      
+                      console.log('🔄 Attempting reload...');
+                      if (typeof window !== 'undefined' && window.location) {
+                        console.log('🔄 Reloading page...');
+                        window.location.reload();
+                      } else {
+                        console.log('🔄 Not on web, showing alert...');
+                        Alert.alert('Logout Complete', 'Please restart the app.');
+                      }
+                    } catch (e) {
+                      console.error('❌ Direct logout error:', e);
+                      Alert.alert('Logout Error', `Error: ${e.message}`);
+                      // Try reload anyway
+                      if (typeof window !== 'undefined' && window.location) {
+                        window.location.reload();
+                      }
+                    }
+                  }
+                }
+              ]);
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 10 }}>DIRECT LOGOUT</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={{ backgroundColor: '#4444ff', padding: 8, borderRadius: 5 }}
             onPress={() => {
               console.log('🔘 DEBUG: Blue button pressed!');
               setCurrentScreen('subscription');
             }}
           >
-            <Text style={{ color: 'white', fontSize: 12 }}>TEST SUB</Text>
+            <Text style={{ color: 'white', fontSize: 10 }}>TEST SUB</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={{ backgroundColor: '#8800ff', padding: 8, borderRadius: 5 }}
+            onPress={() => {
+              console.log('🔘 DEBUG: User info test');
+              console.log('🔍 Current user:', user);
+              console.log('🔍 User email:', user?.email);
+              console.log('🔍 User ID:', user?.id);
+              console.log('🔍 signout function:', typeof signout);
+              Alert.alert('User Info', `Email: ${user?.email || 'No email'}\\nID: ${user?.id || 'No ID'}\\nSignout: ${typeof signout}`);
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 10 }}>USER INFO</Text>
           </TouchableOpacity>
         </View>
       </View>
