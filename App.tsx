@@ -8,6 +8,7 @@ import { NotificationProvider } from './contexts/NotificationContext';
 import { UsageProvider } from './contexts/UsageContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import PromptFormScreen from './screens/PromptFormScreen';
+import TestScreen from './screens/TestScreen';
 import AuthScreen from './screens/AuthScreen';
 
 // Global logout handler that can be called from anywhere
@@ -40,9 +41,9 @@ function AppContent() {
     return <AuthScreen />;
   }
 
-  // Show main app
-  console.log('📱 Showing PromptFormScreen - User authenticated');
-  return <PromptFormScreen />;
+  // Show test screen instead of main app for debugging
+  console.log('📱 Showing TestScreen - User authenticated');
+  return <TestScreen />;
 }
 
 // Error boundary component
