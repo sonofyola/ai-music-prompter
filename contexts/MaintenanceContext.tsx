@@ -114,39 +114,64 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     const newMessage = message || maintenanceMessage;
     const timestamp = Date.now();
     
-    console.log('🔧 Toggling maintenance mode:', { enabled, newMessage, timestamp });
+    console.log('🔧 TOGGLE START - Toggling maintenance mode:', { 
+      enabled, 
+      newMessage, 
+      timestamp,
+      currentState: isMaintenanceMode,
+      isAdmin,
+      userEmail: user?.email
+    });
     
     // Update local state immediately
     setIsMaintenanceMode(enabled);
     setMaintenanceMessage(newMessage);
     
+    console.log('🔧 LOCAL STATE UPDATED:', { 
+      newIsMaintenanceMode: enabled,
+      newMaintenanceMessage: newMessage
+    });
+    
     const maintenanceData = {
-      enabled: enabled,  // Match the database schema
+      enabled: enabled,
       message: newMessage,
       timestamp,
       adminEmail: user?.email || 'unknown'
     };
     
+    console.log('🔧 MAINTENANCE DATA TO SAVE:', maintenanceData);
+    
     try {
       // Save to database (global state)
       if (db) {
         try {
+          console.log('🔧 CHECKING EXISTING RECORDS...');
           // Get existing records first
           const existingRecords = await db.from('maintenance').getAll();
+          console.log('🔧 EXISTING RECORDS:', existingRecords);
           
           if (existingRecords && existingRecords.length > 0) {
             // Update the first record
             const recordId = existingRecords[0].id;
-            await db.from('maintenance').update(recordId, maintenanceData);
-            console.log('✅ Updated maintenance state in database');
+            console.log('🔧 UPDATING RECORD ID:', recordId);
+            const updateResult = await db.from('maintenance').update(recordId, maintenanceData);
+            console.log('✅ Updated maintenance state in database:', updateResult);
           } else {
             // Create new record if none exists
-            await db.from('maintenance').add(maintenanceData);
-            console.log('✅ Created new maintenance state in database');
+            console.log('🔧 CREATING NEW RECORD...');
+            const addResult = await db.from('maintenance').add(maintenanceData);
+            console.log('✅ Created new maintenance state in database:', addResult);
           }
+          
+          // Verify the save by reading it back
+          const verifyRecords = await db.from('maintenance').getAll();
+          console.log('🔧 VERIFICATION - Records after save:', verifyRecords);
+          
         } catch (dbError) {
           console.error('⚠️ Failed to save to database:', dbError);
         }
+      } else {
+        console.log('⚠️ No database connection available');
       }
 
       // Always save to local storage as backup
@@ -158,52 +183,65 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       
       if (Platform.OS === 'web') {
         localStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
+        console.log('✅ Saved to localStorage:', storageData);
       } else {
         await AsyncStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
+        console.log('✅ Saved to AsyncStorage:', storageData);
       }
-      
-      console.log('✅ Saved maintenance state to local storage');
       
     } catch (error) {
       console.error('💥 Error saving maintenance state:', error);
       throw error;
     }
+    
+    console.log('🔧 TOGGLE COMPLETE');
   };
 
   const loadMaintenanceState = async () => {
-    if (!db) return;
+    if (!db) {
+      console.log('⚠️ No database connection for loading maintenance state');
+      return;
+    }
     
     try {
-      console.log('🔍 Loading maintenance state from database...');
+      console.log('🔍 LOAD START - Loading maintenance state from database...');
       
       // Get fresh data from database ONLY - don't use stored data
       const maintenanceRecords = await db.from('maintenance').getAll();
-      console.log('📊 Database maintenance records:', maintenanceRecords);
+      console.log('📊 LOAD - Database maintenance records:', maintenanceRecords);
       
       if (maintenanceRecords && maintenanceRecords.length > 0) {
         const maintenanceRecord = maintenanceRecords[0];
-        console.log('✅ Found maintenance record:', maintenanceRecord);
+        console.log('✅ LOAD - Found maintenance record:', maintenanceRecord);
         
         // Use database values directly - match the schema field name
         const dbIsActive = maintenanceRecord.enabled || false;
         const dbMessage = maintenanceRecord.message || 'The app is currently under maintenance. Please check back later.';
         
-        console.log('🔧 Setting maintenance state from database:', {
+        console.log('🔧 LOAD - Setting maintenance state from database:', {
           enabled: dbIsActive,
-          message: dbMessage
+          message: dbMessage,
+          currentState: isMaintenanceMode
         });
         
         setIsMaintenanceMode(dbIsActive);
         setMaintenanceMessage(dbMessage);
+        
+        console.log('🔧 LOAD - State updated to:', {
+          isMaintenanceMode: dbIsActive,
+          maintenanceMessage: dbMessage
+        });
       } else {
-        console.log('📝 No maintenance records found, defaulting to OFF');
+        console.log('📝 LOAD - No maintenance records found, defaulting to OFF');
         setIsMaintenanceMode(false);
         setMaintenanceMessage('The app is currently under maintenance. Please check back later.');
       }
     } catch (error) {
-      console.error('❌ Failed to load maintenance state:', error);
+      console.error('❌ LOAD - Failed to load maintenance state:', error);
       // On error, don't change current state
     }
+    
+    console.log('🔍 LOAD COMPLETE');
   };
 
   return (
