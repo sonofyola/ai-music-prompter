@@ -1,6 +1,6 @@
 import "@expo/metro-runtime";
-// import './utils/global-error-handler'; // Temporarily disabled to test mobile
-// import './polyfills'; // Temporarily disabled to test mobile
+import './utils/global-error-handler'; // Adding back to test
+// import './polyfills'; // Still disabled
 import { registerRootComponent } from 'expo';
 
 import App from './App';
