@@ -402,6 +402,28 @@ export default function PromptFormScreen({ navigation }: any) {
               <MaterialIcons name="account-circle" size={24} color={colors.text} />
             </TouchableOpacity>
 
+            {/* Prompt History Button */}
+            <TouchableOpacity
+              style={styles.historyButton}
+              onPress={() => {
+                console.log('🔥 History button pressed');
+                setShowHistoryModal(true);
+              }}
+            >
+              <MaterialIcons name="history" size={20} color={colors.text} />
+            </TouchableOpacity>
+
+            {/* Templates Button */}
+            <TouchableOpacity
+              style={styles.templatesButton}
+              onPress={() => {
+                console.log('🔥 Templates button pressed');
+                setShowTemplatesModal(true);
+              }}
+            >
+              <MaterialIcons name="library-books" size={20} color={colors.text} />
+            </TouchableOpacity>
+
             {/* Admin logout - only when admin is active */}
             {isAdmin && (
               <TouchableOpacity
@@ -922,5 +944,27 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontWeight: '700',
     fontSize: 11,
+  },
+  historyButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  templatesButton: {
+    padding: 8,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minWidth: 40,
+    minHeight: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
