@@ -121,7 +121,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     setMaintenanceMessage(newMessage);
     
     const maintenanceData = {
-      enabled,
+      isActive: enabled,  // Use isActive instead of enabled
       message: newMessage,
       timestamp,
       adminEmail: user?.email || 'unknown'
@@ -131,8 +131,19 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       // Save to database (global state)
       if (db) {
         try {
-          await db.from('maintenance').add(maintenanceData);
-          console.log('✅ Saved maintenance state to database');
+          // Get existing records first
+          const existingRecords = await db.from('maintenance').getAll();
+          
+          if (existingRecords && existingRecords.length > 0) {
+            // Update the first record
+            const recordId = existingRecords[0].id;
+            await db.from('maintenance').update(recordId, maintenanceData);
+            console.log('✅ Updated maintenance state in database');
+          } else {
+            // Create new record if none exists
+            await db.from('maintenance').add(maintenanceData);
+            console.log('✅ Created new maintenance state in database');
+          }
         } catch (dbError) {
           console.error('⚠️ Failed to save to database:', dbError);
         }
