@@ -26,26 +26,12 @@ const MAINTENANCE_STORAGE_KEY = 'global_maintenance_mode';
 
 export function MaintenanceProvider({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, db } = useBasic();
-  // FORCE MAINTENANCE MODE FOR TESTING
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true); // Changed to true for testing
+  // FORCE MAINTENANCE MODE FOR TESTING - but don't let it get overridden
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true);
   const [maintenanceMessage, setMaintenanceMessage] = useState('🚧 TESTING: Maintenance mode is now active! This is a test.');
   const [isAdmin, setIsAdmin] = useState(false);
 
-  useEffect(() => {
-    loadMaintenanceState().catch(error => {
-      console.error('Failed to load maintenance state:', error);
-    });
-    
-    // Check maintenance state every 10 seconds for non-admin users
-    const interval = setInterval(() => {
-      if (!isAdmin) {
-        loadMaintenanceState().catch(console.error);
-      }
-    }, 10000);
-
-    return () => clearInterval(interval);
-  }, [isAdmin, db]);
-
+  // Keep the admin check useEffect
   useEffect(() => {
     // Reset admin status when user changes
     if (isSignedIn && user) {
