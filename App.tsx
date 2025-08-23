@@ -22,8 +22,19 @@ function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
   const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
 
+  // Debug logging
+  console.log('🔍 APP RENDER STATE:', {
+    isSignedIn,
+    userEmail: user?.email,
+    isLoading,
+    isMaintenanceMode,
+    isAdmin,
+    maintenanceMessage
+  });
+
   // Show loading state
   if (isLoading) {
+    console.log('📱 Showing loading screen');
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <Text>Loading...</Text>
@@ -34,6 +45,7 @@ function AppContent() {
   // If maintenance mode is active and user is not admin, show maintenance screen
   // This should catch both non-authenticated users and authenticated non-admin users
   if (isMaintenanceMode && !isAdmin) {
+    console.log('🚧 Showing maintenance screen - maintenance active and user is not admin');
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
@@ -45,10 +57,12 @@ function AppContent() {
 
   // Show auth screen if not signed in
   if (!isSignedIn || !user) {
+    console.log('🔐 Showing auth screen - user not signed in');
     return <AuthScreen />;
   }
 
   // Show main app with navigation
+  console.log('📱 Showing main app with navigation');
   return (
     <NavigationContainer>
       <Stack.Navigator 
