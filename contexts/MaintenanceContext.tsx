@@ -44,6 +44,16 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
     }
   }, [isSignedIn, user]);
 
+  // Debug logging
+  useEffect(() => {
+    console.log('Maintenance Debug:', {
+      isMaintenanceMode,
+      isAdmin,
+      isSignedIn,
+      userEmail: user?.email
+    });
+  }, [isMaintenanceMode, isAdmin, isSignedIn, user?.email]);
+
   const checkAdminAccess = async (): Promise<boolean> => {
     try {
       if (!user?.email) {
@@ -79,8 +89,10 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
   const loadMaintenanceState = async () => {
     try {
       const stored = await AsyncStorage.getItem('maintenanceMode');
+      console.log('Loading maintenance state:', stored); // Debug log
       if (stored) {
         const { enabled, message } = JSON.parse(stored);
+        console.log('Parsed maintenance state:', { enabled, message }); // Debug log
         setIsMaintenanceMode(enabled || false);
         setMaintenanceMessage(message || 'We\'re currently performing maintenance. Please check back soon!');
       }

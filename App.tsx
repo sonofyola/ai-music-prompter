@@ -32,12 +32,13 @@ function AppContent() {
   }
 
   // If maintenance mode is active and user is not admin, show maintenance screen
+  // This should catch both non-authenticated users and authenticated non-admin users
   if (isMaintenanceMode && !isAdmin) {
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
         onAdminAccess={() => {}}
-        showAdminAccess={true}
+        showAdminAccess={false}
       />
     );
   }
