@@ -373,16 +373,22 @@ export default function PromptFormScreen() {
           
           {/* Prompt History Button */}
           <TouchableOpacity
-            style={styles.historyButton}
-            onPress={() => setShowHistoryModal(true)}
+            style={[styles.historyButton, { backgroundColor: '#00ff0020' }]} // DEBUG: Green background
+            onPress={() => {
+              console.log('🔘 History button pressed!');
+              setShowHistoryModal(true);
+            }}
           >
             <MaterialIcons name="history" size={20} color={colors.text} />
           </TouchableOpacity>
 
           {/* Templates Button */}
           <TouchableOpacity
-            style={styles.templatesButton}
-            onPress={() => setShowTemplatesModal(true)}
+            style={[styles.templatesButton, { backgroundColor: '#ffff0020' }]} // DEBUG: Yellow background
+            onPress={() => {
+              console.log('🔘 Templates button pressed!');
+              setShowTemplatesModal(true);
+            }}
           >
             <MaterialIcons name="library-books" size={20} color={colors.text} />
           </TouchableOpacity>
@@ -390,7 +396,7 @@ export default function PromptFormScreen() {
           {/* User Logout Button - for regular users */}
           {!isAdmin && (
             <TouchableOpacity
-              style={styles.userLogoutButton}
+              style={[styles.userLogoutButton, { backgroundColor: '#ff000020' }]} // DEBUG: Red background
               onPress={() => {
                 console.log('🔘 Logout button touched!');
                 handleUserLogout();
@@ -439,6 +445,7 @@ export default function PromptFormScreen() {
       <View style={styles.subscriptionContainer}>
         <SubscriptionStatus 
           onManagePress={() => {
+            console.log('🔘 Subscription button pressed!');
             Alert.alert(
               'Subscription Management', 
               'Choose an option:',
@@ -461,6 +468,29 @@ export default function PromptFormScreen() {
           }}
           compact={true}
         />
+        
+        {/* DEBUG: Test buttons to verify touch is working */}
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, padding: 10, backgroundColor: '#ff000020' }}>
+          <TouchableOpacity 
+            style={{ backgroundColor: '#ff4444', padding: 10, borderRadius: 5 }}
+            onPress={() => {
+              console.log('🔘 DEBUG: Red button pressed!');
+              Alert.alert('Debug', 'Red button works!');
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 12 }}>DEBUG LOGOUT</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={{ backgroundColor: '#4444ff', padding: 10, borderRadius: 5 }}
+            onPress={() => {
+              console.log('🔘 DEBUG: Blue button pressed!');
+              Alert.alert('Debug', 'Blue button works!');
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 12 }}>DEBUG SUB</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <KeyboardAvoidingView 
