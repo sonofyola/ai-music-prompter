@@ -27,13 +27,11 @@ function AppContent() {
   }
 
   return (
-    <ThemeProvider>
-      <NotificationProvider>
-        <PromptHistoryProvider>
-          <PromptFormScreen />
-        </PromptHistoryProvider>
-      </NotificationProvider>
-    </ThemeProvider>
+    <NotificationProvider>
+      <PromptHistoryProvider>
+        <PromptFormScreen />
+      </PromptHistoryProvider>
+    </NotificationProvider>
   );
 }
 
@@ -41,7 +39,9 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <BasicProvider project_id={schema.project_id} schema={schema}>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </BasicProvider>
     </SafeAreaProvider>
   );
