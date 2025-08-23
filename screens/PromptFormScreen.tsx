@@ -44,6 +44,7 @@ import PromptHistoryModal from '../components/PromptHistoryModal';
 import TemplatesModal from '../components/TemplatesModal';
 import EmailCaptureModal from '../components/EmailCaptureModal';
 import AdminScreen from './AdminScreen';
+import SubscriptionScreen from './SubscriptionScreen';
 
 // Admin email whitelist - only these emails can access admin features
 const ADMIN_EMAILS = [
@@ -59,7 +60,7 @@ export default function PromptFormScreen() {
   const styles = createStyles(colors);
 
   // Navigation state
-  const [currentScreen, setCurrentScreen] = useState<'form' | 'admin'>('form');
+  const [currentScreen, setCurrentScreen] = useState<'form' | 'admin' | 'subscription'>('form');
 
   // Admin access state
   const [titlePressCount, setTitlePressCount] = useState(0);
@@ -186,12 +187,40 @@ export default function PromptFormScreen() {
               console.log('🔍 Current user:', user?.email);
               console.log('🔍 signout function:', typeof signout);
               
-              await signout();
-              console.log('✅ Logout successful');
+              if (!signout) {
+                throw new Error('Signout function is not available');
+              }
               
-              // Force a re-render by clearing any local state
+              // Clear local state first
               setIsAdmin(false);
               setCurrentScreen('form');
+              setFormData({
+                subject: '',
+                genres_primary: [],
+                genres_electronic: [],
+                mood: [],
+                tempo_bpm: '',
+                key_scale: '',
+                energy: '',
+                beat: [],
+                bass: [],
+                groove_swing: '',
+                vocal_gender: 'none',
+                vocal_delivery: '',
+                era: '',
+                master_notes: '',
+                length: '',
+                weirdness_level: 'conventional',
+                general_freeform: ''
+              });
+              setGeneratedPrompt('');
+              setShowPrompt(false);
+              
+              // Then call signout
+              console.log('🔄 Calling signout...');
+              const result = await signout();
+              console.log('✅ Signout result:', result);
+              console.log('✅ Logout successful');
               
             } catch (error) {
               console.error('❌ Logout error:', error);
@@ -200,7 +229,40 @@ export default function PromptFormScreen() {
                 stack: error?.stack,
                 name: error?.name
               });
-              Alert.alert('Error', `Failed to logout: ${error?.message || 'Unknown error'}`);
+              
+              // Show more detailed error information
+              const errorMessage = error?.message || 'Unknown error occurred';
+              const errorType = error?.name || 'Error';
+              
+              Alert.alert(
+                'Logout Error', 
+                `${errorType}: ${errorMessage}\n\nTry refreshing the page or use Force Logout.`,
+                [
+                  { text: 'OK' },
+                  { 
+                    text: 'Force Logout', 
+                    style: 'destructive',
+                    onPress: () => {
+                      // Clear all local state and force a refresh
+                      console.log('🔄 Force logout initiated...');
+                      setIsAdmin(false);
+                      setCurrentScreen('form');
+                      
+                      // Try to reload the page if we're on web
+                      if (typeof window !== 'undefined' && window.location) {
+                        window.location.reload();
+                      } else {
+                        // For mobile, show a message to restart the app
+                        Alert.alert(
+                          'Force Logout Complete',
+                          'Please restart the app to complete the logout process.',
+                          [{ text: 'OK' }]
+                        );
+                      }
+                    }
+                  }
+                ]
+              );
             }
           }
         }
@@ -298,6 +360,17 @@ export default function PromptFormScreen() {
     setFormData(historyData);
     setShowHistoryModal(false);
   };
+
+  // Show subscription screen if navigated there
+  if (currentScreen === 'subscription') {
+    return (
+      <SubscriptionScreen 
+        navigation={{ 
+          goBack: () => setCurrentScreen('form') 
+        }} 
+      />
+    );
+  }
 
   // Show admin screen if navigated there
   if (currentScreen === 'admin') {
@@ -446,25 +519,14 @@ export default function PromptFormScreen() {
         <SubscriptionStatus 
           onManagePress={() => {
             console.log('🔘 Subscription button pressed!');
-            Alert.alert(
-              'Subscription Management', 
-              'Choose an option:',
-              [
-                { text: 'Cancel', style: 'cancel' },
-                { 
-                  text: 'View Current Plan', 
-                  onPress: () => {
-                    const statusText = subscriptionStatus === 'unlimited' ? 'Unlimited Plan' : 
-                                     subscriptionStatus === 'premium' ? 'Premium Plan' : 'Free Plan';
-                    Alert.alert('Current Plan', `You are currently on the ${statusText}.`);
-                  }
-                },
-                { 
-                  text: 'Upgrade Plan', 
-                  onPress: () => setShowUpgradeModal(true)
-                }
-              ]
-            );
+            console.log('🔄 Navigating to subscription screen...');
+            try {
+              setCurrentScreen('subscription');
+              console.log('✅ Navigation successful');
+            } catch (error) {
+              console.error('❌ Navigation error:', error);
+              Alert.alert('Error', 'Failed to open subscription screen');
+            }
           }}
           compact={true}
         />
@@ -475,7 +537,7 @@ export default function PromptFormScreen() {
             style={{ backgroundColor: '#ff4444', padding: 10, borderRadius: 5 }}
             onPress={() => {
               console.log('🔘 DEBUG: Red button pressed!');
-              Alert.alert('Debug', 'Red button works!');
+              handleUserLogout();
             }}
           >
             <Text style={{ color: 'white', fontSize: 12 }}>DEBUG LOGOUT</Text>
@@ -485,7 +547,7 @@ export default function PromptFormScreen() {
             style={{ backgroundColor: '#4444ff', padding: 10, borderRadius: 5 }}
             onPress={() => {
               console.log('🔘 DEBUG: Blue button pressed!');
-              Alert.alert('Debug', 'Blue button works!');
+              setCurrentScreen('subscription');
             }}
           >
             <Text style={{ color: 'white', fontSize: 12 }}>DEBUG SUB</Text>

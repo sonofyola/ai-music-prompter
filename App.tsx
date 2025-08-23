@@ -27,12 +27,12 @@ function AppContent() {
 
   // Show auth screen if not signed in
   if (!isSignedIn || !user) {
-    console.log('📱 Showing AuthScreen');
+    console.log('📱 Showing AuthScreen - User signed out or not authenticated');
     return <AuthScreen />;
   }
 
   // Show main app
-  console.log('📱 Showing PromptFormScreen');
+  console.log('📱 Showing PromptFormScreen - User authenticated');
   return <PromptFormScreen />;
 }
 
