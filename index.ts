@@ -1,6 +1,9 @@
+// Load constants polyfill FIRST - before any other imports
+import './constants-polyfill.js';
+
 import "@expo/metro-runtime";
+import './polyfills'; // Load polyfills second
 import './utils/global-error-handler';
-import './polyfills'; // Adding back to test
 import { registerRootComponent } from 'expo';
 
 import App from './App';
