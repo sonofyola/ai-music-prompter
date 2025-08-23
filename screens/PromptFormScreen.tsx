@@ -174,21 +174,48 @@ export default function PromptFormScreen() {
   const handleUserLogout = async () => {
     console.log('🔘 Logout button pressed');
     
-    // Skip the Alert.alert confirmation and go straight to logout
     try {
-      console.log('🔄 Starting logout...');
+      console.log('🔄 Starting complete logout...');
       
+      // Step 1: Call signout
       if (signout && typeof signout === 'function') {
         await signout();
         console.log('✅ Signout completed');
       }
       
-      // Force reload to complete logout
+      // Step 2: Clear all possible cached data
+      if (typeof window !== 'undefined') {
+        // Clear localStorage
+        try {
+          localStorage.clear();
+          console.log('✅ localStorage cleared');
+        } catch (e) {
+          console.log('⚠️ Could not clear localStorage:', e);
+        }
+        
+        // Clear sessionStorage
+        try {
+          sessionStorage.clear();
+          console.log('✅ sessionStorage cleared');
+        } catch (e) {
+          console.log('⚠️ Could not clear sessionStorage:', e);
+        }
+        
+        // Clear cookies by setting them to expire
+        try {
+          document.cookie.split(";").forEach(function(c) { 
+            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+          });
+          console.log('✅ Cookies cleared');
+        } catch (e) {
+          console.log('⚠️ Could not clear cookies:', e);
+        }
+      }
+      
+      // Step 3: Force reload to complete logout
       if (typeof window !== 'undefined' && window.location) {
         console.log('🔄 Reloading page...');
         window.location.reload();
-      } else {
-        console.log('🔄 Not on web platform');
       }
       
     } catch (error) {
@@ -552,6 +579,46 @@ export default function PromptFormScreen() {
             }}
           >
             <Text style={{ color: 'black', fontSize: 14, fontWeight: 'bold' }}>LOGOUT NO ALERT</Text>
+          </TouchableOpacity>
+
+          {/* Nuclear logout test */}
+          <TouchableOpacity 
+            style={{ backgroundColor: '#ff0088', padding: 15, borderRadius: 5, alignItems: 'center' }}
+            onPress={() => {
+              console.log('💥 NUCLEAR LOGOUT TEST!');
+              
+              // Clear everything possible
+              if (typeof window !== 'undefined') {
+                // Clear all storage
+                try { localStorage.clear(); } catch (e) {}
+                try { sessionStorage.clear(); } catch (e) {}
+                
+                // Clear all cookies
+                try {
+                  document.cookie.split(";").forEach(function(c) { 
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                  });
+                } catch (e) {}
+                
+                // Clear IndexedDB if possible
+                try {
+                  if (window.indexedDB) {
+                    window.indexedDB.databases().then(databases => {
+                      databases.forEach(db => {
+                        if (db.name) {
+                          window.indexedDB.deleteDatabase(db.name);
+                        }
+                      });
+                    });
+                  }
+                } catch (e) {}
+                
+                // Force hard reload (bypasses cache)
+                window.location.href = window.location.href;
+              }
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>💥 NUCLEAR LOGOUT</Text>
           </TouchableOpacity>
         </View>
       </View>
