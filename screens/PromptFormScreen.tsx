@@ -54,8 +54,8 @@ const ADMIN_EMAILS = [
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { canGenerate, incrementGeneration, isEmailCaptured, subscriptionStatus } = useUsage();
-  const { savePrompt } = usePromptHistory();
+  const { canGenerate, incrementGeneration, isEmailCaptured, subscriptionStatus, clearAllData } = useUsage();
+  const { savePrompt, clearHistory } = usePromptHistory();
   const { user, signout } = useBasic();
   const styles = createStyles(colors);
 
@@ -175,25 +175,50 @@ export default function PromptFormScreen() {
     console.log('🔘 Logout button pressed');
     Alert.alert(
       'Logout',
-      'Are you sure you want to logout?',
+      'Choose logout method:',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Logout', 
+          text: 'Simple Logout', 
+          onPress: async () => {
+            try {
+              console.log('🔄 Simple logout...');
+              
+              // Just call signout and reload
+              if (signout && typeof signout === 'function') {
+                await signout();
+              }
+              
+              // Force reload
+              if (typeof window !== 'undefined' && window.location) {
+                window.location.reload();
+              } else {
+                Alert.alert('Logout', 'Please restart the app to complete logout.');
+              }
+              
+            } catch (error) {
+              console.error('❌ Simple logout error:', error);
+              // Force reload anyway
+              if (typeof window !== 'undefined' && window.location) {
+                window.location.reload();
+              }
+            }
+          }
+        },
+        { 
+          text: 'Full Logout', 
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('🔄 Starting logout process...');
+              console.log('🔄 Starting full logout process...');
               console.log('🔍 Current user:', user?.email);
               console.log('🔍 signout function:', typeof signout);
               
-              if (!signout) {
-                throw new Error('Signout function is not available');
-              }
-              
-              // Clear local state first
+              // Step 1: Clear all local state immediately
+              console.log('🔄 Clearing local state...');
               setIsAdmin(false);
               setCurrentScreen('form');
+              setTitlePressCount(0);
               setFormData({
                 subject: '',
                 genres_primary: [],
@@ -215,46 +240,71 @@ export default function PromptFormScreen() {
               });
               setGeneratedPrompt('');
               setShowPrompt(false);
+              setShowUpgradeModal(false);
+              setShowEmailCapture(false);
+              setShowHistoryModal(false);
+              setShowTemplatesModal(false);
               
-              // Then call signout
-              console.log('🔄 Calling signout...');
-              const result = await signout();
-              console.log('✅ Signout result:', result);
-              console.log('✅ Logout successful');
+              // Step 2: Clear usage context data
+              console.log('🔄 Clearing usage context...');
+              await clearAllData();
+              
+              // Step 3: Clear prompt history
+              console.log('🔄 Clearing prompt history...');
+              try {
+                await clearHistory();
+                console.log('✅ Prompt history cleared');
+              } catch (historyError) {
+                console.warn('⚠️ Error clearing prompt history:', historyError);
+              }
+              
+              // Step 4: Call Basic Tech signout
+              if (signout && typeof signout === 'function') {
+                console.log('🔄 Calling Basic Tech signout...');
+                await signout();
+                console.log('✅ Basic Tech signout completed');
+              } else {
+                console.warn('⚠️ signout function not available');
+              }
+              
+              // Step 5: Force page reload if on web
+              console.log('🔄 Attempting page reload...');
+              if (typeof window !== 'undefined' && window.location) {
+                setTimeout(() => {
+                  window.location.reload();
+                }, 100);
+              }
+              
+              console.log('✅ Full logout process completed');
               
             } catch (error) {
-              console.error('❌ Logout error:', error);
+              console.error('❌ Full logout error:', error);
               console.error('❌ Error details:', {
                 message: error?.message,
                 stack: error?.stack,
                 name: error?.name
               });
               
-              // Show more detailed error information
-              const errorMessage = error?.message || 'Unknown error occurred';
-              const errorType = error?.name || 'Error';
+              // Force logout regardless of error
+              console.log('🔄 Force logout due to error...');
               
+              // Clear everything we can
+              setIsAdmin(false);
+              setCurrentScreen('form');
+              
+              // Show error with force reload option
               Alert.alert(
                 'Logout Error', 
-                `${errorType}: ${errorMessage}\n\nTry refreshing the page or use Force Logout.`,
+                `Logout encountered an error: ${error?.message || 'Unknown error'}\n\nWe'll force a logout and refresh the page.`,
                 [
-                  { text: 'OK' },
                   { 
-                    text: 'Force Logout', 
-                    style: 'destructive',
+                    text: 'Force Logout & Refresh', 
                     onPress: () => {
-                      // Clear all local state and force a refresh
-                      console.log('🔄 Force logout initiated...');
-                      setIsAdmin(false);
-                      setCurrentScreen('form');
-                      
-                      // Try to reload the page if we're on web
                       if (typeof window !== 'undefined' && window.location) {
                         window.location.reload();
                       } else {
-                        // For mobile, show a message to restart the app
                         Alert.alert(
-                          'Force Logout Complete',
+                          'Logout Complete',
                           'Please restart the app to complete the logout process.',
                           [{ text: 'OK' }]
                         );
@@ -541,6 +591,28 @@ export default function PromptFormScreen() {
             }}
           >
             <Text style={{ color: 'white', fontSize: 12 }}>DEBUG LOGOUT</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={{ backgroundColor: '#ff8800', padding: 10, borderRadius: 5 }}
+            onPress={async () => {
+              console.log('🔘 DEBUG: Orange button pressed - FORCE LOGOUT!');
+              try {
+                if (signout) {
+                  await signout();
+                }
+              } catch (e) {
+                console.log('Signout error:', e);
+              }
+              
+              if (typeof window !== 'undefined' && window.location) {
+                window.location.reload();
+              } else {
+                Alert.alert('Force Logout', 'Please restart the app.');
+              }
+            }}
+          >
+            <Text style={{ color: 'white', fontSize: 12 }}>FORCE LOGOUT</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 

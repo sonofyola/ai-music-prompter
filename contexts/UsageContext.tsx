@@ -11,6 +11,7 @@ interface UsageContextType {
   setEmailCaptured: (captured: boolean) => void;
   upgradeToUnlimited: () => Promise<void>;
   resetUsage: () => Promise<void>;
+  clearAllData: () => Promise<void>;
 }
 
 const UsageContext = createContext<UsageContextType | undefined>(undefined);
@@ -171,6 +172,27 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const clearAllData = async () => {
+    console.log('🔄 UsageContext: Clearing all data...');
+    
+    // Reset all state to defaults
+    setDailyUsage(0);
+    setIsEmailCaptured(false);
+    setSubscriptionStatus('free');
+    
+    // Clear AsyncStorage
+    try {
+      await AsyncStorage.multiRemove([
+        'dailyUsage',
+        'lastUsageDate',
+        'emailCaptured'
+      ]);
+      console.log('✅ UsageContext: AsyncStorage cleared');
+    } catch (error) {
+      console.error('❌ UsageContext: Error clearing AsyncStorage:', error);
+    }
+  };
+
   // Check if user can generate based on subscription status
   const canGenerate = subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
 
@@ -184,6 +206,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       setEmailCaptured,
       upgradeToUnlimited,
       resetUsage,
+      clearAllData,
     }}>
       {children}
     </UsageContext.Provider>
