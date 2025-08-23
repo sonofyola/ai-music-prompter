@@ -1,137 +1,71 @@
-import React, { useState } from 'react';
-import { View, Text } from 'react-native';
+import React from 'react';
+import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BasicProvider, useBasic } from '@basictech/expo';
-import { schema } from './basic.config';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { UsageProvider } from './contexts/UsageContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
-import PromptFormScreen from './screens/PromptFormScreen';
-import TestScreen from './screens/TestScreen';
-import AuthScreen from './screens/AuthScreen';
-
-// Global logout handler that can be called from anywhere
-let globalLogoutHandler: (() => void) | null = null;
-
-export const triggerGlobalLogout = () => {
-  if (globalLogoutHandler) {
-    globalLogoutHandler();
-  }
-};
-
-function AppContent() {
-  const { isSignedIn, user, isLoading } = useBasic();
-
-  // Debug logging
-  console.log('🔍 Auth State:', { isSignedIn, user: user?.email, isLoading });
-
-  // Show loading state
-  if (isLoading) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
-  // Show auth screen if not signed in
-  if (!isSignedIn || !user) {
-    console.log('📱 Showing AuthScreen - User signed out or not authenticated');
-    return <AuthScreen />;
-  }
-
-  // Show test screen instead of main app for debugging
-  console.log('📱 Showing TestScreen - User authenticated');
-  return <TestScreen />;
-}
-
-// Error boundary component
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean; error?: Error }
-> {
-  constructor(props: { children: React.ReactNode }) {
-    super(props);
-    this.state = { hasError: false };
-  }
-
-  static getDerivedStateFromError(error: Error) {
-    return { hasError: true, error };
-  }
-
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('App Error:', error, errorInfo);
-  }
-
-  render() {
-    if (this.state.hasError) {
-      return (
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-          <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
-            Something went wrong
-          </Text>
-          <Text style={{ fontSize: 14, textAlign: 'center', marginBottom: 20 }}>
-            The app encountered an unexpected error. Please refresh the page to try again.
-          </Text>
-          <Text style={{ fontSize: 12, color: '#666', textAlign: 'center' }}>
-            {this.state.error?.message || 'Unknown error'}
-          </Text>
-        </View>
-      );
-    }
-
-    return this.props.children;
-  }
-}
 
 export default function App() {
-  const [basicProviderKey, setBasicProviderKey] = useState(0);
-
-  // Set up global logout handler
-  React.useEffect(() => {
-    globalLogoutHandler = () => {
-      console.log('🔥 GLOBAL LOGOUT: Forcing BasicProvider remount');
-      
-      // Clear all storage
-      if (typeof window !== 'undefined') {
-        try { localStorage.clear(); } catch (e) {}
-        try { sessionStorage.clear(); } catch (e) {}
-        try {
-          document.cookie.split(";").forEach(function(c) { 
-            document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-          });
-        } catch (e) {}
-      }
-      
-      // Force BasicProvider to remount with new key
-      setBasicProviderKey(prev => prev + 1);
-    };
-    
-    return () => {
-      globalLogoutHandler = null;
-    };
-  }, []);
-
+  console.log('🚀 App component rendering...');
+  
   return (
-    <ErrorBoundary>
-      <SafeAreaProvider>
-        <BasicProvider 
-          key={basicProviderKey} // This forces complete remount
-          project_id={schema.project_id} 
-          schema={schema as any}
+    <SafeAreaProvider>
+      <View style={{ 
+        flex: 1, 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        backgroundColor: '#f0f0f0',
+        padding: 20 
+      }}>
+        <Text style={{ 
+          fontSize: 24, 
+          fontWeight: 'bold', 
+          marginBottom: 20,
+          textAlign: 'center'
+        }}>
+          🔧 MINIMAL TEST APP
+        </Text>
+        
+        <Text style={{ 
+          fontSize: 16, 
+          marginBottom: 20,
+          textAlign: 'center'
+        }}>
+          If you can see this, React is working!
+        </Text>
+        
+        <TouchableOpacity 
+          style={{ 
+            backgroundColor: '#007AFF', 
+            padding: 15, 
+            borderRadius: 8,
+            marginBottom: 10
+          }}
+          onPress={() => {
+            console.log('Button pressed!');
+            Alert.alert('Success', 'Button works!');
+          }}
         >
-          <ThemeProvider>
-            <NotificationProvider>
-              <UsageProvider>
-                <PromptHistoryProvider>
-                  <AppContent />
-                </PromptHistoryProvider>
-              </UsageProvider>
-            </NotificationProvider>
-          </ThemeProvider>
-        </BasicProvider>
-      </SafeAreaProvider>
-    </ErrorBoundary>
+          <Text style={{ 
+            color: 'white', 
+            textAlign: 'center', 
+            fontWeight: 'bold' 
+          }}>
+            Test Button
+          </Text>
+        </TouchableOpacity>
+        
+        <Text style={{ 
+          fontSize: 12, 
+          color: '#666',
+          textAlign: 'center',
+          marginTop: 20
+        }}>
+          Check the browser console for any error messages
+        </Text>
+      </View>
+    </SafeAreaProvider>
   );
 }
+
+// Export the global logout function as a placeholder
+export const triggerGlobalLogout = () => {
+  console.log('Global logout called');
+};
