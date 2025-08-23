@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useBasic } from '@basictech/expo';
 
@@ -23,19 +23,28 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'unlimited'>('free');
 
-  useEffect(() => {
-    if (isSignedIn && user && db) {
-      loadUserUsage().catch(error => {
-        console.error('Failed to load user usage, falling back to local storage:', error);
-        loadLocalUsage();
-      });
-    } else {
-      // Fallback to local storage for non-authenticated users
-      loadLocalUsage();
-    }
-  }, [isSignedIn, user, db]);
+  const loadLocalUsage = useCallback(async () => {
+    try {
+      const today = new Date().toDateString();
+      const lastUsageDate = await AsyncStorage.getItem('lastUsageDate');
+      const storedUsage = await AsyncStorage.getItem('dailyUsage');
+      const emailCaptured = await AsyncStorage.getItem('emailCaptured');
 
-  const loadUserUsage = async () => {
+      if (lastUsageDate !== today) {
+        setDailyUsage(0);
+        await AsyncStorage.setItem('lastUsageDate', today);
+        await AsyncStorage.setItem('dailyUsage', '0');
+      } else {
+        setDailyUsage(parseInt(storedUsage || '0', 10));
+      }
+
+      setIsEmailCaptured(emailCaptured === 'true');
+    } catch (error) {
+      console.error('Error loading local usage:', error);
+    }
+  }, []);
+
+  const loadUserUsage = useCallback(async () => {
     if (!db || !user) return;
 
     try {
@@ -78,28 +87,19 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       // Fall back to local storage on database error
       await loadLocalUsage();
     }
-  };
+  }, [db, user, loadLocalUsage]);
 
-  const loadLocalUsage = async () => {
-    try {
-      const today = new Date().toDateString();
-      const lastUsageDate = await AsyncStorage.getItem('lastUsageDate');
-      const storedUsage = await AsyncStorage.getItem('dailyUsage');
-      const emailCaptured = await AsyncStorage.getItem('emailCaptured');
-
-      if (lastUsageDate !== today) {
-        setDailyUsage(0);
-        await AsyncStorage.setItem('lastUsageDate', today);
-        await AsyncStorage.setItem('dailyUsage', '0');
-      } else {
-        setDailyUsage(parseInt(storedUsage || '0', 10));
-      }
-
-      setIsEmailCaptured(emailCaptured === 'true');
-    } catch (error) {
-      console.error('Error loading local usage:', error);
+  useEffect(() => {
+    if (isSignedIn && user && db) {
+      loadUserUsage().catch(error => {
+        console.error('Failed to load user usage, falling back to local storage:', error);
+        loadLocalUsage();
+      });
+    } else {
+      // Fallback to local storage for non-authenticated users
+      loadLocalUsage();
     }
-  };
+  }, [isSignedIn, user, db, loadUserUsage, loadLocalUsage]);
 
   const incrementGeneration = async () => {
     const newUsage = dailyUsage + 1;
@@ -171,8 +171,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Admin users have unlimited access
-  const effectiveSubscriptionStatus = isAdmin ? 'unlimited' : subscriptionStatus;
+  // Check if user can generate based on subscription status
   const canGenerate = subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
 
   return (
