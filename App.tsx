@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Alert } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
@@ -20,7 +20,7 @@ const Stack = createStackNavigator();
 
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
-  const { isMaintenanceMode, maintenanceMessage, isAdmin } = useMaintenance();
+  const { isMaintenanceMode, maintenanceMessage, isAdmin, checkAdminAccess, setAdminStatus } = useMaintenance();
 
   // Enhanced debug logging
   console.log('🔍 APP RENDER - Full state check:', {
@@ -32,6 +32,41 @@ function AppContent() {
     maintenanceMessage,
     timestamp: new Date().toISOString()
   });
+
+  // Handle admin access attempt from maintenance screen
+  const handleAdminAccessFromMaintenance = async () => {
+    console.log('🔓 Admin access requested from maintenance screen');
+    console.log('🔓 User email:', user?.email);
+    
+    try {
+      if (!user?.email) {
+        Alert.alert('Sign In Required', 'Please sign in to access admin features.');
+        return;
+      }
+      
+      const hasAccess = await checkAdminAccess();
+      
+      if (hasAccess) {
+        console.log('✅ Admin access granted from maintenance screen!');
+        await setAdminStatus(true);
+        Alert.alert(
+          '🔓 Admin Access Granted',
+          `Welcome, admin! Maintenance mode bypassed.\n\nEmail: ${user?.email}`,
+          [{ text: 'Continue' }]
+        );
+      } else {
+        console.log('❌ Admin access denied from maintenance screen');
+        Alert.alert(
+          '🚫 Access Denied',
+          `You are not authorized for admin access.\n\nYour email: ${user?.email}\n\nOnly whitelisted email addresses can access admin features.`,
+          [{ text: 'OK' }]
+        );
+      }
+    } catch (error) {
+      console.error('❌ Admin access error from maintenance screen:', error);
+      Alert.alert('Error', `Failed to check admin access: ${error.message}`);
+    }
+  };
 
   // Show loading state - including while admin check is happening
   if (isLoading) {
@@ -79,12 +114,8 @@ function AppContent() {
     return (
       <MaintenanceScreen 
         message={maintenanceMessage}
-        onAdminAccess={() => {
-          // Allow admin access attempt from maintenance screen
-          console.log('🔓 Admin access requested from maintenance screen');
-          // This will be handled by the 7-click method in the maintenance screen
-        }}
-        showAdminAccess={true} // Show admin access button for signed-in users
+        onAdminAccess={handleAdminAccessFromMaintenance}
+        showAdminAccess={isSignedIn} // Only show admin access button for signed-in users
       />
     );
   }
