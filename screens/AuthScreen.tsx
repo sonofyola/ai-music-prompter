@@ -6,116 +6,76 @@ import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import ThemeToggle from '../components/ThemeToggle';
 import DebugScreen from './DebugScreen';
+import { performCompleteAuthReset } from '../utils/authReset';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
-  const { user, login, isLoading, isSignedIn, db } = useBasic();
+  const { login, isLoading } = useBasic();
+
   const styles = createStyles(colors);
-  
-  // Add debug mode state
-  const [showDebug, setShowDebug] = useState(false);
-
-  useEffect(() => {
-    if (isSignedIn && user) {
-      // User is authenticated, create/update their profile
-      initializeUserProfile();
-    }
-  }, [isSignedIn, user, db]);
-
-  const initializeUserProfile = async () => {
-    if (!db || !user) return;
-
-    try {
-      // Check if user profile exists
-      const existingProfile = await db.from('user_profiles').get(user.id);
-      
-      if (!existingProfile) {
-        // Create new user profile
-        await db.from('user_profiles').add({
-          id: user.id,
-          email: user.email || '',
-          subscription_status: 'free',
-          usage_count: 0,
-          last_reset_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          stripe_customer_id: '',
-        });
-        console.log('✅ Created new user profile for:', user.email);
-      } else {
-        console.log('✅ User profile exists for:', user.email);
-      }
-    } catch (error) {
-      console.error('❌ Error initializing user profile:', error);
-    }
-  };
-
-  const handleLogin = async () => {
-    try {
-      console.log('🔄 Starting login process...');
-      await login();
-      console.log('✅ Login successful');
-    } catch (error) {
-      console.error('❌ Login error:', error);
-      Alert.alert('Login Error', 'Failed to sign in. Please try again.');
-    }
-  };
-
-  // Show debug screen if requested
-  if (showDebug) {
-    return <DebugScreen />;
-  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => setShowDebug(true)}>
-          <Text style={{ color: colors.textSecondary, fontSize: 12 }}>Debug</Text>
-        </TouchableOpacity>
-        <ThemeToggle />
-      </View>
-
       <View style={styles.content}>
-        <View style={styles.logoContainer}>
-          <MaterialIcons name="auto-awesome" size={80} color={colors.primary} />
+        {/* Header */}
+        <View style={styles.header}>
+          <MaterialIcons name="auto-awesome" size={48} color={colors.primary} />
           <Text style={styles.title}>AI Music Prompter</Text>
           <Text style={styles.subtitle}>
-            Generate professional AI music prompts for Suno, Riffusion, and MusicGen
+            Generate perfect prompts for AI music tools like Suno, Riffusion, and MusicGen
           </Text>
         </View>
 
-        <View style={styles.featuresContainer}>
-          <View style={styles.feature}>
-            <MaterialIcons name="music-note" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Professional music prompts</Text>
-          </View>
-          <View style={styles.feature}>
-            <MaterialIcons name="history" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Save & manage prompt history</Text>
-          </View>
-          <View style={styles.feature}>
-            <MaterialIcons name="dashboard" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Smart prompt templates</Text>
-          </View>
-          <View style={styles.feature}>
-            <MaterialIcons name="cloud-sync" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Sync across all devices</Text>
-          </View>
+        {/* Auth Section */}
+        <View style={styles.authSection}>
+          <TouchableOpacity 
+            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            onPress={login}
+            disabled={isLoading}
+          >
+            <MaterialIcons name="login" size={24} color={colors.background} />
+            <Text style={styles.loginButtonText}>
+              {isLoading ? 'Signing In...' : 'Sign In to Get Started'}
+            </Text>
+          </TouchableOpacity>
+
+          <Text style={styles.authNote}>
+            Sign in to save your prompts, access templates, and unlock premium features
+          </Text>
         </View>
 
-        <TouchableOpacity 
-          style={styles.loginButton} 
-          onPress={handleLogin}
-          disabled={isLoading}
-        >
-          <MaterialIcons name="login" size={24} color={colors.background} />
-          <Text style={styles.loginButtonText}>
-            {isLoading ? 'Signing In...' : 'Sign In to Get Started'}
-          </Text>
-        </TouchableOpacity>
+        {/* Debug Section */}
+        <View style={styles.debugSection}>
+          <TouchableOpacity 
+            style={styles.debugButton}
+            onPress={performCompleteAuthReset}
+          >
+            <Text style={styles.debugButtonText}>🔄 Reset Everything</Text>
+          </TouchableOpacity>
+        </View>
 
-        <Text style={styles.authNote}>
-          Secure authentication powered by Basic Tech
-        </Text>
+        {/* Features Preview */}
+        <View style={styles.featuresSection}>
+          <Text style={styles.featuresTitle}>What you can do:</Text>
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <MaterialIcons name="music-note" size={20} color={colors.primary} />
+              <Text style={styles.featureText}>Generate detailed music prompts</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <MaterialIcons name="shuffle" size={20} color={colors.primary} />
+              <Text style={styles.featureText}>Get random track ideas</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <MaterialIcons name="history" size={20} color={colors.primary} />
+              <Text style={styles.featureText}>Save and manage prompt history</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <MaterialIcons name="dashboard" size={20} color={colors.primary} />
+              <Text style={styles.featureText}>Use smart templates</Text>
+            </View>
+          </View>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -196,5 +156,50 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
+  },
+  authSection: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  debugSection: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  debugButton: {
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  debugButtonText: {
+    color: 'white',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  featuresSection: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 10,
+  },
+  featuresList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    paddingHorizontal: 10,
+  },
+  featureText: {
+    fontSize: 14,
+    color: colors.text,
+    marginLeft: 10,
   },
 });
