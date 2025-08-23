@@ -1,126 +1,75 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
-import { performCompleteAuthReset } from '../utils/authReset';
+import { performCompleteAuthReset, performQuickAuthReset } from '../utils/authReset';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
   const { login, signout, isLoading, user, isSignedIn } = useBasic();
+  const [isResetting, setIsResetting] = useState(false);
 
   const styles = createStyles(colors);
-
-  // Debug logging
-  console.log('🔐 AuthScreen - Current state:', {
-    isSignedIn,
-    user: user ? {
-      email: user.email,
-      name: user.name,
-      id: user.id
-    } : null,
-    isLoading
-  });
-
-  const handleSignOut = async () => {
-    try {
-      console.log('🔓 Signing out...');
-      await signout();
-      console.log('✅ Signed out successfully');
-    } catch (error) {
-      console.error('❌ Error signing out:', error);
-    }
-  };
-
-  const handleCompleteReset = async () => {
-    try {
-      console.log('🧹 Performing complete reset...');
-      await signout();
-      await performCompleteAuthReset();
-    } catch (error) {
-      console.error('❌ Error during complete reset:', error);
-    }
-  };
-
-  const handleNuclearReset = async () => {
-    try {
-      console.log('💥 NUCLEAR RESET - Clearing everything...');
-      
-      // Sign out first
-      try {
-        await signout();
-      } catch (e) {
-        console.log('Sign out failed, continuing...');
-      }
-      
-      // Clear everything we can think of
-      await performCompleteAuthReset();
-      
-      // Additional aggressive clearing
-      if (typeof window !== 'undefined') {
-        // Clear all storage
-        try {
-          window.localStorage.clear();
-          window.sessionStorage.clear();
-        } catch (e) {}
-        
-        // Clear service workers
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(registrations => {
-            registrations.forEach(registration => registration.unregister());
-          });
-        }
-        
-        // Clear cache
-        if ('caches' in window) {
-          caches.keys().then(names => {
-            names.forEach(name => caches.delete(name));
-          });
-        }
-        
-        // Clear all cookies with extreme prejudice
-        document.cookie.split(";").forEach(function(c) { 
-          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
-        });
-        
-        // Clear any remaining auth-related items from all storage
-        try {
-          const allLocalStorageKeys = Object.keys(localStorage);
-          allLocalStorageKeys.forEach(key => localStorage.removeItem(key));
-          
-          const allSessionStorageKeys = Object.keys(sessionStorage);
-          allSessionStorageKeys.forEach(key => sessionStorage.removeItem(key));
-        } catch (e) {}
-      }
-      
-      // Force hard reload with cache busting
-      setTimeout(() => {
-        if (typeof window !== 'undefined') {
-          // Clear browser cache and reload
-          if ('caches' in window) {
-            caches.keys().then(names => {
-              names.forEach(name => caches.delete(name));
-              window.location.replace(window.location.origin + '?nuclear=' + Date.now());
-            });
-          } else {
-            window.location.replace(window.location.origin + '?nuclear=' + Date.now());
-          }
-        }
-      }, 2000);
-      
-    } catch (error) {
-      console.error('❌ Error during nuclear reset:', error);
-    }
-  };
 
   const handleLogin = async () => {
     try {
       console.log('🔑 Starting login process...');
       await login();
     } catch (error) {
-      console.error('❌ Error during login:', error);
+      console.error('❌ Login error:', error);
+      Alert.alert(
+        'Login Error',
+        'There was an issue signing in. Please try again or use the reset options below.',
+        [{ text: 'OK' }]
+      );
     }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      console.log('🔓 Signing out...');
+      await signout();
+    } catch (error) {
+      console.error('❌ Sign out error:', error);
+    }
+  };
+
+  const handleQuickReset = async () => {
+    setIsResetting(true);
+    try {
+      console.log('🔄 Quick reset...');
+      await performQuickAuthReset();
+      await signout();
+    } catch (error) {
+      console.error('❌ Quick reset error:', error);
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const handleCompleteReset = async () => {
+    Alert.alert(
+      'Complete Reset',
+      'This will clear all authentication data and reload the app. Continue?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              await performCompleteAuthReset();
+            } catch (error) {
+              console.error('❌ Complete reset error:', error);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -139,7 +88,10 @@ export default function AuthScreen() {
         {user && (
           <View style={styles.userStatus}>
             <Text style={styles.userStatusText}>
-              Currently signed in as: {user.email || user.name || 'Unknown User'}
+              Signed in as: {user.email || user.name || 'Unknown User'}
+            </Text>
+            <Text style={styles.userStatusSubtext}>
+              Status: {isSignedIn ? '✅ Authenticated' : '⚠️ Authentication Issue'}
             </Text>
             <TouchableOpacity 
               style={styles.signOutButton}
@@ -154,13 +106,15 @@ export default function AuthScreen() {
         {/* Auth Section */}
         <View style={styles.authSection}>
           <TouchableOpacity 
-            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+            style={[styles.loginButton, (isLoading || isResetting) && styles.loginButtonDisabled]}
             onPress={handleLogin}
-            disabled={isLoading}
+            disabled={isLoading || isResetting}
           >
             <MaterialIcons name="login" size={24} color={colors.background} />
             <Text style={styles.loginButtonText}>
-              {isLoading ? 'Signing In...' : user ? 'Continue to App' : 'Sign In to Get Started'}
+              {isLoading ? 'Signing In...' : 
+               isResetting ? 'Resetting...' :
+               user ? 'Continue to App' : 'Sign In to Get Started'}
             </Text>
           </TouchableOpacity>
 
@@ -169,27 +123,25 @@ export default function AuthScreen() {
           </Text>
         </View>
 
-        {/* Debug Section - Always show for troubleshooting */}
-        <View style={styles.debugSection}>
+        {/* Troubleshooting Section */}
+        <View style={styles.troubleshootSection}>
+          <Text style={styles.troubleshootTitle}>Having issues?</Text>
+          
           <TouchableOpacity 
-            style={styles.debugButton}
+            style={styles.troubleshootButton}
+            onPress={handleQuickReset}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🔄 Quick Reset</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF3B30' }]}
             onPress={handleCompleteReset}
+            disabled={isResetting}
           >
-            <Text style={styles.debugButtonText}>🔄 Complete Reset</Text>
+            <Text style={styles.troubleshootButtonText}>🧹 Complete Reset</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.debugButton, { backgroundColor: '#FF1744', marginTop: 8 }]}
-            onPress={handleNuclearReset}
-          >
-            <Text style={styles.debugButtonText}>💥 Nuclear Reset</Text>
-          </TouchableOpacity>
-          
-          {user && (
-            <Text style={styles.debugInfo}>
-              Current user: {user.email || user.name || 'Unknown'}
-            </Text>
-          )}
         </View>
 
         {/* Features Preview */}
@@ -261,6 +213,13 @@ const createStyles = (colors: any) => StyleSheet.create({
   userStatusText: {
     fontSize: 14,
     color: colors.text,
+    marginBottom: 4,
+    textAlign: 'center',
+    fontWeight: '600',
+  },
+  userStatusSubtext: {
+    fontSize: 12,
+    color: colors.textSecondary,
     marginBottom: 12,
     textAlign: 'center',
   },
@@ -309,29 +268,32 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
     fontStyle: 'italic',
   },
-  debugSection: {
-    marginTop: 20,
+  troubleshootSection: {
+    marginTop: 30,
     alignItems: 'center',
   },
-  debugButton: {
-    backgroundColor: '#FF3B30',
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
+  troubleshootTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 15,
   },
-  debugButtonText: {
+  troubleshootButton: {
+    backgroundColor: '#FF9500',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginBottom: 10,
+    minWidth: 150,
+  },
+  troubleshootButtonText: {
     color: 'white',
     fontWeight: '600',
     fontSize: 14,
-  },
-  debugInfo: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginTop: 8,
     textAlign: 'center',
   },
   featuresSection: {
-    marginTop: 20,
+    marginTop: 30,
     alignItems: 'center',
   },
   featuresTitle: {
