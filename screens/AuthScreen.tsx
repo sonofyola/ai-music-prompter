@@ -12,6 +12,17 @@ export default function AuthScreen() {
 
   const styles = createStyles(colors);
 
+  // Debug logging
+  console.log('🔐 AuthScreen - Current state:', {
+    isSignedIn,
+    user: user ? {
+      email: user.email,
+      name: user.name,
+      id: user.id
+    } : null,
+    isLoading
+  });
+
   const handleSignOut = async () => {
     try {
       console.log('🔓 Signing out...');
@@ -29,6 +40,64 @@ export default function AuthScreen() {
       await performCompleteAuthReset();
     } catch (error) {
       console.error('❌ Error during complete reset:', error);
+    }
+  };
+
+  const handleNuclearReset = async () => {
+    try {
+      console.log('💥 NUCLEAR RESET - Clearing everything...');
+      
+      // Sign out first
+      try {
+        await signout();
+      } catch (e) {
+        console.log('Sign out failed, continuing...');
+      }
+      
+      // Clear everything we can think of
+      await performCompleteAuthReset();
+      
+      // Additional aggressive clearing
+      if (typeof window !== 'undefined') {
+        // Clear all storage
+        try {
+          window.localStorage.clear();
+          window.sessionStorage.clear();
+        } catch (e) {}
+        
+        // Clear service workers
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            registrations.forEach(registration => registration.unregister());
+          });
+        }
+        
+        // Clear cache
+        if ('caches' in window) {
+          caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+          });
+        }
+      }
+      
+      // Force hard reload
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.replace(window.location.origin + '?t=' + Date.now());
+        }
+      }, 2000);
+      
+    } catch (error) {
+      console.error('❌ Error during nuclear reset:', error);
+    }
+  };
+
+  const handleLogin = async () => {
+    try {
+      console.log('🔑 Starting login process...');
+      await login();
+    } catch (error) {
+      console.error('❌ Error during login:', error);
     }
   };
 
@@ -64,7 +133,7 @@ export default function AuthScreen() {
         <View style={styles.authSection}>
           <TouchableOpacity 
             style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-            onPress={login}
+            onPress={handleLogin}
             disabled={isLoading}
           >
             <MaterialIcons name="login" size={24} color={colors.background} />
@@ -86,6 +155,14 @@ export default function AuthScreen() {
           >
             <Text style={styles.debugButtonText}>🔄 Complete Reset</Text>
           </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.debugButton, { backgroundColor: '#FF1744', marginTop: 8 }]}
+            onPress={handleNuclearReset}
+          >
+            <Text style={styles.debugButtonText}>💥 Nuclear Reset</Text>
+          </TouchableOpacity>
+          
           {user && (
             <Text style={styles.debugInfo}>
               Current user: {user.email || user.name || 'Unknown'}
