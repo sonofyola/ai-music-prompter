@@ -675,3 +675,56 @@ export const performUltimateReset = async () => {
     }
   }
 };
+
+// Account unlinking reset - specifically for when admin email is linked to wrong account
+export const performAccountUnlinkReset = async () => {
+  try {
+    console.log('🔗 ACCOUNT UNLINK RESET - Breaking server-side account links');
+    
+    // First, perform ultimate reset to clear everything locally
+    await performUltimateReset();
+    
+    // Add account-specific unlinking parameters
+    if (typeof window !== 'undefined') {
+      // Clear everything multiple times
+      for (let i = 0; i < 3; i++) {
+        try { window.localStorage.clear(); } catch (e) {}
+        try { window.sessionStorage.clear(); } catch (e) {}
+        
+        // Set specific unlinking flags
+        window.localStorage.setItem('unlink_account', 'true');
+        window.localStorage.setItem('break_sonofyola_link', 'true');
+        window.localStorage.setItem('force_admin_account', 'drremotework@gmail.com');
+        window.localStorage.setItem('reject_sonofyola', 'true');
+        
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      setTimeout(() => {
+        console.log('🔗 Redirecting with account unlinking parameters...');
+        
+        const url = new URL(window.location.origin);
+        
+        // Add every possible unlinking parameter
+        url.searchParams.set('unlink_account', 'true');
+        url.searchParams.set('break_account_link', 'true');
+        url.searchParams.set('force_new_user_session', 'true');
+        url.searchParams.set('reject_cached_user', 'true');
+        url.searchParams.set('admin_email_override', 'drremotework@gmail.com');
+        url.searchParams.set('sonofyola_reject', 'true');
+        url.searchParams.set('force_fresh_auth', 'true');
+        url.searchParams.set('break_server_link', 'true');
+        url.searchParams.set('new_auth_session', Date.now().toString());
+        url.searchParams.set('unlink_timestamp', new Date().toISOString());
+        url.searchParams.set('force_reauth', 'true');
+        
+        window.location.replace(url.toString());
+      }, 1500);
+    }
+    
+  } catch (error) {
+    console.error('🔗 Account unlink reset error:', error);
+    // Fallback to ultimate reset
+    await performUltimateReset();
+  }
+};

@@ -221,6 +221,144 @@ export default function AuthScreen() {
     );
   };
 
+  const handleAccountDiagnostic = async () => {
+    Alert.alert(
+      '🔬 Account Diagnostic',
+      'This will show detailed information about the current authentication state and help identify why drremotework@gmail.com is linked to sonofyola.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🔬 Run Diagnostic',
+          onPress: async () => {
+            console.log('🔬 === ACCOUNT DIAGNOSTIC START ===');
+            
+            // Log current user state
+            console.log('🔍 Current User Object:', JSON.stringify(user, null, 2));
+            console.log('🔍 Is Signed In:', isSignedIn);
+            console.log('🔍 Is Loading:', isLoading);
+            
+            // Check localStorage for any Basic Tech data
+            if (typeof window !== 'undefined' && window.localStorage) {
+              console.log('🔍 LocalStorage Keys:');
+              const allKeys = Object.keys(window.localStorage);
+              allKeys.forEach(key => {
+                if (key.toLowerCase().includes('basic') || 
+                    key.toLowerCase().includes('kiki') || 
+                    key.toLowerCase().includes('auth') ||
+                    key.toLowerCase().includes('sonofyola') ||
+                    key.toLowerCase().includes('user')) {
+                  const value = window.localStorage.getItem(key);
+                  console.log(`  ${key}: ${value}`);
+                }
+              });
+            }
+            
+            // Check sessionStorage
+            if (typeof window !== 'undefined' && window.sessionStorage) {
+              console.log('🔍 SessionStorage Keys:');
+              const allKeys = Object.keys(window.sessionStorage);
+              allKeys.forEach(key => {
+                if (key.toLowerCase().includes('basic') || 
+                    key.toLowerCase().includes('kiki') || 
+                    key.toLowerCase().includes('auth') ||
+                    key.toLowerCase().includes('sonofyola') ||
+                    key.toLowerCase().includes('user')) {
+                  const value = window.sessionStorage.getItem(key);
+                  console.log(`  ${key}: ${value}`);
+                }
+              });
+            }
+            
+            // Check cookies
+            if (typeof document !== 'undefined' && document.cookie) {
+              console.log('🔍 Cookies:', document.cookie);
+            }
+            
+            // Check AsyncStorage
+            try {
+              const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+              const allKeys = await AsyncStorage.getAllKeys();
+              console.log('🔍 AsyncStorage Keys:', allKeys);
+              
+              for (const key of allKeys) {
+                if (key.toLowerCase().includes('basic') || 
+                    key.toLowerCase().includes('kiki') || 
+                    key.toLowerCase().includes('auth') ||
+                    key.toLowerCase().includes('sonofyola') ||
+                    key.toLowerCase().includes('user')) {
+                  const value = await AsyncStorage.getItem(key);
+                  console.log(`  ${key}: ${value}`);
+                }
+              }
+            } catch (e) {
+              console.log('🔍 AsyncStorage not available');
+            }
+            
+            console.log('🔬 === ACCOUNT DIAGNOSTIC END ===');
+            
+            Alert.alert(
+              'Diagnostic Complete',
+              'Check the console for detailed information about the authentication state. Look for any references to sonofyola or account linking.',
+              [{ text: 'OK' }]
+            );
+          }
+        }
+      ]
+    );
+  };
+
+  const handleForceNewAccount = async () => {
+    Alert.alert(
+      '🆕 Force New Account Session',
+      'This will attempt to break the link between drremotework@gmail.com and sonofyola by forcing Basic Tech to treat this as a completely new account session.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🆕 Force New Account',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              console.log('🆕 Forcing new account session...');
+              
+              // Sign out first
+              await signout();
+              
+              // Clear everything aggressively
+              const { performUltimateReset } = await import('../utils/authReset');
+              
+              // Add special parameters to force new account
+              if (typeof window !== 'undefined') {
+                // Clear everything first
+                window.localStorage.clear();
+                window.sessionStorage.clear();
+                
+                // Set special flags to force new account
+                window.localStorage.setItem('force_new_account', 'true');
+                window.localStorage.setItem('break_sonofyola_link', 'true');
+                window.localStorage.setItem('admin_override', 'drremotework@gmail.com');
+                
+                setTimeout(() => {
+                  const url = new URL(window.location.origin);
+                  url.searchParams.set('force_new_account', 'true');
+                  url.searchParams.set('break_account_link', 'true');
+                  url.searchParams.set('admin_email', 'drremotework@gmail.com');
+                  url.searchParams.set('sonofyola_override', 'true');
+                  url.searchParams.set('new_session', Date.now().toString());
+                  
+                  window.location.replace(url.toString());
+                }, 1000);
+              }
+              
+            } catch (error) {
+              console.error('❌ Force new account error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -306,6 +444,23 @@ export default function AuthScreen() {
         {/* Troubleshooting Section */}
         <View style={styles.troubleshootSection}>
           <Text style={styles.troubleshootTitle}>Having issues?</Text>
+          
+          {/* Diagnostic Tools */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#007AFF' }]}
+            onPress={handleAccountDiagnostic}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🔬 Account Diagnostic</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#34C759' }]}
+            onPress={handleForceNewAccount}
+            disabled={isResetting}
+          >
+            <Text style={styles.troubleshootButtonText}>🆕 Force New Account</Text>
+          </TouchableOpacity>
           
           {/* Always show this button for sonofyola issues */}
           <TouchableOpacity 
