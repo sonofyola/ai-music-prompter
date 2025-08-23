@@ -7,7 +7,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 // Context Providers
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
+import { PromptHistoryProvider } from './contexts/PromptHistoryProvider';
 
 // Screens
 import PromptFormScreen from './screens/PromptFormScreen';
@@ -15,96 +15,69 @@ import AuthScreen from './screens/AuthScreen';
 
 function AppContent() {
   const { isSignedIn, user, isLoading, signout } = useBasic();
-  const [showStuckScreen, setShowStuckScreen] = useState(false);
 
-  console.log('🔐 Auth State:', { isSignedIn, user: user?.email || 'none', isLoading });
+  // Log everything aggressively
+  console.log('🔍 FULL AUTH STATE:', {
+    isSignedIn,
+    user,
+    userEmail: user?.email,
+    isLoading,
+    userObject: JSON.stringify(user)
+  });
 
-  // Check for stuck state on every render
-  useEffect(() => {
-    if (isSignedIn && user?.email === 'sonofyola@gmail.com') {
-      console.log('🚨 STUCK STATE DETECTED - showing stuck screen');
-      setShowStuckScreen(true);
-    } else {
-      setShowStuckScreen(false);
-    }
-  }, [isSignedIn, user?.email]);
+  // Force show debug info on screen
+  const debugInfo = {
+    isSignedIn: String(isSignedIn),
+    userEmail: user?.email || 'none',
+    isLoading: String(isLoading),
+    userExists: user ? 'yes' : 'no'
+  };
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
-        <Text style={styles.loadingText}>Loading...</Text>
+      <View style={styles.debugContainer}>
+        <Text style={styles.debugTitle}>🔄 Loading Auth...</Text>
+        <Text style={styles.debugText}>Please wait...</Text>
       </View>
     );
   }
 
-  // ALWAYS show stuck screen if detected, regardless of other conditions
-  if (showStuckScreen || (isSignedIn && user?.email === 'sonofyola@gmail.com')) {
-    return (
-      <View style={styles.stuckContainer}>
-        <Text style={styles.stuckTitle}>🔒 Authentication Issue</Text>
-        <Text style={styles.stuckText}>
-          Stuck logged in as: {user?.email || 'unknown'}
+  // ALWAYS show current state at the top of screen
+  return (
+    <View style={{ flex: 1 }}>
+      {/* Debug header - always visible */}
+      <View style={styles.debugHeader}>
+        <Text style={styles.debugHeaderText}>
+          Auth: {debugInfo.isSignedIn} | User: {debugInfo.userEmail}
         </Text>
-        
         <TouchableOpacity 
-          style={styles.actionButton}
+          style={styles.debugButton}
           onPress={async () => {
-            console.log('🔓 Attempting force signout...');
+            console.log('🔓 Manual signout attempt');
             try {
               await signout();
-              setShowStuckScreen(false);
             } catch (e) {
-              console.error('Signout failed:', e);
-              Alert.alert('Error', 'Failed to sign out. Try refreshing the app.');
+              console.error('Signout error:', e);
             }
           }}
         >
-          <Text style={styles.actionButtonText}>🔓 Force Sign Out</Text>
+          <Text style={styles.debugButtonText}>Sign Out</Text>
         </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#FF3B30' }]}
-          onPress={() => {
-            console.log('🔄 Forcing refresh...');
-            setShowStuckScreen(false);
-            // This will trigger a re-render and hopefully break the cycle
-          }}
-        >
-          <Text style={styles.actionButtonText}>🔄 Try Again</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={[styles.actionButton, { backgroundColor: '#34C759' }]}
-          onPress={() => {
-            console.log('⚠️ Bypassing auth...');
-            setShowStuckScreen(false);
-            // This will let them continue without proper auth
-          }}
-        >
-          <Text style={styles.actionButtonText}>⚠️ Continue Anyway</Text>
-        </TouchableOpacity>
-
-        <Text style={styles.debugText}>
-          User: {user?.email || 'None'}
-        </Text>
-        <Text style={styles.debugText}>
-          Signed In: {isSignedIn ? 'Yes' : 'No'}
-        </Text>
       </View>
-    );
-  }
 
-  // Normal auth flow - but bypass if we just chose "Continue Anyway"
-  if (!isSignedIn || !user) {
-    return <AuthScreen />;
-  }
-
-  return (
-    <NotificationProvider>
-      <PromptHistoryProvider>
-        <PromptFormScreen />
-      </PromptHistoryProvider>
-    </NotificationProvider>
+      {/* Main content */}
+      <View style={{ flex: 1 }}>
+        {!isSignedIn || !user ? (
+          <AuthScreen />
+        ) : (
+          <NotificationProvider>
+            <PromptHistoryProvider>
+              <PromptFormScreen />
+            </PromptHistoryProvider>
+          </NotificationProvider>
+        )}
+      </View>
+    </View>
   );
 }
 
@@ -121,52 +94,43 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  debugContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#f5f5f5',
-  },
-  loadingText: {
-    fontSize: 18,
-    color: '#666',
-  },
-  stuckContainer: {
-    flex: 1,
     padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#f5f5f5',
   },
-  stuckTitle: {
-    fontSize: 24,
+  debugTitle: {
+    fontSize: 20,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  stuckText: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 30,
-    color: '#666',
-    lineHeight: 22,
-  },
-  actionButton: {
-    backgroundColor: '#007AFF',
-    padding: 15,
-    borderRadius: 10,
-    marginVertical: 10,
-  },
-  actionButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'center',
+    marginBottom: 10,
   },
   debugText: {
+    fontSize: 16,
+    color: '#666',
+  },
+  debugHeader: {
+    backgroundColor: '#FF3B30',
+    padding: 10,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  debugHeaderText: {
+    color: 'white',
     fontSize: 12,
-    textAlign: 'center',
-    color: '#999',
-    marginTop: 5,
+    flex: 1,
+  },
+  debugButton: {
+    backgroundColor: 'white',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  debugButtonText: {
+    color: '#FF3B30',
+    fontSize: 12,
+    fontWeight: 'bold',
   },
 });
