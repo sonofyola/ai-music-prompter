@@ -1,30 +1,34 @@
 #!/usr/bin/env node
 
-const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-console.log('🧹 Clearing all caches and restarting...');
+// Clear Expo cache directories
+const cacheDirs = [
+  '.expo/cache',
+  '.expo/web/cache',
+  'node_modules/.cache',
+];
 
-try {
-  // Clear Expo cache
-  if (fs.existsSync('.expo')) {
-    console.log('Clearing .expo directory...');
-    execSync('rm -rf .expo', { stdio: 'inherit' });
+function clearDirectory(dir) {
+  const fullPath = path.join(process.cwd(), dir);
+  if (fs.existsSync(fullPath)) {
+    try {
+      fs.rmSync(fullPath, { recursive: true, force: true });
+      console.log(`✅ Cleared: ${dir}`);
+    } catch (error) {
+      console.log(`❌ Failed to clear ${dir}:`, error.message);
+    }
+  } else {
+    console.log(`⚠️  Directory not found: ${dir}`);
   }
-
-  // Clear node_modules/.cache
-  const cacheDir = path.join('node_modules', '.cache');
-  if (fs.existsSync(cacheDir)) {
-    console.log('Clearing node_modules/.cache...');
-    execSync('rm -rf node_modules/.cache', { stdio: 'inherit' });
-  }
-
-  // Clear Metro cache
-  console.log('Clearing Metro cache...');
-  execSync('npx expo start --clear', { stdio: 'inherit' });
-
-} catch (error) {
-  console.error('Error clearing cache:', error.message);
-  process.exit(1);
 }
+
+console.log('🧹 Clearing Expo cache directories...');
+cacheDirs.forEach(clearDirectory);
+
+console.log('✨ Cache clearing complete!');
+console.log('💡 You may also want to:');
+console.log('   - Clear your browser cache');
+console.log('   - Try incognito/private browsing mode');
+console.log('   - Disable browser extensions temporarily');

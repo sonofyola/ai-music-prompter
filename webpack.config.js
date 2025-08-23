@@ -10,6 +10,18 @@ module.exports = async function (env, argv) {
     'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
   };
   
-  // Simplified configuration to avoid CORS issues
+  // Add devServer configuration to handle CORS
+  if (config.devServer) {
+    config.devServer = {
+      ...config.devServer,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, PATCH',
+        'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization',
+      },
+      allowedHosts: 'all',
+    };
+  }
+  
   return config;
 };
