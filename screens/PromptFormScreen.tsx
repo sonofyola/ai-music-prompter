@@ -175,144 +175,37 @@ export default function PromptFormScreen() {
     console.log('🔘 Logout button pressed');
     Alert.alert(
       'Logout',
-      'Choose logout method:',
+      'Are you sure you want to logout?',
       [
         { text: 'Cancel', style: 'cancel' },
         { 
-          text: 'Simple Logout', 
-          onPress: async () => {
-            try {
-              console.log('🔄 Simple logout...');
-              
-              // Just call signout and reload
-              if (signout && typeof signout === 'function') {
-                await signout();
-              }
-              
-              // Force reload
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload();
-              } else {
-                Alert.alert('Logout', 'Please restart the app to complete logout.');
-              }
-              
-            } catch (error) {
-              console.error('❌ Simple logout error:', error);
-              // Force reload anyway
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload();
-              }
-            }
-          }
-        },
-        { 
-          text: 'Full Logout', 
+          text: 'Logout', 
           style: 'destructive',
           onPress: async () => {
             try {
-              console.log('🔄 Starting full logout process...');
-              console.log('🔍 Current user:', user?.email);
-              console.log('🔍 signout function:', typeof signout);
+              console.log('🔄 Starting logout...');
               
-              // Step 1: Clear all local state immediately
-              console.log('🔄 Clearing local state...');
-              setIsAdmin(false);
-              setCurrentScreen('form');
-              setTitlePressCount(0);
-              setFormData({
-                subject: '',
-                genres_primary: [],
-                genres_electronic: [],
-                mood: [],
-                tempo_bpm: '',
-                key_scale: '',
-                energy: '',
-                beat: [],
-                bass: [],
-                groove_swing: '',
-                vocal_gender: 'none',
-                vocal_delivery: '',
-                era: '',
-                master_notes: '',
-                length: '',
-                weirdness_level: 'conventional',
-                general_freeform: ''
-              });
-              setGeneratedPrompt('');
-              setShowPrompt(false);
-              setShowUpgradeModal(false);
-              setShowEmailCapture(false);
-              setShowHistoryModal(false);
-              setShowTemplatesModal(false);
-              
-              // Step 2: Clear usage context data
-              console.log('🔄 Clearing usage context...');
-              await clearAllData();
-              
-              // Step 3: Clear prompt history
-              console.log('🔄 Clearing prompt history...');
-              try {
-                await clearHistory();
-                console.log('✅ Prompt history cleared');
-              } catch (historyError) {
-                console.warn('⚠️ Error clearing prompt history:', historyError);
-              }
-              
-              // Step 4: Call Basic Tech signout
+              // Simple approach that works
               if (signout && typeof signout === 'function') {
-                console.log('🔄 Calling Basic Tech signout...');
                 await signout();
-                console.log('✅ Basic Tech signout completed');
-              } else {
-                console.warn('⚠️ signout function not available');
+                console.log('✅ Signout completed');
               }
               
-              // Step 5: Force page reload if on web
-              console.log('🔄 Attempting page reload...');
+              // Force reload to complete logout
               if (typeof window !== 'undefined' && window.location) {
-                setTimeout(() => {
-                  window.location.reload();
-                }, 100);
+                window.location.reload();
+              } else {
+                Alert.alert('Logout Complete', 'Please restart the app to complete logout.');
               }
-              
-              console.log('✅ Full logout process completed');
               
             } catch (error) {
-              console.error('❌ Full logout error:', error);
-              console.error('❌ Error details:', {
-                message: error?.message,
-                stack: error?.stack,
-                name: error?.name
-              });
-              
-              // Force logout regardless of error
-              console.log('🔄 Force logout due to error...');
-              
-              // Clear everything we can
-              setIsAdmin(false);
-              setCurrentScreen('form');
-              
-              // Show error with force reload option
-              Alert.alert(
-                'Logout Error', 
-                `Logout encountered an error: ${error?.message || 'Unknown error'}\n\nWe'll force a logout and refresh the page.`,
-                [
-                  { 
-                    text: 'Force Logout & Refresh', 
-                    onPress: () => {
-                      if (typeof window !== 'undefined' && window.location) {
-                        window.location.reload();
-                      } else {
-                        Alert.alert(
-                          'Logout Complete',
-                          'Please restart the app to complete the logout process.',
-                          [{ text: 'OK' }]
-                        );
-                      }
-                    }
-                  }
-                ]
-              );
+              console.error('❌ Logout error:', error);
+              // Force reload anyway - this ensures logout works even if signout fails
+              if (typeof window !== 'undefined' && window.location) {
+                window.location.reload();
+              } else {
+                Alert.alert('Logout Complete', 'Please restart the app to complete logout.');
+              }
             }
           }
         }
@@ -582,37 +475,15 @@ export default function PromptFormScreen() {
         />
         
         {/* DEBUG: Test buttons to verify touch is working */}
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, padding: 10, backgroundColor: '#ff000020' }}>
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 10, padding: 10, backgroundColor: '#00ff0020' }}>
           <TouchableOpacity 
-            style={{ backgroundColor: '#ff4444', padding: 10, borderRadius: 5 }}
+            style={{ backgroundColor: '#22aa22', padding: 10, borderRadius: 5 }}
             onPress={() => {
-              console.log('🔘 DEBUG: Red button pressed!');
+              console.log('🔘 DEBUG: Testing working logout approach');
               handleUserLogout();
             }}
           >
-            <Text style={{ color: 'white', fontSize: 12 }}>DEBUG LOGOUT</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={{ backgroundColor: '#ff8800', padding: 10, borderRadius: 5 }}
-            onPress={async () => {
-              console.log('🔘 DEBUG: Orange button pressed - FORCE LOGOUT!');
-              try {
-                if (signout) {
-                  await signout();
-                }
-              } catch (e) {
-                console.log('Signout error:', e);
-              }
-              
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload();
-              } else {
-                Alert.alert('Force Logout', 'Please restart the app.');
-              }
-            }}
-          >
-            <Text style={{ color: 'white', fontSize: 12 }}>FORCE LOGOUT</Text>
+            <Text style={{ color: 'white', fontSize: 12 }}>TEST LOGOUT</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
@@ -622,7 +493,7 @@ export default function PromptFormScreen() {
               setCurrentScreen('subscription');
             }}
           >
-            <Text style={{ color: 'white', fontSize: 12 }}>DEBUG SUB</Text>
+            <Text style={{ color: 'white', fontSize: 12 }}>TEST SUB</Text>
           </TouchableOpacity>
         </View>
       </View>
