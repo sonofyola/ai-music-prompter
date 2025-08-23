@@ -813,10 +813,10 @@
     "@babel/helper-string-parser" "^7.27.1"
     "@babel/helper-validator-identifier" "^7.27.1"
 
-"@basictech/expo@^0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@basictech/expo/-/expo-0.0.5.tgz#28a53a20729d53b437054ee1c0f68f4753021608"
-  integrity sha512-d/SrZquhSAKfaMUelmMLGfU+Z+adHhhz81rae02W7lPxjt9gB+SV2FD6vG/ac2/Hm2r2VO2D7W4P2y/suaERWQ==
+"@basictech/expo@^0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@basictech/expo/-/expo-0.0.7.tgz#3158a9291c46ea9ecd52410d736fe2d06e7003a8"
+  integrity sha512-J7gZUXUeqt9lEk+1eXWcDmW8zZdnt8txEOaNQrfY+el4OnLTg9/47wrN6c0n5BXuejF+Q98mko5tBKSa7sFS3Q==
 
 "@egjs/hammerjs@^2.0.17":
   version "2.0.17"
