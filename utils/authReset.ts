@@ -857,32 +857,27 @@ export const deleteSonofyolaAccount = async (db: any) => {
 };
 
 // Alternative sonofyola deletion that works even when stuck with sonofyola account
-export const forceDeleteSonofyolaAccount = async () => {
+export const forceDeleteSonofyolaAccount = async (db?: any) => {
   try {
     console.log('🗑️ FORCE DELETE SONOFYOLA - Attempting deletion even while stuck');
     
-    // Try to get Basic Tech instance directly
-    const { useBasic } = await import('@basictech/expo');
-    
-    // Get current database connection (even if it's the sonofyola account)
-    const basicInstance = useBasic();
-    const { db } = basicInstance;
-    
     if (!db) {
-      console.error('❌ No database connection available');
-      return { success: false, error: 'No database connection available' };
+      console.error('❌ No database connection provided');
+      return { success: false, error: 'No database connection provided' };
     }
     
-    console.log('💾 Using current database connection to delete sonofyola...');
+    console.log('💾 Using provided database connection to delete sonofyola...');
     
-    // Use the current connection (even if it's sonofyola) to delete sonofyola accounts
+    // Use the provided database connection to delete sonofyola accounts
     const result = await deleteSonofyolaAccount(db);
     
     if (result.success && result.deletedCount > 0) {
       console.log('🎉 Sonofyola accounts deleted! Now performing complete reset...');
       
       // After successful deletion, perform complete reset
-      await performSuperNuclearReset();
+      setTimeout(async () => {
+        await performSuperNuclearReset();
+      }, 1000);
       
       return {
         success: true,

@@ -373,8 +373,20 @@ export default function AuthScreen() {
             try {
               console.log('🗑️ Starting forced sonofyola account deletion...');
               
+              // Get the current database connection from useBasic
+              const { db } = useBasic();
+              
+              if (!db) {
+                Alert.alert(
+                  'Error',
+                  'No database connection available. Try signing in first, then use this button.',
+                  [{ text: 'OK' }]
+                );
+                return;
+              }
+              
               const { forceDeleteSonofyolaAccount } = await import('../utils/authReset');
-              const result = await forceDeleteSonofyolaAccount();
+              const result = await forceDeleteSonofyolaAccount(db);
               
               if (result.success) {
                 Alert.alert(
@@ -384,7 +396,6 @@ export default function AuthScreen() {
                     {
                       text: 'Complete Reset',
                       onPress: () => {
-                        // The forceDeleteSonofyolaAccount already triggers a reset
                         console.log('🎉 Sonofyola deletion and reset complete!');
                       }
                     }
