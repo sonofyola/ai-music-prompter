@@ -200,7 +200,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <SafeAreaProvider>
-        <BasicProvider project_id={schema.project_id} schema={schema}>
+        <BasicProvider project_id={schema.project_id} schema={schema as any}>
           <ThemeProvider>
             <MaintenanceProvider>
               <NotificationProvider>

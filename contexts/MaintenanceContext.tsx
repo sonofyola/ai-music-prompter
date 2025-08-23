@@ -17,6 +17,7 @@ interface MaintenanceRecord {
   message: string;
   timestamp: number;
   adminEmail?: string;
+  [key: string]: any; // Add index signature for compatibility
 }
 
 interface StorageData {
@@ -330,7 +331,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
             console.log('🔧 UPDATING EXISTING RECORD - ID:', recordId);
             console.log('🔧 UPDATE DATA:', maintenanceData);
             
-            const updateResult = await db.from('maintenance').update(recordId, maintenanceData);
+            const updateResult = await db.from('maintenance').update(recordId, maintenanceData as any);
             console.log('✅ UPDATE RESULT:', updateResult);
             console.log('✅ Updated maintenance state in database');
           } else {
@@ -338,7 +339,7 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
             console.log('🔧 CREATING NEW RECORD - No existing records found');
             console.log('🔧 CREATE DATA:', maintenanceData);
             
-            const addResult = await db.from('maintenance').add(maintenanceData);
+            const addResult = await db.from('maintenance').add(maintenanceData as any);
             console.log('✅ CREATE RESULT:', addResult);
             console.log('✅ Created new maintenance state in database');
           }
