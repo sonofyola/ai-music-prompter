@@ -57,7 +57,10 @@ export default function PromptFormScreen({ navigation }: any) {
   const [titlePressCount, setTitlePressCount] = useState(0);
 
   // Debug: Log admin status
+  console.log('=== DEBUG INFO ===');
   console.log('Admin Status:', isAdmin);
+  console.log('User Email:', user?.email);
+  console.log('User Object:', user);
 
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -87,16 +90,16 @@ export default function PromptFormScreen({ navigation }: any) {
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
 
   const handleTitlePress = async () => {
-    console.log('Title pressed! Count:', titlePressCount + 1);
-    console.log('Current user email:', user?.email);
-    console.log('Current admin status:', isAdmin);
+    console.log('🔥 TITLE PRESSED! Count:', titlePressCount + 1);
+    console.log('🔥 Current user email:', user?.email);
+    console.log('🔥 Current admin status:', isAdmin);
     
     setTitlePressCount(prev => {
       const newCount = prev + 1;
-      console.log('New count:', newCount);
+      console.log('🔥 New count:', newCount);
       
       if (newCount === 7) {
-        console.log('7 clicks reached! Checking admin access...');
+        console.log('🔥🔥🔥 7 CLICKS REACHED! Checking admin access...');
         // Check if user has admin access
         checkAdminAccessHandler();
         return 0; // Reset counter
@@ -104,7 +107,7 @@ export default function PromptFormScreen({ navigation }: any) {
       
       // Reset counter after 3 seconds of no presses
       setTimeout(() => {
-        console.log('Resetting title press counter');
+        console.log('🔥 Resetting title press counter');
         setTitlePressCount(0);
       }, 3000);
       
@@ -113,14 +116,14 @@ export default function PromptFormScreen({ navigation }: any) {
   };
 
   const checkAdminAccessHandler = async () => {
-    console.log('=== ADMIN ACCESS CHECK ===');
-    console.log('Checking admin access for user:', user?.email);
-    console.log('User object:', user);
+    console.log('🚀 === ADMIN ACCESS CHECK ===');
+    console.log('🚀 Checking admin access for user:', user?.email);
+    console.log('🚀 User object:', user);
     
     try {
       const hasAccess = await checkAdminAccess();
-      console.log('Admin access result:', hasAccess);
-      console.log('Admin emails whitelist:', ['drremotework@gmail.com', 'admin@aimusicpromptr.com']);
+      console.log('🚀 Admin access result:', hasAccess);
+      console.log('🚀 Admin emails whitelist:', ['drremotework@gmail.com', 'admin@aimusicpromptr.com']);
       
       if (hasAccess) {
         console.log('✅ Admin access granted!');
@@ -133,12 +136,12 @@ export default function PromptFormScreen({ navigation }: any) {
             { 
               text: 'Open Admin Panel', 
               onPress: () => {
-                console.log('Navigating to Admin panel...');
-                console.log('Navigation object:', navigation);
+                console.log('🚀 Navigating to Admin panel...');
+                console.log('🚀 Navigation object:', navigation);
                 if (navigation?.navigate) {
                   navigation.navigate('Admin');
                 } else {
-                  console.error('Navigation not available!');
+                  console.error('❌ Navigation not available!');
                   Alert.alert('Error', 'Navigation not available. Please try refreshing the app.');
                 }
               }
@@ -154,7 +157,7 @@ export default function PromptFormScreen({ navigation }: any) {
         );
       }
     } catch (error) {
-      console.error('Admin access error:', error);
+      console.error('❌ Admin access error:', error);
       Alert.alert('Error', `Failed to check admin access: ${error.message}`);
     }
   };
@@ -362,12 +365,29 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
+            {/* SUPER OBVIOUS DEBUG BUTTON */}
+            <TouchableOpacity
+              style={styles.debugButton}
+              onPress={() => {
+                Alert.alert(
+                  '🔍 DEBUG INFO',
+                  `User Email: ${user?.email || 'Not signed in'}\nAdmin Status: ${isAdmin ? 'YES' : 'NO'}\nNavigation: ${navigation ? 'Available' : 'Not Available'}`,
+                  [
+                    { text: 'Force Admin Check', onPress: checkAdminAccessHandler },
+                    { text: 'OK' }
+                  ]
+                );
+              }}
+            >
+              <Text style={styles.debugButtonText}>DEBUG</Text>
+            </TouchableOpacity>
+            
             {/* Admin Panel Button - only shows when admin is active */}
             {isAdmin && (
               <TouchableOpacity
-                style={[styles.userMenuButton, { backgroundColor: colors.primary }]}
+                style={styles.adminPanelButton}
                 onPress={() => {
-                  console.log('Admin panel button pressed');
+                  console.log('🚀 Admin panel button pressed');
                   if (navigation?.navigate) {
                     navigation.navigate('Admin');
                   } else {
@@ -376,27 +396,11 @@ export default function PromptFormScreen({ navigation }: any) {
                 }}
               >
                 <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
+                <Text style={styles.adminButtonText}>ADMIN</Text>
               </TouchableOpacity>
             )}
             
-            {/* Debug admin button - remove this in production */}
-            <TouchableOpacity
-              style={[styles.userMenuButton, { backgroundColor: '#ff9999' }]}
-              onPress={() => {
-                Alert.alert(
-                  'Debug Info',
-                  `User: ${user?.email}\nAdmin: ${isAdmin}\nNavigation: ${navigation ? 'Available' : 'Not Available'}`,
-                  [
-                    { text: 'Test Admin Access', onPress: checkAdminAccessHandler },
-                    { text: 'OK' }
-                  ]
-                );
-              }}
-            >
-              <MaterialIcons name="bug-report" size={20} color="#000" />
-            </TouchableOpacity>
-            
-            {/* User menu - now with real authentication */}
+            {/* User menu */}
             <TouchableOpacity
               style={styles.userMenuButton}
               onPress={() => {
@@ -425,34 +429,21 @@ export default function PromptFormScreen({ navigation }: any) {
           </View>
         </View>
 
-        {/* Admin status indicator - only shows when admin is active */}
+        {/* SUPER OBVIOUS ADMIN STATUS BAR */}
         {isAdmin && (
           <TouchableOpacity 
             style={styles.adminIndicatorLarge}
             onPress={() => {
-              // Simple tap to go to admin panel
-              console.log('Admin bar tapped - navigating to admin panel');
+              console.log('🚀 Admin bar tapped - navigating to admin panel');
               if (navigation?.navigate) {
                 navigation.navigate('Admin');
               } else {
                 Alert.alert('Navigation Error', 'Unable to navigate to admin panel. Please try refreshing the app.');
               }
             }}
-            onLongPress={() => {
-              Alert.alert(
-                'Admin Options',
-                'Choose an action:',
-                [
-                  { text: 'Go to Admin Panel', onPress: () => navigation?.navigate('Admin') },
-                  { text: 'Logout Admin', onPress: handleAdminLogout, style: 'destructive' },
-                  { text: 'Cancel', style: 'cancel' }
-                ]
-              );
-            }}
-            delayLongPress={1000}
           >
-            <MaterialIcons name="admin-panel-settings" size={20} color="#fff" />
-            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE (Tap to open Admin Panel)</Text>
+            <MaterialIcons name="admin-panel-settings" size={24} color="#fff" />
+            <Text style={styles.adminIndicatorTextLarge}>🔓 ADMIN MODE ACTIVE - TAP TO OPEN ADMIN PANEL</Text>
             <TouchableOpacity 
               style={styles.logoutButtonInBar}
               onPress={handleAdminLogout}
@@ -655,7 +646,6 @@ export default function PromptFormScreen({ navigation }: any) {
           onClose={() => setShowUpgradeModal(false)}
           onUpgradeSuccess={() => {
             setShowUpgradeModal(false);
-            // Optionally show success message
             Alert.alert('Success!', 'You now have unlimited access to AI Music Prompter!');
           }}
         />
@@ -666,7 +656,6 @@ export default function PromptFormScreen({ navigation }: any) {
             onClose={() => setShowEmailCapture(false)}
             onEmailSubmitted={(email) => {
               setShowEmailCapture(false);
-              // Email captured, now try to generate again
               generatePrompt();
             }}
           />
@@ -706,26 +695,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomColor: colors.border,
     backgroundColor: colors.surface,
   },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 4,
-    borderRadius: 8,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    marginLeft: 8,
-  },
   headerRight: {
     flexDirection: 'row',
     alignItems: 'center',
-  },
-  iconButton: {
-    padding: 8,
-    marginRight: 4,
   },
   backButton: {
     flexDirection: 'row',
@@ -859,59 +831,17 @@ const createStyles = (colors: any) => StyleSheet.create({
   bottomSpacing: {
     height: 40,
   },
-  adminIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary + '20',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    gap: 6,
-  },
-  adminIndicatorText: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
-  },
-  logoutButton: {
-    backgroundColor: colors.error + '20',
-    borderRadius: 6,
-  },
-  quickLogoutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.error + '20',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  quickLogoutText: {
-    fontSize: 10,
-    color: colors.error,
-    fontWeight: '600',
-  },
-  logoutButtonLarge: {
-    backgroundColor: '#ff4444',
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#ff0000',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-  },
   adminIndicatorLarge: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     backgroundColor: colors.primary,
-    paddingVertical: 12,
+    paddingVertical: 16,
     paddingHorizontal: 20,
     gap: 12,
   },
   adminIndicatorTextLarge: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#fff',
     fontWeight: '700',
     flex: 1,
@@ -923,7 +853,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     gap: 4,
     backgroundColor: '#ff4444',
     paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 6,
     borderWidth: 1,
     borderColor: '#fff',
@@ -958,29 +888,6 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '600',
     marginTop: 2,
   },
-  debugContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-    backgroundColor: '#333',
-  },
-  debugText: {
-    color: '#fff',
-    fontSize: 10,
-    fontWeight: 'bold',
-    marginRight: 8,
-  },
-  debugButton: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-  },
-  debugButtonText: {
-    fontSize: 10,
-    color: '#000',
-    fontWeight: 'bold',
-  },
   userMenuButton: {
     padding: 8,
     borderRadius: 20,
@@ -992,5 +899,34 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 20,
     backgroundColor: colors.surface,
     marginLeft: 8,
+  },
+  debugButton: {
+    backgroundColor: '#ff0000',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 8,
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  adminPanelButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 8,
+    gap: 4,
+  },
+  adminButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: 12,
   },
 });
