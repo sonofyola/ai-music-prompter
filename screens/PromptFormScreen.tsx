@@ -53,7 +53,7 @@ const ADMIN_EMAILS = [
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { canGenerate, incrementGeneration, isEmailCaptured } = useUsage();
+  const { canGenerate, incrementGeneration, isEmailCaptured, subscriptionStatus } = useUsage();
   const { savePrompt } = usePromptHistory();
   const { user, signout } = useBasic();
   const styles = createStyles(colors);
@@ -171,6 +171,7 @@ export default function PromptFormScreen() {
   };
 
   const handleUserLogout = async () => {
+    console.log('🔘 Logout button pressed');
     Alert.alert(
       'Logout',
       'Are you sure you want to logout?',
@@ -182,10 +183,23 @@ export default function PromptFormScreen() {
           onPress: async () => {
             try {
               console.log('🔄 Starting logout process...');
+              console.log('🔍 Current user:', user?.email);
+              console.log('🔍 signout function:', typeof signout);
+              
               await signout();
               console.log('✅ Logout successful');
+              
+              // Force a re-render by clearing any local state
+              setIsAdmin(false);
+              setCurrentScreen('form');
+              
             } catch (error) {
               console.error('❌ Logout error:', error);
+              console.error('❌ Error details:', {
+                message: error?.message,
+                stack: error?.stack,
+                name: error?.name
+              });
               Alert.alert('Error', `Failed to logout: ${error?.message || 'Unknown error'}`);
             }
           }
@@ -377,7 +391,10 @@ export default function PromptFormScreen() {
           {!isAdmin && (
             <TouchableOpacity
               style={styles.userLogoutButton}
-              onPress={handleUserLogout}
+              onPress={() => {
+                console.log('🔘 Logout button touched!');
+                handleUserLogout();
+              }}
               activeOpacity={0.7}
               hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
             >
@@ -422,7 +439,25 @@ export default function PromptFormScreen() {
       <View style={styles.subscriptionContainer}>
         <SubscriptionStatus 
           onManagePress={() => {
-            Alert.alert('Subscription', 'Subscription management coming soon!');
+            Alert.alert(
+              'Subscription Management', 
+              'Choose an option:',
+              [
+                { text: 'Cancel', style: 'cancel' },
+                { 
+                  text: 'View Current Plan', 
+                  onPress: () => {
+                    const statusText = subscriptionStatus === 'unlimited' ? 'Unlimited Plan' : 
+                                     subscriptionStatus === 'premium' ? 'Premium Plan' : 'Free Plan';
+                    Alert.alert('Current Plan', `You are currently on the ${statusText}.`);
+                  }
+                },
+                { 
+                  text: 'Upgrade Plan', 
+                  onPress: () => setShowUpgradeModal(true)
+                }
+              ]
+            );
           }}
           compact={true}
         />
