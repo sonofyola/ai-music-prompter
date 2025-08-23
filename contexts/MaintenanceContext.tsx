@@ -177,7 +177,8 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       timestamp,
       currentState: isMaintenanceMode,
       isAdmin,
-      userEmail: user?.email
+      userEmail: user?.email,
+      hasDb: !!db
     });
     
     // Update local state immediately
@@ -202,33 +203,47 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
       // Save to database (global state)
       if (db) {
         try {
-          console.log('🔧 CHECKING EXISTING RECORDS...');
+          console.log('🔧 DATABASE SAVE START - Checking existing records...');
           // Get existing records first
           const existingRecords = await db.from('maintenance').getAll();
-          console.log('🔧 EXISTING RECORDS:', existingRecords);
+          console.log('🔧 EXISTING RECORDS FOUND:', existingRecords);
+          console.log('🔧 EXISTING RECORDS LENGTH:', existingRecords?.length);
           
           if (existingRecords && existingRecords.length > 0) {
             // Update the first record
             const recordId = existingRecords[0].id;
-            console.log('🔧 UPDATING RECORD ID:', recordId);
+            console.log('🔧 UPDATING EXISTING RECORD - ID:', recordId);
+            console.log('🔧 UPDATE DATA:', maintenanceData);
+            
             const updateResult = await db.from('maintenance').update(recordId, maintenanceData);
-            console.log('✅ Updated maintenance state in database:', updateResult);
+            console.log('✅ UPDATE RESULT:', updateResult);
+            console.log('✅ Updated maintenance state in database');
           } else {
             // Create new record if none exists
-            console.log('🔧 CREATING NEW RECORD...');
+            console.log('🔧 CREATING NEW RECORD - No existing records found');
+            console.log('🔧 CREATE DATA:', maintenanceData);
+            
             const addResult = await db.from('maintenance').add(maintenanceData);
-            console.log('✅ Created new maintenance state in database:', addResult);
+            console.log('✅ CREATE RESULT:', addResult);
+            console.log('✅ Created new maintenance state in database');
           }
           
           // Verify the save by reading it back
+          console.log('🔧 VERIFICATION - Reading back from database...');
           const verifyRecords = await db.from('maintenance').getAll();
-          console.log('🔧 VERIFICATION - Records after save:', verifyRecords);
+          console.log('🔧 VERIFICATION RESULT:', verifyRecords);
+          console.log('🔧 VERIFICATION COUNT:', verifyRecords?.length);
           
         } catch (dbError) {
-          console.error('⚠️ Failed to save to database:', dbError);
+          console.error('⚠️ DATABASE ERROR - Failed to save to database:', dbError);
+          console.error('⚠️ ERROR DETAILS:', {
+            name: dbError.name,
+            message: dbError.message,
+            stack: dbError.stack
+          });
         }
       } else {
-        console.log('⚠️ No database connection available');
+        console.log('⚠️ NO DATABASE - Database connection not available');
       }
 
       // Always save to local storage as backup
@@ -238,20 +253,35 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
         timestamp
       };
       
+      console.log('💾 SAVING TO STORAGE:', storageData);
+      
       if (Platform.OS === 'web') {
         localStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
-        console.log('✅ Saved to localStorage:', storageData);
+        console.log('✅ SAVED TO LOCALSTORAGE');
+        
+        // Verify localStorage save
+        const verifyStorage = localStorage.getItem(MAINTENANCE_STORAGE_KEY);
+        console.log('💾 LOCALSTORAGE VERIFICATION:', verifyStorage);
       } else {
         await AsyncStorage.setItem(MAINTENANCE_STORAGE_KEY, JSON.stringify(storageData));
-        console.log('✅ Saved to AsyncStorage:', storageData);
+        console.log('✅ SAVED TO ASYNCSTORAGE');
+        
+        // Verify AsyncStorage save
+        const verifyStorage = await AsyncStorage.getItem(MAINTENANCE_STORAGE_KEY);
+        console.log('💾 ASYNCSTORAGE VERIFICATION:', verifyStorage);
       }
       
     } catch (error) {
-      console.error('💥 Error saving maintenance state:', error);
+      console.error('💥 TOGGLE ERROR - Error saving maintenance state:', error);
+      console.error('💥 ERROR DETAILS:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
       throw error;
     }
     
-    console.log('🔧 TOGGLE COMPLETE');
+    console.log('🔧 TOGGLE COMPLETE - Maintenance mode toggle finished');
   };
 
   const loadMaintenanceState = async () => {
