@@ -26,8 +26,9 @@ const MAINTENANCE_STORAGE_KEY = 'global_maintenance_mode';
 
 export function MaintenanceProvider({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn, db } = useBasic();
-  const [isMaintenanceMode, setIsMaintenanceMode] = useState(false);
-  const [maintenanceMessage, setMaintenanceMessage] = useState('We\'re currently performing maintenance. Please check back soon!');
+  // FORCE MAINTENANCE MODE FOR TESTING
+  const [isMaintenanceMode, setIsMaintenanceMode] = useState(true); // Changed to true for testing
+  const [maintenanceMessage, setMaintenanceMessage] = useState('🚧 TESTING: Maintenance mode is now active! This is a test.');
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
