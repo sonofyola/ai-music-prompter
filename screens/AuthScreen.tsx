@@ -78,12 +78,34 @@ export default function AuthScreen() {
             names.forEach(name => caches.delete(name));
           });
         }
+        
+        // Clear all cookies with extreme prejudice
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        
+        // Clear any remaining auth-related items from all storage
+        try {
+          const allLocalStorageKeys = Object.keys(localStorage);
+          allLocalStorageKeys.forEach(key => localStorage.removeItem(key));
+          
+          const allSessionStorageKeys = Object.keys(sessionStorage);
+          allSessionStorageKeys.forEach(key => sessionStorage.removeItem(key));
+        } catch (e) {}
       }
       
-      // Force hard reload
+      // Force hard reload with cache busting
       setTimeout(() => {
         if (typeof window !== 'undefined') {
-          window.location.replace(window.location.origin + '?t=' + Date.now());
+          // Clear browser cache and reload
+          if ('caches' in window) {
+            caches.keys().then(names => {
+              names.forEach(name => caches.delete(name));
+              window.location.replace(window.location.origin + '?nuclear=' + Date.now());
+            });
+          } else {
+            window.location.replace(window.location.origin + '?nuclear=' + Date.now());
+          }
         }
       }, 2000);
       

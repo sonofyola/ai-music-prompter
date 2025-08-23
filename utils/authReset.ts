@@ -61,22 +61,49 @@ export const performCompleteAuthReset = async () => {
       });
     }
     
-    // Clear any Basic Tech specific storage
+    // Clear any Basic Tech specific storage - EXPANDED LIST
     const basicTechKeys = [
       'basic-auth',
-      'basic-token',
+      'basic-token', 
       'basic-user',
       'basic-session',
       'kiki-auth',
       'kiki-token',
-      'kiki-user',
+      'kiki-user', 
       'kiki-session',
       'auth-token',
       'user-session',
-      'login-data'
+      'login-data',
+      // Additional Basic Tech keys
+      'basic_auth_token',
+      'basic_user_data',
+      'basic_session_data',
+      'basictech-auth',
+      'basictech-user',
+      'basictech-session',
+      'bt-auth',
+      'bt-user',
+      'bt-session',
+      // Expo SecureStore keys that might be used
+      'expo-auth-session',
+      'expo-secure-store-auth'
     ];
     
     if (typeof localStorage !== 'undefined') {
+      // Clear all localStorage keys that might contain auth data
+      const allKeys = Object.keys(localStorage);
+      allKeys.forEach(key => {
+        if (key.toLowerCase().includes('auth') || 
+            key.toLowerCase().includes('user') || 
+            key.toLowerCase().includes('session') ||
+            key.toLowerCase().includes('basic') ||
+            key.toLowerCase().includes('kiki') ||
+            key.toLowerCase().includes('token')) {
+          localStorage.removeItem(key);
+          console.log(`🧹 Removed suspicious key: ${key}`);
+        }
+      });
+      
       basicTechKeys.forEach(key => {
         localStorage.removeItem(key);
         console.log(`🧹 Removed ${key} from localStorage`);
@@ -84,10 +111,47 @@ export const performCompleteAuthReset = async () => {
     }
     
     if (typeof sessionStorage !== 'undefined') {
+      // Clear all sessionStorage keys that might contain auth data
+      const allKeys = Object.keys(sessionStorage);
+      allKeys.forEach(key => {
+        if (key.toLowerCase().includes('auth') || 
+            key.toLowerCase().includes('user') || 
+            key.toLowerCase().includes('session') ||
+            key.toLowerCase().includes('basic') ||
+            key.toLowerCase().includes('kiki') ||
+            key.toLowerCase().includes('token')) {
+          sessionStorage.removeItem(key);
+          console.log(`🧹 Removed suspicious key: ${key}`);
+        }
+      });
+      
       basicTechKeys.forEach(key => {
         sessionStorage.removeItem(key);
         console.log(`🧹 Removed ${key} from sessionStorage`);
       });
+    }
+    
+    // Clear Expo SecureStore if available
+    try {
+      const SecureStore = require('expo-secure-store');
+      const secureStoreKeys = [
+        'auth-token',
+        'user-data', 
+        'session-data',
+        'basic-auth',
+        'kiki-auth'
+      ];
+      
+      for (const key of secureStoreKeys) {
+        try {
+          await SecureStore.deleteItemAsync(key);
+          console.log(`🧹 Removed ${key} from SecureStore`);
+        } catch (e) {
+          // Key might not exist, that's fine
+        }
+      }
+    } catch (e) {
+      console.log('🧹 SecureStore not available');
     }
     
     console.log('🧹 Complete auth reset performed');
@@ -96,7 +160,7 @@ export const performCompleteAuthReset = async () => {
     setTimeout(() => {
       if (typeof window !== 'undefined' && window.location) {
         console.log('🧹 Forcing page reload...');
-        window.location.href = window.location.origin;
+        window.location.href = window.location.origin + '?clear=' + Date.now();
       }
     }, 1000);
     
