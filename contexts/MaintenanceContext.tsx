@@ -268,6 +268,9 @@ export function MaintenanceProvider({ children }: { children: React.ReactNode })
         throw new Error('Access denied: You are not authorized for admin access.');
       }
       console.log('✅ SET ADMIN STATUS - Access granted');
+    } else {
+      // When logging out (status = false), just set it to false without checks
+      console.log('🚪 SET ADMIN STATUS - Logging out, setting to false');
     }
     
     setIsAdmin(status);

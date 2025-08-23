@@ -45,11 +45,19 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         { 
           text: 'Logout', 
           style: 'destructive',
-          onPress: () => {
-            console.log('🚨 LOGOUT CONFIRMED - Setting admin status to false');
-            setAdminStatus(false);
-            console.log('🚨 LOGOUT CONFIRMED - Calling onBackToApp');
-            onBackToApp();
+          onPress: async () => {
+            try {
+              console.log('🚨 LOGOUT CONFIRMED - Setting admin status to false');
+              await setAdminStatus(false);
+              console.log('🚨 LOGOUT CONFIRMED - Admin status set to false');
+              console.log('🚨 LOGOUT CONFIRMED - Calling onBackToApp');
+              onBackToApp();
+              console.log('🚨 LOGOUT COMPLETE');
+            } catch (error) {
+              console.error('🚨 LOGOUT ERROR:', error);
+              // Even if there's an error, still try to go back
+              onBackToApp();
+            }
           }
         }
       ]
