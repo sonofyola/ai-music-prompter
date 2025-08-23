@@ -11,50 +11,25 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useBasic } from '@basictech/expo';
 
 // Components
 import FormField from '../components/FormField';
 import MultiSelectField from '../components/MultiSelectField';
 import PickerField from '../components/PickerField';
 import ThemeToggle from '../components/ThemeToggle';
-import UsageIndicator from '../components/UsageIndicator';
-import SubscriptionStatus from '../components/SubscriptionStatus';
-import UpgradeModal from '../components/UpgradeModal';
-import PromptHistoryModal from '../components/PromptHistoryModal';
-import TemplatesModal from '../components/TemplatesModal';
-import EmailCaptureModal from '../components/EmailCaptureModal';
 import GeneratedPrompt from '../components/GeneratedPrompt';
 import RandomTrackModal from '../components/RandomTrackModal';
-
-// Screens
-import AdminScreen from './AdminScreen';
-import SubscriptionScreen from './SubscriptionScreen';
+import TemplatesModal from '../components/TemplatesModal';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
-import { useUsage } from '../contexts/UsageContext';
-import { usePromptHistory } from '../contexts/PromptHistoryContext';
 
 // Utils
 import { formatPrompt } from '../utils/promptFormatter';
-import { generateRandomTrack } from '../utils/randomTrackGenerator';
 import { GENRES, MOODS, INSTRUMENTS, TEMPOS, KEYS, TIME_SIGNATURES } from '../utils/musicData';
-
-// Admin email whitelist
-const ADMIN_EMAILS = [
-  'drremotework@gmail.com',
-  'admin@aimusicpromptr.com',
-];
 
 export default function PromptFormScreen() {
   const { colors } = useTheme();
-  const { user, signout } = useBasic();
-  const { canUseFeature, incrementUsage, subscriptionStatus } = useUsage();
-  const { addToHistory } = usePromptHistory();
-  
-  // Screen state
-  const [currentScreen, setCurrentScreen] = useState<'form' | 'admin' | 'subscription'>('form');
   
   // Form state
   const [formData, setFormData] = useState({
@@ -75,10 +50,7 @@ export default function PromptFormScreen() {
   });
 
   // Modal states
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
   const [showRandomModal, setShowRandomModal] = useState(false);
 
   // Generated prompt state
@@ -86,32 +58,16 @@ export default function PromptFormScreen() {
   const [isGenerating, setIsGenerating] = useState(false);
 
   const styles = createStyles(colors);
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleGeneratePrompt = async () => {
-    if (!canUseFeature('prompt_generation')) {
-      setShowUpgradeModal(true);
-      return;
-    }
-
     setIsGenerating(true);
     try {
       const prompt = formatPrompt(formData);
       setGeneratedPrompt(prompt);
-      
-      // Save to history
-      await addToHistory({
-        name: `${formData.genre || 'Untitled'} - ${new Date().toLocaleDateString()}`,
-        formData: JSON.stringify(formData),
-        generatedPrompt: prompt,
-      });
-
-      // Increment usage
-      await incrementUsage('prompt_generation');
     } catch (error) {
       console.error('Error generating prompt:', error);
       Alert.alert('Error', 'Failed to generate prompt. Please try again.');
@@ -121,10 +77,6 @@ export default function PromptFormScreen() {
   };
 
   const handleRandomTrack = () => {
-    if (!canUseFeature('random_generator')) {
-      setShowUpgradeModal(true);
-      return;
-    }
     setShowRandomModal(true);
   };
 
@@ -132,23 +84,6 @@ export default function PromptFormScreen() {
     setFormData(prev => ({ ...prev, ...randomData }));
     setShowRandomModal(false);
   };
-
-  const handleSignOut = async () => {
-    try {
-      await signout();
-    } catch (error) {
-      console.error('Error signing out:', error);
-      Alert.alert('Error', 'Failed to sign out. Please try again.');
-    }
-  };
-
-  if (currentScreen === 'admin' && isAdmin) {
-    return <AdminScreen onBack={() => setCurrentScreen('form')} />;
-  }
-
-  if (currentScreen === 'subscription') {
-    return <SubscriptionScreen onBack={() => setCurrentScreen('form')} />;
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -163,28 +98,11 @@ export default function PromptFormScreen() {
             <Text style={styles.headerTitle}>AI Music Prompter</Text>
           </View>
           <View style={styles.headerRight}>
-            <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
-              <MaterialIcons name="history" size={24} color={colors.text} />
-            </TouchableOpacity>
             <TouchableOpacity onPress={() => setShowTemplatesModal(true)} style={styles.headerButton}>
               <MaterialIcons name="dashboard" size={24} color={colors.text} />
             </TouchableOpacity>
-            {isAdmin && (
-              <TouchableOpacity onPress={() => setCurrentScreen('admin')} style={styles.headerButton}>
-                <MaterialIcons name="admin-panel-settings" size={24} color={colors.primary} />
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity onPress={handleSignOut} style={styles.headerButton}>
-              <MaterialIcons name="logout" size={24} color={colors.text} />
-            </TouchableOpacity>
             <ThemeToggle />
           </View>
-        </View>
-
-        {/* Usage and Subscription Status */}
-        <View style={styles.statusContainer}>
-          <UsageIndicator />
-          <SubscriptionStatus onUpgrade={() => setCurrentScreen('subscription')} />
         </View>
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
@@ -319,7 +237,6 @@ export default function PromptFormScreen() {
                   <TouchableOpacity
                     style={[styles.sliderThumb, { left: `${formData.weirdness * 10}%` }]}
                     onPressIn={() => {
-                      // Simple tap to increment
                       const newValue = formData.weirdness >= 10 ? 0 : formData.weirdness + 1;
                       updateFormData('weirdness', newValue);
                     }}
@@ -366,32 +283,13 @@ export default function PromptFormScreen() {
             {generatedPrompt && (
               <GeneratedPrompt 
                 prompt={generatedPrompt}
-                onEmailCapture={() => setShowEmailModal(true)}
+                onEmailCapture={() => {}}
               />
             )}
           </View>
         </ScrollView>
 
         {/* Modals */}
-        <UpgradeModal 
-          visible={showUpgradeModal}
-          onClose={() => setShowUpgradeModal(false)}
-          onUpgrade={() => {
-            setShowUpgradeModal(false);
-            setCurrentScreen('subscription');
-          }}
-        />
-
-        <PromptHistoryModal
-          visible={showHistoryModal}
-          onClose={() => setShowHistoryModal(false)}
-          onLoadPrompt={(data) => {
-            setFormData(JSON.parse(data.formData));
-            setGeneratedPrompt(data.generatedPrompt);
-            setShowHistoryModal(false);
-          }}
-        />
-
         <TemplatesModal
           visible={showTemplatesModal}
           onClose={() => setShowTemplatesModal(false)}
@@ -399,12 +297,6 @@ export default function PromptFormScreen() {
             setFormData(prev => ({ ...prev, ...template }));
             setShowTemplatesModal(false);
           }}
-        />
-
-        <EmailCaptureModal
-          visible={showEmailModal}
-          onClose={() => setShowEmailModal(false)}
-          prompt={generatedPrompt}
         />
 
         <RandomTrackModal
@@ -449,12 +341,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerButton: {
     padding: 8,
     marginLeft: 8,
-  },
-  statusContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
   },
   scrollView: {
     flex: 1,
