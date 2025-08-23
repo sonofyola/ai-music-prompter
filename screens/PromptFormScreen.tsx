@@ -366,24 +366,6 @@ export default function PromptFormScreen({ navigation }: any) {
           <View style={styles.headerRight}>
             <ThemeToggle />
             
-            {/* User menu */}
-            <TouchableOpacity
-              style={styles.userMenuButton}
-              onPress={() => {
-                console.log('🔥 User menu button pressed');
-                Alert.alert(
-                  'Account Menu',
-                  `Signed in as: ${user?.email || 'Unknown'}`,
-                  [
-                    { text: 'Sign Out', onPress: handleUserLogout, style: 'destructive' },
-                    { text: 'Cancel', style: 'cancel' }
-                  ]
-                );
-              }}
-            >
-              <MaterialIcons name="account-circle" size={24} color={colors.text} />
-            </TouchableOpacity>
-
             {/* Prompt History Button */}
             <TouchableOpacity
               style={styles.historyButton}
