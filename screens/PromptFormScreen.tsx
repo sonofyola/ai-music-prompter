@@ -173,44 +173,31 @@ export default function PromptFormScreen() {
 
   const handleUserLogout = async () => {
     console.log('🔘 Logout button pressed');
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Logout', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              console.log('🔄 Starting logout...');
-              
-              // Simple approach that works
-              if (signout && typeof signout === 'function') {
-                await signout();
-                console.log('✅ Signout completed');
-              }
-              
-              // Force reload to complete logout
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload();
-              } else {
-                Alert.alert('Logout Complete', 'Please restart the app to complete logout.');
-              }
-              
-            } catch (error) {
-              console.error('❌ Logout error:', error);
-              // Force reload anyway - this ensures logout works even if signout fails
-              if (typeof window !== 'undefined' && window.location) {
-                window.location.reload();
-              } else {
-                Alert.alert('Logout Complete', 'Please restart the app to complete logout.');
-              }
-            }
-          }
-        }
-      ]
-    );
+    
+    // Skip the Alert.alert confirmation and go straight to logout
+    try {
+      console.log('🔄 Starting logout...');
+      
+      if (signout && typeof signout === 'function') {
+        await signout();
+        console.log('✅ Signout completed');
+      }
+      
+      // Force reload to complete logout
+      if (typeof window !== 'undefined' && window.location) {
+        console.log('🔄 Reloading page...');
+        window.location.reload();
+      } else {
+        console.log('🔄 Not on web platform');
+      }
+      
+    } catch (error) {
+      console.error('❌ Logout error:', error);
+      // Force reload anyway - this ensures logout works even if signout fails
+      if (typeof window !== 'undefined' && window.location) {
+        window.location.reload();
+      }
+    }
   };
 
   const handleRandomTrackIdea = () => {
@@ -418,7 +405,7 @@ export default function PromptFormScreen() {
                 console.log('🔍 User object:', user);
                 console.log('🔍 Signout function:', signout);
                 console.log('🔍 Is admin:', isAdmin);
-                Alert.alert('DEBUG', 'Logout button was pressed! Check console for details.');
+                // Skip Alert.alert and go straight to logout
                 handleUserLogout();
               }}
               activeOpacity={0.7}
@@ -554,6 +541,17 @@ export default function PromptFormScreen() {
             }}
           >
             <Text style={{ color: 'white', fontSize: 14, fontWeight: 'bold' }}>MINIMAL LOGOUT</Text>
+          </TouchableOpacity>
+
+          {/* Test direct logout without Alert.alert */}
+          <TouchableOpacity 
+            style={{ backgroundColor: '#00ff88', padding: 15, borderRadius: 5, alignItems: 'center' }}
+            onPress={() => {
+              console.log('🟢 DIRECT LOGOUT WITHOUT ALERT!');
+              handleUserLogout();
+            }}
+          >
+            <Text style={{ color: 'black', fontSize: 14, fontWeight: 'bold' }}>LOGOUT NO ALERT</Text>
           </TouchableOpacity>
         </View>
       </View>
