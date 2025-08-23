@@ -388,6 +388,7 @@ export default function PromptFormScreen({ navigation }: any) {
             <TouchableOpacity
               style={styles.userMenuButton}
               onPress={() => {
+                console.log('🔥 User menu button pressed');
                 Alert.alert(
                   'Account Menu',
                   `Signed in as: ${user?.email || 'Unknown'}`,
@@ -405,7 +406,10 @@ export default function PromptFormScreen({ navigation }: any) {
             {isAdmin && (
               <TouchableOpacity
                 style={styles.adminLogoutButton}
-                onPress={handleAdminLogout}
+                onPress={() => {
+                  console.log('🔥 Admin logout button pressed');
+                  handleAdminLogout();
+                }}
               >
                 <MaterialIcons name="logout" size={20} color="#ff4444" />
               </TouchableOpacity>
