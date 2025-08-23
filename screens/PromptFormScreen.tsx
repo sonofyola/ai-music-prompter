@@ -428,15 +428,29 @@ export default function PromptFormScreen({ navigation }: any) {
             {isAdmin && (
               <TouchableOpacity
                 style={styles.adminLogoutButton}
-                onPress={(e) => {
-                  e.stopPropagation(); // Prevent event bubbling
-                  console.log('🔥 Admin logout button pressed');
-                  handleAdminLogout();
+                onPress={() => {
+                  console.log('🔥🔥🔥 RED ADMIN LOGOUT BUTTON PRESSED!');
+                  console.log('🔥 Admin status:', isAdmin);
+                  console.log('🔥 User:', user?.email);
+                  
+                  // Show immediate alert to test if button works at all
+                  Alert.alert(
+                    '🔴 RED BUTTON PRESSED!',
+                    'The red admin logout button is working! Do you want to logout from admin mode?',
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { 
+                        text: 'Logout Admin', 
+                        style: 'destructive',
+                        onPress: handleAdminLogout
+                      }
+                    ]
+                  );
                 }}
                 activeOpacity={0.7}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
               >
-                <MaterialIcons name="logout" size={20} color="#ff4444" />
+                <MaterialIcons name="logout" size={24} color="#ff4444" />
               </TouchableOpacity>
             )}
           </View>
@@ -922,20 +936,20 @@ const createStyles = (colors: any) => StyleSheet.create({
     justifyContent: 'center',
   },
   adminLogoutButton: {
-    padding: 8,
+    padding: 12,
     borderRadius: 20,
-    backgroundColor: colors.surface,
-    borderWidth: 2,
+    backgroundColor: '#ffeeee',
+    borderWidth: 3,
     borderColor: '#ff4444',
-    minWidth: 40,
-    minHeight: 40,
+    minWidth: 50,
+    minHeight: 50,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#ff4444',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.5,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 5,
   },
   adminPanelButton: {
     flexDirection: 'row',
