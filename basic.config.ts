@@ -1,122 +1,122 @@
 export const schema = {
   "tables": {
     "maintenance": {
-      "type": "collection",
+      "type": "collection" as const,
       "fields": {
         "enabled": {
-          "type": "boolean",
+          "type": "boolean" as const,
           "indexed": true
         },
         "message": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "timestamp": {
-          "type": "number",
+          "type": "number" as const,
           "indexed": true
         },
         "adminEmail": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         }
       }
     },
     "user_profiles": {
-      "type": "collection",
+      "type": "collection" as const,
       "fields": {
         "email": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "created_at": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         },
         "usage_count": {
-          "type": "number",
+          "type": "number" as const,
           "indexed": false
         },
         "last_reset_date": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         },
         "stripe_customer_id": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         },
         "subscription_status": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         }
       }
     },
     "prompt_history": {
-      "type": "collection",
+      "type": "collection" as const,
       "fields": {
         "name": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "user_id": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "form_data": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         },
         "created_at": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "generated_prompt": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         }
       }
     },
     "collected_emails": {
-      "type": "collection",
+      "type": "collection" as const,
       "fields": {
         "tier": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "email": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "source": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "timestamp": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         }
       }
     },
     "users": {
-      "type": "collection",
+      "type": "collection" as const,
       "fields": {
         "email": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "name": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "created_at": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": true
         },
         "last_login": {
-          "type": "string",
+          "type": "string" as const,
           "indexed": false
         },
         "is_admin": {
-          "type": "boolean",
+          "type": "boolean" as const,
           "indexed": true
         }
       }

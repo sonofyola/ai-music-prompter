@@ -1,20 +1,20 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import * as Clipboard from 'expo-clipboard';
-import { upgradeBetaTester, downgradeBetaTester, getBetaTesters } from '../utils/adminHelpers';
+import { upgradeBetaTester, getBetaTesters } from '../utils/adminHelpers';
 
 interface User {
   id: string;
   email: string;
-  name?: string;
   created_at: string;
-  last_login?: string;
-  is_admin: boolean;
   subscription_status?: string;
   usage_count?: number;
+  stripe_customer_id?: string;
+  last_reset_date?: string;
 }
 
 interface AdminScreenProps {
@@ -25,9 +25,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { user, signout, db } = useBasic();
   const [users, setUsers] = useState<User[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
   const [betaTesters, setBetaTesters] = useState<any[]>([]);
-  const [isLoadingBeta, setIsLoadingBeta] = useState(false);
   const [upgradeEmail, setUpgradeEmail] = useState('');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -45,50 +43,43 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   // Check if current user is admin
   const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
 
-  useEffect(() => {
-    if (isAdmin) {
-      loadUsers();
-      loadBetaTesters();
-    }
-  }, [isAdmin]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     if (!db || !isAdmin) return;
     
-    setIsLoadingUsers(true);
     try {
       const allUsers = await db.from('user_profiles').getAll();
       const typedUsers: User[] = (allUsers || []).map(user => ({
         id: user.id,
         email: user.email as string,
-        name: user.name as string,
         created_at: user.created_at as string,
-        last_login: user.last_login as string,
-        is_admin: user.is_admin as boolean,
         subscription_status: user.subscription_status as string,
-        usage_count: user.usage_count as number
+        usage_count: user.usage_count as number,
+        stripe_customer_id: user.stripe_customer_id as string,
+        last_reset_date: user.last_reset_date as string,
       }));
       setUsers(typedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
       setUsers([]);
-    } finally {
-      setIsLoadingUsers(false);
     }
-  };
+  }, [db, isAdmin]);
 
-  const loadBetaTesters = async () => {
+  const loadBetaTesters = useCallback(async () => {
     if (!db) return;
-    setIsLoadingBeta(true);
     try {
       const testers = await getBetaTesters(db);
       setBetaTesters(testers);
     } catch (error) {
       console.error('Error loading beta testers:', error);
-    } finally {
-      setIsLoadingBeta(false);
     }
-  };
+  }, [db]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadUsers();
+      loadBetaTesters();
+    }
+  }, [isAdmin, loadUsers, loadBetaTesters]);
 
   const handleUpgradeBetaTester = async () => {
     if (!db || !upgradeEmail.trim()) return;
@@ -106,7 +97,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           }
         }}]
       );
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to upgrade user. Please try again.');
     } finally {
       setIsUpgrading(false);
@@ -144,9 +135,9 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
     setIsExporting(true);
     try {
-      const csvContent = 'Email,Name,Created,Subscription Status,Usage Count\n' + 
+      const csvContent = 'Email,Created,Subscription Status,Usage Count\n' + 
         users.map(user => 
-          `${user.email},"${user.name || ''}",${user.created_at},${user.subscription_status || 'free'},${user.usage_count || 0}`
+          `${user.email},${user.created_at},${user.subscription_status || 'free'},${user.usage_count || 0}`
         ).join('\n');
       
       await Clipboard.setStringAsync(csvContent);
@@ -207,7 +198,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       <SafeAreaView style={styles.container}>
         <View style={styles.notAdminContainer}>
           <Text style={styles.notAdminText}>Access Denied</Text>
-          <Text style={styles.notAdminSubtext}>You don't have admin privileges.</Text>
+          <Text style={styles.notAdminSubtext}>You don&apos;t have admin privileges.</Text>
           <TouchableOpacity style={styles.backButton} onPress={onBackToApp}>
             <Text style={styles.backButtonText}>← Back to App</Text>
           </TouchableOpacity>
@@ -220,99 +211,41 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     <SafeAreaView style={styles.container}>
       <ScrollView 
         style={styles.scrollView}
-        accessible={false}
         contentContainerStyle={styles.contentContainer}
       >
         {/* Header */}
         <View style={styles.header}>
-          <Text 
-            style={styles.title}
-            accessibilityRole="header"
-            accessibilityLevel={1}
-          >
-            🛠️ Admin Dashboard
-          </Text>
-          <Text 
-            style={styles.subtitle}
-            accessibilityRole="text"
-          >
-            Manage users, monitor usage, and system settings
-          </Text>
+          <Text style={styles.title}>🛠️ Admin Dashboard</Text>
+          <Text style={styles.subtitle}>Manage users, monitor usage, and system settings</Text>
         </View>
 
         {/* Quick stats */}
-        <View 
-          style={styles.section}
-          accessible={true}
-          accessibilityLabel="System statistics"
-          accessibilityRole="region"
-        >
-          <Text 
-            style={styles.sectionTitle}
-            accessibilityRole="header"
-            accessibilityLevel={2}
-          >
-            📊 Quick Stats
-          </Text>
-
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>📊 Quick Stats</Text>
           <View style={styles.statsGrid}>
-            <View 
-              style={styles.statCard}
-              accessible={true}
-              accessibilityLabel={`Total users: ${stats.totalUsers}`}
-              accessibilityRole="text"
-            >
-              <Text style={styles.statNumber} accessible={false}>{stats.totalUsers}</Text>
-              <Text style={styles.statLabel} accessible={false}>Total Users</Text>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.totalUsers}</Text>
+              <Text style={styles.statLabel}>Total Users</Text>
             </View>
-
-            <View 
-              style={styles.statCard}
-              accessible={true}
-              accessibilityLabel={`Premium users: ${stats.premiumUsers}`}
-              accessibilityRole="text"
-            >
-              <Text style={styles.statNumber} accessible={false}>{stats.premiumUsers}</Text>
-              <Text style={styles.statLabel} accessible={false}>Premium Users</Text>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.premiumUsers}</Text>
+              <Text style={styles.statLabel}>Premium Users</Text>
             </View>
-
-            <View 
-              style={styles.statCard}
-              accessible={true}
-              accessibilityLabel={`Daily prompts generated: ${stats.dailyPrompts}`}
-              accessibilityRole="text"
-            >
-              <Text style={styles.statNumber} accessible={false}>{stats.dailyPrompts}</Text>
-              <Text style={styles.statLabel} accessible={false}>Daily Prompts</Text>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.dailyPrompts}</Text>
+              <Text style={styles.statLabel}>Daily Prompts</Text>
             </View>
-
-            <View 
-              style={styles.statCard}
-              accessible={true}
-              accessibilityLabel={`Total prompts generated: ${stats.totalPrompts}`}
-              accessibilityRole="text"
-            >
-              <Text style={styles.statNumber} accessible={false}>{stats.totalPrompts}</Text>
-              <Text style={styles.statLabel} accessible={false}>Total Prompts</Text>
+            <View style={styles.statCard}>
+              <Text style={styles.statNumber}>{stats.totalPrompts}</Text>
+              <Text style={styles.statLabel}>Total Prompts</Text>
             </View>
           </View>
         </View>
 
         {/* Beta Tester Management */}
-        <View 
-          style={styles.section}
-          accessible={true}
-          accessibilityLabel="Beta tester management"
-          accessibilityRole="region"
-        >
-          <Text 
-            style={styles.sectionTitle}
-            accessibilityRole="header"
-            accessibilityLevel={2}
-          >
-            👥 Beta Tester Management
-          </Text>
-
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>👥 Beta Tester Management</Text>
+          
           {/* Upgrade controls */}
           <View style={styles.upgradeControls}>
             <TextInput
@@ -320,25 +253,13 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
               placeholder="Enter user email to upgrade..."
               value={upgradeEmail}
               onChangeText={setUpgradeEmail}
-              accessible={true}
-              accessibilityLabel="User email for upgrade"
-              accessibilityHint="Enter the email address of the user you want to upgrade to premium"
               keyboardType="email-address"
               autoCapitalize="none"
             />
-
             <TouchableOpacity 
               style={[styles.upgradeButton, !upgradeEmail.trim() && styles.upgradeButtonDisabled]}
               onPress={handleUpgradeBetaTester}
               disabled={!upgradeEmail.trim() || isUpgrading}
-              accessible={true}
-              accessibilityLabel={isUpgrading ? "Upgrading user" : "Upgrade user to unlimited"}
-              accessibilityHint="Manually upgrade the specified user to unlimited premium access"
-              accessibilityRole="button"
-              accessibilityState={{
-                disabled: !upgradeEmail.trim() || isUpgrading,
-                busy: isUpgrading
-              }}
             >
               <Text style={styles.upgradeButtonText}>
                 {isUpgrading ? 'Upgrading...' : '⬆️ Upgrade to Unlimited'}
@@ -348,80 +269,41 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
           {/* Beta testers list */}
           {betaTesters.length > 0 && (
-            <View 
-              style={styles.betaTestersContainer}
-              accessible={true}
-              accessibilityLabel="Beta testers list"
-              accessibilityRole="table"
-            >
-              <Text 
-                style={styles.listTitle}
-                accessibilityRole="header"
-                accessibilityLevel={3}
-              >
-                Current Beta Testers:
-              </Text>
-
+            <View style={styles.betaTestersContainer}>
+              <Text style={styles.listTitle}>Current Beta Testers:</Text>
+              
               {/* Table header */}
-              <View 
-                style={styles.tableHeader}
-                accessible={true}
-                accessibilityLabel="Table headers: Email, Status, Usage, Actions"
-                accessibilityRole="rowheader"
-              >
-                <Text style={[styles.tableHeaderText, styles.emailColumn]} accessible={false}>Email</Text>
-                <Text style={[styles.tableHeaderText, styles.statusColumn]} accessible={false}>Status</Text>
-                <Text style={[styles.tableHeaderText, styles.usageColumn]} accessible={false}>Usage</Text>
-                <Text style={[styles.tableHeaderText, styles.actionsColumn]} accessible={false}>Actions</Text>
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderText, styles.emailColumn]}>Email</Text>
+                <Text style={[styles.tableHeaderText, styles.statusColumn]}>Status</Text>
+                <Text style={[styles.tableHeaderText, styles.usageColumn]}>Usage</Text>
+                <Text style={[styles.tableHeaderText, styles.actionsColumn]}>Actions</Text>
               </View>
 
               {/* Table rows */}
-              {betaTesters.map((user, index) => (
-                <View 
-                  key={user.id}
-                  style={styles.tableRow}
-                  accessible={true}
-                  accessibilityLabel={`User ${user.email}, status ${user.subscription_status}, usage ${user.usage_count || 0}`}
-                  accessibilityRole="row"
-                >
-                  <Text 
-                    style={[styles.tableCellText, styles.emailColumn]} 
-                    accessible={false}
-                    numberOfLines={1}
-                  >
+              {betaTesters.map((user) => (
+                <View key={user.id} style={styles.tableRow}>
+                  <Text style={[styles.tableCellText, styles.emailColumn]} numberOfLines={1}>
                     {user.email}
                   </Text>
-                  
-                  <View style={[styles.tableCell, styles.statusColumn]} accessible={false}>
-                    <Text 
-                      style={[
-                        styles.statusBadge,
-                        user.subscription_status === 'unlimited' && styles.statusUnlimited,
-                        user.subscription_status === 'premium' && styles.statusPremium,
-                        user.subscription_status === 'free' && styles.statusFree
-                      ]}
-                      accessible={false}
-                    >
-                      {user.subscription_status}
+                  <View style={[styles.tableCell, styles.statusColumn]}>
+                    <Text style={[
+                      styles.statusBadge,
+                      user.subscription_status === 'unlimited' && styles.statusUnlimited,
+                      user.subscription_status === 'premium' && styles.statusPremium,
+                      user.subscription_status === 'free' && styles.statusFree
+                    ]}>
+                      {user.subscription_status || 'free'}
                     </Text>
                   </View>
-                  
-                  <Text 
-                    style={[styles.tableCellText, styles.usageColumn]} 
-                    accessible={false}
-                  >
+                  <Text style={[styles.tableCellText, styles.usageColumn]}>
                     {user.usage_count || 0}
                   </Text>
-                  
-                  <View style={[styles.tableCell, styles.actionsColumn]} accessible={false}>
+                  <View style={[styles.tableCell, styles.actionsColumn]}>
                     {user.subscription_status !== 'unlimited' && (
                       <TouchableOpacity 
                         style={styles.quickUpgradeButton}
                         onPress={() => handleQuickUpgrade(user.email)}
-                        accessible={true}
-                        accessibilityLabel={`Upgrade ${user.email} to unlimited`}
-                        accessibilityHint="Quickly upgrade this user to unlimited premium access"
-                        accessibilityRole="button"
                       >
                         <Text style={styles.quickUpgradeButtonText}>⬆️</Text>
                       </TouchableOpacity>
@@ -434,51 +316,22 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         </View>
 
         {/* User Management */}
-        <View 
-          style={styles.section}
-          accessible={true}
-          accessibilityLabel="User management tools"
-          accessibilityRole="region"
-        >
-          <Text 
-            style={styles.sectionTitle}
-            accessibilityRole="header"
-            accessibilityLevel={2}
-          >
-            👤 User Management
-          </Text>
-
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>👤 User Management</Text>
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={handleExportUsers}
               disabled={isExporting}
-              accessible={true}
-              accessibilityLabel={isExporting ? "Exporting user data" : "Export user emails"}
-              accessibilityHint="Downloads a CSV file containing all user email addresses"
-              accessibilityRole="button"
-              accessibilityState={{
-                disabled: isExporting,
-                busy: isExporting
-              }}
             >
               <Text style={styles.actionButtonText}>
                 {isExporting ? '📤 Exporting...' : '📤 Export User Emails'}
               </Text>
             </TouchableOpacity>
-
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={handleRefreshData}
               disabled={isRefreshing}
-              accessible={true}
-              accessibilityLabel={isRefreshing ? "Refreshing data" : "Refresh user data"}
-              accessibilityHint="Reloads all user data and statistics from the database"
-              accessibilityRole="button"
-              accessibilityState={{
-                disabled: isRefreshing,
-                busy: isRefreshing
-              }}
             >
               <Text style={styles.actionButtonText}>
                 {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
@@ -488,43 +341,19 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         </View>
 
         {/* System Settings */}
-        <View 
-          style={styles.section}
-          accessible={true}
-          accessibilityLabel="System settings"
-          accessibilityRole="region"
-        >
-          <Text 
-            style={styles.sectionTitle}
-            accessibilityRole="header"
-            accessibilityLevel={2}
-          >
-            ⚙️ System Settings
-          </Text>
-
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>⚙️ System Settings</Text>
           <View style={styles.settingsContainer}>
-            {/* Maintenance mode toggle */}
-            <View 
-              style={styles.settingItem}
-              accessible={true}
-              accessibilityLabel={`Maintenance mode is ${maintenanceMode ? 'enabled' : 'disabled'}`}
-              accessibilityRole="switch"
-              accessibilityState={{ checked: maintenanceMode }}
-            >
-              <Text style={styles.settingLabel} accessible={false}>Maintenance Mode</Text>
+            <View style={styles.settingItem}>
+              <Text style={styles.settingLabel}>Maintenance Mode</Text>
               <TouchableOpacity 
                 style={[styles.toggle, maintenanceMode && styles.toggleActive]}
                 onPress={handleToggleMaintenance}
-                accessible={false} // Parent handles accessibility
               >
                 <View style={[styles.toggleThumb, maintenanceMode && styles.toggleThumbActive]} />
               </TouchableOpacity>
             </View>
-
-            <Text 
-              style={styles.settingDescription}
-              accessibilityRole="text"
-            >
+            <Text style={styles.settingDescription}>
               When enabled, only admins can access the app
             </Text>
           </View>
@@ -532,14 +361,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
         {/* Sign out */}
         <View style={styles.footer}>
-          <TouchableOpacity 
-            style={styles.signOutButton}
-            onPress={handleSignOut}
-            accessible={true}
-            accessibilityLabel="Sign out of admin account"
-            accessibilityHint="Logs out of the admin dashboard and returns to login screen"
-            accessibilityRole="button"
-          >
+          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
             <Text style={styles.signOutButtonText}>🚪 Sign Out</Text>
           </TouchableOpacity>
         </View>

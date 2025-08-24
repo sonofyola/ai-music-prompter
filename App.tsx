@@ -19,21 +19,25 @@ import AuthScreen from './screens/AuthScreen';
 // Utils
 import { checkPendingPayments, markPaymentCompleted } from './utils/paymentVerification';
 
-function AppContent({ accessibilitySettings }) {
+function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
 
   // Check for completed payments when app becomes active
   useEffect(() => {
     const handleAppStateChange = async (nextAppState: string) => {
       if (nextAppState === 'active' && isSignedIn && user) {
-        // Check if user completed a payment while away
-        const pendingPayment = await checkPendingPayments();
-        if (pendingPayment) {
-          // Auto-upgrade user if they have a pending payment
-          console.log('Found pending payment, auto-upgrading user:', user.email);
-          await markPaymentCompleted(pendingPayment.subscriptionId);
-          
-          // The UsageContext will handle the upgrade through its normal flow
+        try {
+          // Check if user completed a payment while away
+          const pendingPayment = await checkPendingPayments();
+          if (pendingPayment) {
+            // Auto-upgrade user if they have a pending payment
+            console.log('Found pending payment, auto-upgrading user:', user.email);
+            await markPaymentCompleted(pendingPayment.subscriptionId);
+            
+            // The UsageContext will handle the upgrade through its normal flow
+          }
+        } catch (error) {
+          console.error('Error checking pending payments:', error);
         }
       }
     };
@@ -54,13 +58,7 @@ function AppContent({ accessibilitySettings }) {
   return (
     <View style={{ flex: 1 }}>
       {isSignedIn && user ? (
-        <UsageProvider>
-          <NotificationProvider>
-            <PromptHistoryProvider>
-              <PromptFormScreen />
-            </PromptHistoryProvider>
-          </NotificationProvider>
-        </UsageProvider>
+        <PromptFormScreen />
       ) : (
         <AuthScreen />
       )}
@@ -105,26 +103,19 @@ export default function App() {
     };
   }, []);
 
-  // Pass accessibility context to the rest of the app
-  const accessibilityContext = {
-    isScreenReaderEnabled,
-    isReduceMotionEnabled,
-  };
-
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <UsageProvider>
-            <PromptHistoryProvider>
-              <MaintenanceProvider>
+          <MaintenanceProvider>
+            <UsageProvider>
+              <PromptHistoryProvider>
                 <NotificationProvider>
-                  {/* Pass accessibility context through your app */}
-                  <AppContent accessibilitySettings={accessibilityContext} />
+                  <AppContent />
                 </NotificationProvider>
-              </MaintenanceProvider>
-            </PromptHistoryProvider>
-          </UsageProvider>
+              </PromptHistoryProvider>
+            </UsageProvider>
+          </MaintenanceProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </BasicProvider>
