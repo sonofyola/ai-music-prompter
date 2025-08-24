@@ -8,10 +8,10 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { PromptTemplate, MusicPromptData } from '../types';
 import { PROMPT_TEMPLATES, TEMPLATE_CATEGORIES } from '../utils/promptTemplates';
+import IconFallback from './IconFallback';
 
 interface TemplatesModalProps {
   visible: boolean;
@@ -60,11 +60,11 @@ export default function TemplatesModal({
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <MaterialIcons name="dashboard" size={24} color={colors.primary} />
+            <IconFallback name="dashboard" size={24} color={colors.primary} />
             <Text style={styles.title}>Prompt Templates</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+            <IconFallback name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -109,8 +109,8 @@ export default function TemplatesModal({
               >
                 <View style={styles.templateHeader}>
                   <View style={styles.templateTitleContainer}>
-                    <MaterialIcons 
-                      name={template.icon as any} 
+                    <IconFallback 
+                      name={template.icon} 
                       size={24} 
                       color={colors.primary} 
                     />
@@ -119,7 +119,7 @@ export default function TemplatesModal({
                       <Text style={styles.templateCategory}>{template.category}</Text>
                     </View>
                   </View>
-                  <MaterialIcons name="arrow-forward" size={20} color={colors.primary} />
+                  <IconFallback name="arrow-forward" size={20} color={colors.primary} />
                 </View>
                 <Text style={styles.templateDescription}>{template.description}</Text>
                 

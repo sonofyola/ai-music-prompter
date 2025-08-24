@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import { performCompleteAuthReset, performQuickAuthReset, performNuclearReset } from '../utils/authReset';
+import IconFallback from '../components/IconFallback';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
@@ -438,7 +438,7 @@ export default function AuthScreen() {
       <View style={styles.content}>
         {/* Header */}
         <View style={styles.header}>
-          <MaterialIcons name="auto-awesome" size={48} color={colors.primary} />
+          <IconFallback name="auto-awesome" size={48} color={colors.primary} />
           <Text style={styles.title}>AI Music Prompter</Text>
           <Text style={styles.subtitle}>
             Generate perfect prompts for AI music tools like Suno, Riffusion, and MusicGen
@@ -459,7 +459,7 @@ export default function AuthScreen() {
         {/* Sonofyola Warning */}
         {isStuckWithSonofyola && (
           <View style={styles.warningSection}>
-            <MaterialIcons name="warning" size={24} color="#FF3B30" />
+            <IconFallback name="warning" size={24} color="#FF3B30" />
             <Text style={styles.warningTitle}>Account Issue Detected</Text>
             <Text style={styles.warningText}>
               You are stuck with the sonofyola account. Use the reset button below to clear this and sign in with a different account.
@@ -489,7 +489,7 @@ export default function AuthScreen() {
               style={styles.signOutButton}
               onPress={handleSignOut}
             >
-              <MaterialIcons name="logout" size={20} color={colors.primary} />
+              <IconFallback name="logout" size={20} color={colors.primary} />
               <Text style={styles.signOutButtonText}>Sign Out</Text>
             </TouchableOpacity>
           </View>
@@ -502,7 +502,7 @@ export default function AuthScreen() {
             onPress={handleLogin}
             disabled={isLoading || isResetting}
           >
-            <MaterialIcons name="login" size={24} color={colors.background} />
+            <IconFallback name="login" size={24} color={colors.background} />
             <Text style={styles.loginButtonText}>
               {isLoading ? 'Signing In...' : 
                isResetting ? 'Resetting...' :
@@ -607,19 +607,19 @@ export default function AuthScreen() {
           <Text style={styles.featuresTitle}>What you can do:</Text>
           <View style={styles.featuresList}>
             <View style={styles.featureItem}>
-              <MaterialIcons name="music-note" size={20} color={colors.primary} />
+              <IconFallback name="music-note" size={20} color={colors.primary} />
               <Text style={styles.featureText}>Generate detailed music prompts</Text>
             </View>
             <View style={styles.featureItem}>
-              <MaterialIcons name="shuffle" size={20} color={colors.primary} />
+              <IconFallback name="shuffle" size={20} color={colors.primary} />
               <Text style={styles.featureText}>Get random track ideas</Text>
             </View>
             <View style={styles.featureItem}>
-              <MaterialIcons name="history" size={20} color={colors.primary} />
+              <IconFallback name="history" size={20} color={colors.primary} />
               <Text style={styles.featureText}>Save and manage prompt history</Text>
             </View>
             <View style={styles.featureItem}>
-              <MaterialIcons name="dashboard" size={20} color={colors.primary} />
+              <IconFallback name="dashboard" size={20} color={colors.primary} />
               <Text style={styles.featureText}>Use smart templates</Text>
             </View>
           </View>

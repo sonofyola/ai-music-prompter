@@ -9,10 +9,10 @@ import {
   Alert,
   TextInput
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
 import { SavedPrompt, MusicPromptData } from '../types';
+import IconFallback from './IconFallback';
 
 interface PromptHistoryModalProps {
   visible: boolean;
@@ -103,11 +103,11 @@ export default function PromptHistoryModal({
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <MaterialIcons name="history" size={24} color={colors.primary} />
+            <IconFallback name="history" size={24} color={colors.primary} />
             <Text style={styles.title}>Prompt History</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+            <IconFallback name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -117,7 +117,7 @@ export default function PromptHistoryModal({
             style={styles.saveButton}
             onPress={() => setShowSaveDialog(true)}
           >
-            <MaterialIcons name="save" size={18} color="#fff" />
+            <IconFallback name="save" size={18} color="#fff" />
             <Text style={styles.saveButtonText}>Save Current</Text>
           </TouchableOpacity>
 
@@ -135,7 +135,7 @@ export default function PromptHistoryModal({
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {filteredPrompts.length === 0 ? (
             <View style={styles.emptyState}>
-              <MaterialIcons name="history" size={48} color={colors.textTertiary} />
+              <IconFallback name="history" size={48} color={colors.textTertiary} />
               <Text style={styles.emptyStateText}>
                 No saved prompts yet
               </Text>
@@ -160,7 +160,7 @@ export default function PromptHistoryModal({
                           onPress={() => handleDeletePrompt(prompt)}
                           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         >
-                          <MaterialIcons name="delete" size={20} color={colors.textSecondary} />
+                          <IconFallback name="delete" size={20} color={colors.textSecondary} />
                         </TouchableOpacity>
                       </View>
                     </View>

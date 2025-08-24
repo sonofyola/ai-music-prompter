@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import IconFallback from './IconFallback';
 
 interface MultiSelectFieldProps {
   label: string;
@@ -59,10 +59,11 @@ export default function MultiSelectField({
               : `${values.length} selected`
           }
         </Text>
-        <MaterialIcons 
-          name={isExpanded ? "keyboard-arrow-up" : "keyboard-arrow-down"} 
+        <IconFallback 
+          name={isExpanded ? "expand-less" : "expand-more"} 
           size={24} 
-          color={colors.textSecondary} 
+          color={colors.textSecondary}
+          fallback={isExpanded ? "▲" : "▼"}
         />
       </TouchableOpacity>
 
@@ -79,7 +80,7 @@ export default function MultiSelectField({
               onPress={() => toggleOption(value)}
             >
               <Text style={styles.selectedText}>{value}</Text>
-              <MaterialIcons name="close" size={16} color={colors.primary} />
+              <IconFallback name="close" size={16} color={colors.primary} />
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -103,7 +104,7 @@ export default function MultiSelectField({
                 {option}
               </Text>
               {values.includes(option) && (
-                <MaterialIcons name="check" size={20} color={colors.primary} />
+                <IconFallback name="check" size={20} color={colors.primary} />
               )}
             </TouchableOpacity>
           ))}

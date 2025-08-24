@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
+import IconFallback from './IconFallback';
 
 interface FormFieldProps extends TextInputProps {
   label: string;
@@ -28,7 +28,7 @@ export default function FormField({
             onPress={onRandomPress}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <MaterialIcons name="casino" size={20} color={colors.primary} />
+            <IconFallback name="casino" size={20} color={colors.primary} />
           </TouchableOpacity>
         )}
       </View>

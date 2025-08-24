@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import * as Clipboard from 'expo-clipboard';
 import { useTheme } from '../contexts/ThemeContext';
+import IconFallback from './IconFallback';
 
 interface GeneratedPromptProps {
   prompt: string;
@@ -29,7 +29,7 @@ export default function GeneratedPrompt({ prompt }: GeneratedPromptProps) {
       <View style={styles.header}>
         <Text style={styles.title}>Generated Prompt</Text>
         <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
-          <MaterialIcons 
+          <IconFallback 
             name={copied ? 'check' : 'content-copy'} 
             size={20} 
             color={copied ? colors.success : colors.primary} 

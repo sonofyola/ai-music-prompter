@@ -10,7 +10,6 @@ import {
   KeyboardAvoidingView
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useBasic } from '@basictech/expo';
 
 // Components
@@ -22,6 +21,7 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
+import IconFallback from '../components/IconFallback';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -218,7 +218,7 @@ export default function PromptFormScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <MaterialIcons name="auto-awesome" size={28} color={colors.primary} />
+            <IconFallback name="auto-awesome" size={28} color={colors.primary} />
             <View>
               <Text style={styles.headerTitle}>AI Music Prompter</Text>
               {user && (
@@ -230,10 +230,10 @@ export default function PromptFormScreen() {
           </View>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
-              <MaterialIcons name="history" size={24} color={colors.text} />
+              <IconFallback name="history" size={24} color={colors.text} />
             </TouchableOpacity>
             <TouchableOpacity onPress={handleSignOut} style={styles.headerButton}>
-              <MaterialIcons name="logout" size={24} color={colors.text} />
+              <IconFallback name="logout" size={24} color={colors.text} />
             </TouchableOpacity>
             <ThemeToggle />
           </View>
@@ -244,15 +244,15 @@ export default function PromptFormScreen() {
             {/* Quick Actions */}
             <View style={styles.quickActions}>
               <TouchableOpacity style={styles.quickActionButton} onPress={handleRandomTrack}>
-                <MaterialIcons name="shuffle" size={20} color={colors.background} />
+                <IconFallback name="shuffle" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Random Track</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowTemplatesModal(true)}>
-                <MaterialIcons name="dashboard" size={20} color={colors.background} />
+                <IconFallback name="dashboard" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Templates</Text>
               </TouchableOpacity>
               <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowRandomModal(true)}>
-                <MaterialIcons name="casino" size={20} color={colors.background} />
+                <IconFallback name="casino" size={20} color={colors.background} />
                 <Text style={styles.quickActionText}>Ideas</Text>
               </TouchableOpacity>
             </View>
@@ -270,7 +270,7 @@ export default function PromptFormScreen() {
                   />
                 </View>
                 <TouchableOpacity style={styles.diceButton} onPress={handleRandomSubject}>
-                  <MaterialIcons name="casino" size={24} color={colors.primary} />
+                  <IconFallback name="casino" size={24} color={colors.primary} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -459,7 +459,7 @@ export default function PromptFormScreen() {
               onPress={handleGeneratePrompt}
               disabled={isGenerating}
             >
-              <MaterialIcons 
+              <IconFallback 
                 name={isGenerating ? "hourglass-empty" : "auto-awesome"} 
                 size={24} 
                 color={colors.background} 

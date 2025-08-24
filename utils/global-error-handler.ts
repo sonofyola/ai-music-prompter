@@ -8,13 +8,34 @@ if (Platform.OS === 'web') {
   if (typeof window !== 'undefined') {
     window.addEventListener('error', (event) => {
       // Silently handle errors without sending to parent
-      console.warn('Error caught by minimal handler:', event.error?.message || 'Unknown error');
+      const message = event.error?.message || event.message || 'Unknown error';
+      
+      // Filter out specific errors we want to suppress
+      if (message.includes('Unexpected text node') || 
+          message.includes('MaterialIcons.ttf') ||
+          message.includes('A text node cannot be a child of a <View>')) {
+        console.warn('Suppressed UI error:', message);
+        event.preventDefault();
+        return;
+      }
+      
+      console.warn('Error caught by minimal handler:', message);
       event.preventDefault();
     });
     
     window.addEventListener('unhandledrejection', (event) => {
       // Silently handle promise rejections
-      console.warn('Unhandled promise rejection:', event.reason);
+      const reason = event.reason?.message || event.reason || 'Unknown rejection';
+      
+      // Filter out network errors for fonts
+      if (reason.includes('MaterialIcons.ttf') || 
+          reason.includes('NetworkError')) {
+        console.warn('Suppressed network error:', reason);
+        event.preventDefault();
+        return;
+      }
+      
+      console.warn('Unhandled promise rejection:', reason);
       event.preventDefault();
     });
   }

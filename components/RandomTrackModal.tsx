@@ -8,9 +8,9 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { TrackIdea, generateMultipleTrackIdeas } from '../utils/randomTrackGenerator';
+import IconFallback from './IconFallback';
 
 interface RandomTrackModalProps {
   visible: boolean;
@@ -72,11 +72,11 @@ export default function RandomTrackModal({
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <MaterialIcons name="casino" size={24} color={colors.primary} />
+            <IconFallback name="casino" size={24} color={colors.primary} />
             <Text style={styles.title}>Random Track Ideas</Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <MaterialIcons name="close" size={24} color={colors.textSecondary} />
+            <IconFallback name="close" size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
 
@@ -87,7 +87,7 @@ export default function RandomTrackModal({
         <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
           {isGenerating ? (
             <View style={styles.loadingContainer}>
-              <MaterialIcons name="casino" size={32} color={colors.primary} />
+              <IconFallback name="casino" size={32} color={colors.primary} />
               <Text style={styles.loadingText}>Generating creative ideas...</Text>
             </View>
           ) : (
@@ -101,7 +101,7 @@ export default function RandomTrackModal({
                 >
                   <View style={styles.ideaHeader}>
                     <Text style={styles.ideaSubject}>{idea.subject}</Text>
-                    <MaterialIcons name="arrow-forward" size={20} color={colors.primary} />
+                    <IconFallback name="arrow-forward" size={20} color={colors.primary} />
                   </View>
                   <Text style={styles.ideaDescription}>{idea.description}</Text>
                 </TouchableOpacity>
@@ -116,7 +116,7 @@ export default function RandomTrackModal({
             onPress={generateNewIdeas}
             disabled={isGenerating}
           >
-            <MaterialIcons 
+            <IconFallback 
               name="refresh" 
               size={20} 
               color="#fff" 
