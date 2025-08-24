@@ -61,10 +61,11 @@ export default function PromptFormScreen() {
   const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
   
   // Debug logging
-  console.log('Admin check:', {
+  console.log('🔍 PromptFormScreen Debug:', {
     userEmail: user?.email,
-    isAdmin: isAdmin,
-    user: user
+    userId: user?.id,
+    isAdmin,
+    userObject: user
   });
 
   // Track user in database
