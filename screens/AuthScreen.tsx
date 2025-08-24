@@ -451,33 +451,79 @@ export default function AuthScreen() {
     console.log('🔗 SIMPLE URL BREAK - Starting...');
     
     Alert.alert(
-      '🔗 Simple Session Break',
-      'This will clear storage and reload the app safely for mobile.',
+      '🔗 Simple URL Session Break',
+      'This will clear storage and redirect with session-breaking parameters.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: '🔗 Break Session',
           style: 'destructive',
           onPress: async () => {
-            console.log('🔗 Executing mobile-safe session break...');
+            console.log('🔗 Executing simple URL session break...');
             setIsResetting(true);
             
             try {
-              // Import the mobile-safe version
-              const { performMobileSafeSessionBreak } = await import('../utils/authReset');
-              await performMobileSafeSessionBreak();
-            } catch (error) {
-              console.error('🔗 Mobile-safe session break error:', error);
-              // Emergency fallback - just clear and reload
-              try {
-                if (typeof window !== 'undefined') {
-                  window.localStorage.clear();
-                  window.sessionStorage.clear();
-                  setTimeout(() => window.location.reload(), 1000);
+              // Check if we're on web or mobile
+              const isWeb = typeof window !== 'undefined' && window.location && window.location.href;
+              
+              if (isWeb) {
+                // Web platform - use URL manipulation
+                console.log('🔗 Web platform - using URL manipulation...');
+                
+                // Clear storage immediately
+                console.log('🔗 Clearing web storage...');
+                try { window.localStorage.clear(); } catch (e) { console.log('localStorage clear failed:', e); }
+                try { window.sessionStorage.clear(); } catch (e) { console.log('sessionStorage clear failed:', e); }
+                
+                // Set flags
+                window.localStorage.setItem('force_new_session', 'true');
+                window.localStorage.setItem('break_session_continuity', 'true');
+                window.localStorage.setItem('admin_session_override', 'drremotework@gmail.com');
+                window.localStorage.setItem('reject_sonofyola', 'true');
+                
+                console.log('🔗 Web storage cleared, redirecting...');
+                
+                // Redirect with session-breaking parameters
+                setTimeout(() => {
+                  const url = new URL(window.location.origin);
+                  url.searchParams.set('session_break', 'true');
+                  url.searchParams.set('force_new_auth', 'true');
+                  url.searchParams.set('admin_override', 'drremotework@gmail.com');
+                  url.searchParams.set('reject_sonofyola', 'true');
+                  url.searchParams.set('timestamp', Date.now().toString());
+                  url.searchParams.set('nonce', Math.random().toString(36));
+                  
+                  console.log('🔗 Redirecting to:', url.toString());
+                  window.location.replace(url.toString());
+                }, 1000);
+              } else {
+                // Mobile platform - use AsyncStorage and complete reset
+                console.log('🔗 Mobile platform - using AsyncStorage and complete reset...');
+                
+                // Clear AsyncStorage
+                try {
+                  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                  console.log('🔗 Clearing AsyncStorage...');
+                  await AsyncStorage.clear();
+                  
+                  // Set session break flags
+                  await AsyncStorage.setItem('session_break', 'true');
+                  await AsyncStorage.setItem('force_new_auth', 'true');
+                  await AsyncStorage.setItem('admin_override', 'drremotework@gmail.com');
+                  await AsyncStorage.setItem('reject_sonofyola', 'true');
+                  await AsyncStorage.setItem('mobile_session_break', Date.now().toString());
+                  
+                  console.log('🔗 AsyncStorage cleared and flags set');
+                } catch (e) {
+                  console.log('🔗 AsyncStorage operations failed:', e);
                 }
-              } catch (e) {
-                console.error('Emergency fallback failed:', e);
+                
+                // For mobile, perform a complete auth reset instead of URL redirect
+                console.log('🔗 Performing complete auth reset for mobile...');
+                await performCompleteAuthReset();
               }
+            } catch (error) {
+              console.error('🔗 Simple URL break error:', error);
               setIsResetting(false);
             }
           }
