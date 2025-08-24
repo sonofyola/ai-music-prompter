@@ -323,40 +323,18 @@ export default function PromptFormScreen() {
                 {subscriptionStatus === 'unlimited' && (
                   <Text style={styles.premiumBadge}>Premium</Text>
                 )}
-                {/* Debug info */}
-                <Text style={[styles.usageText, { fontSize: 10, color: colors.textSecondary }]}>
-                  Debug: Status={subscriptionStatus}, Admin={isAdmin ? 'Yes' : 'No'}
-                </Text>
               </View>
               
               {subscriptionStatus === 'free' && (
                 <TouchableOpacity 
                   style={styles.upgradeButton}
-                  onPress={() => {
-                    console.log('🚀 Upgrade button touched!');
-                    console.log('Current subscription status:', subscriptionStatus);
-                    console.log('Is admin:', isAdmin);
-                    console.log('User email:', user?.email);
-                    handleUpgradePress();
-                  }}
+                  onPress={handleUpgradePress}
                   activeOpacity={0.7}
                 >
                   <IconFallback name="upgrade" size={16} color="#fff" />
                   <Text style={styles.upgradeButtonText}>Upgrade</Text>
                 </TouchableOpacity>
               )}
-              
-              {/* Temporary test button - always visible */}
-              <TouchableOpacity 
-                style={[styles.upgradeButton, { backgroundColor: colors.warning }]}
-                onPress={() => {
-                  console.log('🧪 Test upgrade button pressed!');
-                  setShowUpgradeModal(true);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.upgradeButtonText}>Test Upgrade</Text>
-              </TouchableOpacity>
             </View>
 
             {/* Action buttons */}
