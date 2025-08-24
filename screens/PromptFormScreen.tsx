@@ -289,7 +289,11 @@ export default function PromptFormScreen() {
             {user && (
               <Text style={styles.userIndicator}>
                 Welcome, {user.name || user.email?.split('@')[0] || 'User'}!
-                {subscriptionStatus !== 'unlimited' && (
+                {isAdmin ? (
+                  <Text style={styles.adminBadge}> • Admin (Unlimited)</Text>
+                ) : subscriptionStatus === 'unlimited' ? (
+                  <Text style={styles.premiumBadge}> • Premium</Text>
+                ) : (
                   <Text style={styles.usageHint}> • {3 - (dailyUsage || 0)} free left today</Text>
                 )}
               </Text>
@@ -631,6 +635,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
     fontStyle: 'italic',
+  },
+  adminBadge: {
+    color: colors.success,
+    fontWeight: '700',
+  },
+  premiumBadge: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   usageHint: {
     color: colors.primary,

@@ -18,11 +18,17 @@ const UsageContext = createContext<UsageContextType | undefined>(undefined);
 
 const DAILY_FREE_LIMIT = 3;
 
+// Admin emails - these users get unlimited access automatically
+const ADMIN_EMAILS = ['ibeme8@gmail.com', 'drremotework@gmail.com', 'sonofyola@gmail.com'];
+
 export function UsageProvider({ children }: { children: React.ReactNode }) {
   const { user, db, isSignedIn } = useBasic();
   const [dailyUsage, setDailyUsage] = useState(0);
   const [isEmailCaptured, setIsEmailCaptured] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<'free' | 'premium' | 'unlimited'>('free');
+
+  // Check if current user is admin
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
 
   const loadLocalUsage = useCallback(async () => {
     try {
@@ -65,22 +71,33 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           setDailyUsage(Number(userProfile.usage_count) || 0);
         }
         
-        const status = String(userProfile.subscription_status) as 'free' | 'premium' | 'unlimited';
+        // Set subscription status - admins get unlimited automatically
+        let status = String(userProfile.subscription_status) as 'free' | 'premium' | 'unlimited';
+        if (isAdmin) {
+          status = 'unlimited';
+          // Update admin status in database if not already set
+          if (userProfile.subscription_status !== 'unlimited') {
+            await db.from('user_profiles').update(user.id, {
+              subscription_status: 'unlimited',
+            });
+          }
+        }
         setSubscriptionStatus(status || 'free');
         
         setIsEmailCaptured(true); // Authenticated users have email
       } else {
         // Create new user profile if it doesn't exist
+        const initialStatus = isAdmin ? 'unlimited' : 'free';
         await db.from('user_profiles').add({
           email: user.email || '',
-          subscription_status: 'free',
+          subscription_status: initialStatus,
           usage_count: 0,
           last_reset_date: new Date().toISOString(),
           created_at: new Date().toISOString(),
           stripe_customer_id: '',
         });
         setDailyUsage(0);
-        setSubscriptionStatus('free');
+        setSubscriptionStatus(initialStatus);
         setIsEmailCaptured(true);
       }
     } catch (error) {
@@ -88,7 +105,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       // Fall back to local storage on database error
       await loadLocalUsage();
     }
-  }, [db, user, loadLocalUsage]);
+  }, [db, user, loadLocalUsage, isAdmin]);
 
   useEffect(() => {
     if (isSignedIn && user && db) {
@@ -102,7 +119,15 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isSignedIn, user, db, loadUserUsage, loadLocalUsage]);
 
+  // Auto-upgrade admins on login
+  useEffect(() => {
+    if (isAdmin && subscriptionStatus !== 'unlimited') {
+      setSubscriptionStatus('unlimited');
+    }
+  }, [isAdmin, subscriptionStatus]);
+
   const incrementGeneration = async () => {
+    // Admins don't need to track usage, but we'll still increment for analytics
     const newUsage = dailyUsage + 1;
     setDailyUsage(newUsage);
 
@@ -178,7 +203,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     // Reset all state to defaults
     setDailyUsage(0);
     setIsEmailCaptured(false);
-    setSubscriptionStatus('free');
+    setSubscriptionStatus(isAdmin ? 'unlimited' : 'free');
     
     // Clear AsyncStorage
     try {
@@ -193,8 +218,8 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Check if user can generate based on subscription status
-  const canGenerate = subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
+  // Check if user can generate - admins always can, others based on subscription/limits
+  const canGenerate = isAdmin || subscriptionStatus === 'unlimited' || dailyUsage < DAILY_FREE_LIMIT;
 
   return (
     <UsageContext.Provider value={{
