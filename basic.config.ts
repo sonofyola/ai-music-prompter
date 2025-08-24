@@ -1,106 +1,135 @@
 export const schema = {
   "tables": {
-    "user_profiles": {
-      "type": "collection" as const,
+    "users": {
+      "type": "collection",
       "fields": {
+        "name": {
+          "type": "string",
+          "indexed": true
+        },
         "email": {
-          "type": "string" as const,
+          "type": "string",
+          "indexed": true
+        },
+        "is_admin": {
+          "type": "boolean",
           "indexed": true
         },
         "created_at": {
-          "type": "string" as const,
-          "indexed": false
+          "type": "string",
+          "indexed": true
         },
-        "usage_count": {
-          "type": "number" as const,
+        "last_login": {
+          "type": "string",
           "indexed": false
+        }
+      }
+    },
+    "maintenance": {
+      "type": "collection",
+      "fields": {
+        "enabled": {
+          "type": "boolean",
+          "indexed": true
         },
-        "last_reset_date": {
-          "type": "string" as const,
-          "indexed": false
+        "message": {
+          "type": "string",
+          "indexed": true
         },
-        "stripe_customer_id": {
-          "type": "string" as const,
-          "indexed": false
+        "timestamp": {
+          "type": "number",
+          "indexed": true
         },
-        "subscription_status": {
-          "type": "string" as const,
+        "adminEmail": {
+          "type": "string",
           "indexed": true
         }
       }
     },
+    "user_profiles": {
+      "type": "collection",
+      "fields": {
+        "email": {
+          "type": "string",
+          "indexed": true
+        },
+        "created_at": {
+          "type": "string",
+          "indexed": false
+        },
+        "usage_count": {
+          "type": "number",
+          "indexed": false
+        },
+        "last_reset_date": {
+          "type": "string",
+          "indexed": false
+        },
+        "stripe_customer_id": {
+          "type": "string",
+          "indexed": false
+        },
+        "subscription_status": {
+          "type": "string",
+          "indexed": true
+        },
+        "upgraded_at": {
+          "type": "string",
+          "indexed": false
+        },
+        "upgraded_by": {
+          "type": "string",
+          "indexed": false
+        }
+      }
+    },
     "prompt_history": {
-      "type": "collection" as const,
+      "type": "collection",
       "fields": {
         "name": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "user_id": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "form_data": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": false
         },
         "created_at": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "generated_prompt": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": false
         }
       }
     },
     "collected_emails": {
-      "type": "collection" as const,
+      "type": "collection",
       "fields": {
         "tier": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "email": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "source": {
-          "type": "string" as const,
+          "type": "string",
           "indexed": true
         },
         "timestamp": {
-          "type": "string" as const,
-          "indexed": true
-        }
-      }
-    },
-    "users": {
-      "type": "collection" as const,
-      "fields": {
-        "email": {
-          "type": "string" as const,
-          "indexed": true
-        },
-        "name": {
-          "type": "string" as const,
-          "indexed": true
-        },
-        "created_at": {
-          "type": "string" as const,
-          "indexed": true
-        },
-        "last_login": {
-          "type": "string" as const,
-          "indexed": false
-        },
-        "is_admin": {
-          "type": "boolean" as const,
+          "type": "string",
           "indexed": true
         }
       }
     }
   },
-  "version": 3,
+  "version": 4,
   "project_id": "4e424624-5175-44ea-8548-fdf8f1f26d93"
 };

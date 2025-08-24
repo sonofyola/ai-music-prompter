@@ -1,36 +1,34 @@
 import { useBasic } from '@basictech/expo';
+import { Alert } from 'react-native';
 
 // Helper function for admins to upgrade beta testers
-export const upgradeBetaTester = async (
-  db: any, 
-  userEmail: string, 
-  subscriptionType: 'premium' | 'unlimited' = 'unlimited'
-) => {
+export const upgradeBetaTester = async (email: string, db: any) => {
   try {
-    // Find user by email
-    const allUsers = await db.from('user_profiles').getAll();
-    const user = allUsers.find((u: any) => u.email === userEmail);
+    console.log('🔄 Upgrading beta tester:', email);
     
-    if (!user) {
-      throw new Error(`User with email ${userEmail} not found`);
+    // Find user profile by email instead of using user ID directly
+    const allUserProfiles = await db.from('user_profiles').getAll();
+    const userProfile = allUserProfiles?.find((profile: any) => profile.email === email);
+    
+    if (!userProfile) {
+      console.error('❌ User profile not found for email:', email);
+      throw new Error(`User profile not found for email: ${email}`);
     }
     
-    // Update their subscription status
-    await db.from('user_profiles').update(user.id, {
-      subscription_status: subscriptionType,
+    console.log('📋 Found user profile:', userProfile);
+    
+    // Update the user profile to unlimited status
+    const updatedProfile = await db.from('user_profiles').update(userProfile.id, {
+      subscription_status: 'unlimited',
       upgraded_at: new Date().toISOString(),
-      upgraded_by: 'admin', // Track that this was a manual upgrade
+      upgraded_by: 'admin'
     });
     
-    console.log(`✅ Successfully upgraded ${userEmail} to ${subscriptionType}`);
-    return { success: true, message: `${userEmail} upgraded to ${subscriptionType}` };
-    
+    console.log('✅ Successfully upgraded user profile:', updatedProfile);
+    return updatedProfile;
   } catch (error) {
-    console.error('Error upgrading beta tester:', error);
-    return { 
-      success: false, 
-      message: error instanceof Error ? error.message : 'Failed to upgrade user' 
-    };
+    console.error('❌ Error upgrading beta tester:', error);
+    throw error;
   }
 };
 

@@ -26,7 +26,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [users, setUsers] = useState<User[]>([]);
   const [betaTesters, setBetaTesters] = useState<any[]>([]);
   const [upgradeEmail, setUpgradeEmail] = useState('');
-  const [isUpgrading, setIsUpgrading] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -121,30 +120,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     }
   }, [isAdmin, loadUsers, loadBetaTesters]);
 
-  const handleUpgradeBetaTester = async () => {
-    if (!db || !upgradeEmail.trim()) return;
-    
-    setIsUpgrading(true);
-    try {
-      const result = await upgradeBetaTester(db, upgradeEmail.trim());
-      Alert.alert(
-        result.success ? 'Success!' : 'Error',
-        result.message,
-        [{ text: 'OK', onPress: () => {
-          if (result.success) {
-            setUpgradeEmail('');
-            loadUsers();
-            loadBetaTesters();
-          }
-        }}]
-      );
-    } catch {
-      Alert.alert('Error', 'Failed to upgrade user. Please try again.');
-    } finally {
-      setIsUpgrading(false);
-    }
-  };
-
   const handleQuickUpgrade = async (email: string) => {
     if (!db) return;
     
@@ -156,15 +131,24 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         {
           text: 'Upgrade',
           onPress: async () => {
-            const result = await upgradeBetaTester(db, email);
-            Alert.alert(
-              result.success ? 'Success!' : 'Error',
-              result.message,
-              [{ text: 'OK', onPress: () => {
-                loadUsers();
-                loadBetaTesters();
-              }}]
-            );
+            try {
+              await upgradeBetaTester(email, db);
+              Alert.alert(
+                'Success!',
+                `${email} has been upgraded to unlimited access!`,
+                [{ text: 'OK', onPress: () => {
+                  loadUsers();
+                  loadBetaTesters();
+                }}]
+              );
+            } catch (error) {
+              console.error('Error upgrading user:', error);
+              Alert.alert(
+                'Error',
+                `Failed to upgrade ${email}. Error: ${error}`,
+                [{ text: 'OK' }]
+              );
+            }
           }
         }
       ]
@@ -274,6 +258,44 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         }
       ]
     );
+  };
+
+  const handleManualUpgrade = async () => {
+    if (!upgradeEmail.trim()) {
+      Alert.alert('Error', 'Please enter an email address');
+      return;
+    }
+
+    if (!db) {
+      Alert.alert('Error', 'Database not available');
+      return;
+    }
+
+    try {
+      console.log('🔄 Manual upgrade for:', upgradeEmail);
+      
+      await upgradeBetaTester(upgradeEmail.trim(), db);
+      
+      // Refresh the data
+      await loadUsers();
+      await loadBetaTesters();
+      
+      Alert.alert(
+        'Success!', 
+        `${upgradeEmail} has been upgraded to unlimited access!`,
+        [{ text: 'OK' }]
+      );
+      
+      setUpgradeEmail(''); // Clear the input
+      console.log('✅ Manual upgrade completed successfully');
+    } catch (error) {
+      console.error('❌ Manual upgrade failed:', error);
+      Alert.alert(
+        'Upgrade Failed', 
+        `Failed to upgrade ${upgradeEmail}. Error: ${error}`,
+        [{ text: 'OK' }]
+      );
+    }
   };
 
   const styles = createStyles(colors);
@@ -541,13 +563,10 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
               autoCapitalize="none"
             />
             <TouchableOpacity 
-              style={[styles.upgradeButton, !upgradeEmail.trim() && styles.upgradeButtonDisabled]}
-              onPress={handleUpgradeBetaTester}
-              disabled={!upgradeEmail.trim() || isUpgrading}
+              style={styles.upgradeButton}
+              onPress={handleManualUpgrade}
             >
-              <Text style={styles.upgradeButtonText}>
-                {isUpgrading ? 'Upgrading...' : '⬆️ Upgrade to Unlimited'}
-              </Text>
+              <Text style={styles.upgradeButtonText}>⬆️ Upgrade to Unlimited</Text>
             </TouchableOpacity>
           </View>
 
