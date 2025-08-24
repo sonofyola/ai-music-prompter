@@ -5,6 +5,7 @@ import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import IconFallback from '../components/IconFallback';
 import * as Clipboard from 'expo-clipboard';
+import { upgradeBetaTester, downgradeBetaTester, getBetaTesters } from '../utils/adminHelpers';
 
 interface User {
   id: string;
@@ -24,6 +25,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { user, signout, db } = useBasic();
   const [users, setUsers] = useState<User[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+  const [betaTesters, setBetaTesters] = useState<any[]>([]);
+  const [isLoadingBeta, setIsLoadingBeta] = useState(false);
 
   // Check if current user is admin
   const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
@@ -213,6 +216,46 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
+  const loadBetaTesters = async () => {
+    if (!db) return;
+    setIsLoadingBeta(true);
+    try {
+      const testers = await getBetaTesters(db);
+      setBetaTesters(testers);
+    } catch (error) {
+      console.error('Error loading beta testers:', error);
+    } finally {
+      setIsLoadingBeta(false);
+    }
+  };
+
+  const handleUpgradeBetaTester = async (email: string) => {
+    if (!db) return;
+    
+    Alert.alert(
+      'Upgrade Beta Tester',
+      `Upgrade ${email} to unlimited access?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Upgrade',
+          onPress: async () => {
+            const result = await upgradeBetaTester(db, email);
+            Alert.alert(
+              result.success ? 'Success!' : 'Error',
+              result.message,
+              [{ text: 'OK', onPress: loadBetaTesters }]
+            );
+          }
+        }
+      ]
+    );
+  };
+
+  useEffect(() => {
+    loadBetaTesters();
+  }, [db]);
+
   const styles = createStyles(colors);
 
   return (
@@ -372,6 +415,52 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             )}
           </View>
         )}
+
+        {/* Beta Tester Management */}
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>🧪 Beta Tester Management</Text>
+            <TouchableOpacity onPress={loadBetaTesters} disabled={isLoadingBeta}>
+              <Text style={styles.refreshButton}>
+                {isLoadingBeta ? 'Loading...' : 'Refresh'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+          
+          {betaTesters.length === 0 ? (
+            <Text style={styles.emptyText}>No beta testers found</Text>
+          ) : (
+            betaTesters.map((tester, index) => (
+              <View key={index} style={styles.userCard}>
+                <View style={styles.userInfo}>
+                  <Text style={styles.userEmail}>{tester.email}</Text>
+                  <Text style={styles.userStatus}>
+                    Status: {tester.subscription_status || 'free'} | 
+                    Usage: {tester.usage_count || 0}/3
+                  </Text>
+                  <Text style={styles.userDate}>
+                    Joined: {new Date(tester.created_at).toLocaleDateString()}
+                  </Text>
+                </View>
+                
+                <View style={styles.userActions}>
+                  {tester.subscription_status === 'free' ? (
+                    <TouchableOpacity
+                      style={[styles.actionButton, styles.upgradeButton]}
+                      onPress={() => handleUpgradeBetaTester(tester.email)}
+                    >
+                      <Text style={styles.actionButtonText}>⬆️ Upgrade</Text>
+                    </TouchableOpacity>
+                  ) : (
+                    <View style={styles.statusBadge}>
+                      <Text style={styles.statusBadgeText}>✅ Unlimited</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+            ))
+          )}
+        </View>
 
         {/* System Info */}
         <View style={styles.section}>
@@ -671,5 +760,80 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  refreshButton: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  userCard: {
+    backgroundColor: colors.background,
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  userStatus: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  userDate: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginBottom: 4,
+  },
+  userActions: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  actionButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+  },
+  upgradeButton: {
+    backgroundColor: colors.success,
+  },
+  statusBadge: {
+    backgroundColor: colors.success + '20',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: colors.success + '40',
+  },
+  statusBadgeText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: colors.success,
+  },
+  emptyText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontStyle: 'italic',
+    padding: 20,
   },
 });
