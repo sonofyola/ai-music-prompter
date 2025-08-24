@@ -710,6 +710,58 @@ export default function AuthScreen() {
     );
   };
 
+  const handleOfflineReset = () => {
+    console.log('🔌 OFFLINE RESET - Starting...');
+    
+    Alert.alert(
+      '🔌 Offline Reset',
+      'This will clear all local data without contacting any servers, then you can manually reload.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🔌 Clear All Data',
+          onPress: async () => {
+            console.log('🔌 Executing offline reset...');
+            setIsResetting(true);
+            
+            try {
+              const { performOfflineReset } = await import('../utils/authReset');
+              const success = await performOfflineReset();
+              
+              if (success) {
+                Alert.alert(
+                  '✅ Data Cleared',
+                  'All local data has been cleared offline. Now manually reload the app.',
+                  [
+                    { text: 'Not Now', style: 'cancel', onPress: () => setIsResetting(false) },
+                    {
+                      text: 'Reload Now',
+                      onPress: () => {
+                        if (typeof window !== 'undefined') {
+                          window.location.reload();
+                        }
+                      }
+                    }
+                  ]
+                );
+              } else {
+                throw new Error('Offline reset failed');
+              }
+              
+            } catch (error) {
+              console.error('🔌 Offline reset error:', error);
+              Alert.alert(
+                'Reset Error',
+                'There was an issue with the offline reset.',
+                [{ text: 'OK', onPress: () => setIsResetting(false) }]
+              );
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const handleBasicSignOut = async () => {
     console.log('🔓 BASIC SIGN OUT - Starting...');
     
@@ -965,6 +1017,15 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFD700' }]}>💥 STANDALONE NUCLEAR</Text>
+          </TouchableOpacity>
+
+          {/* Add this new button at the very top */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF6B35', borderWidth: 3, borderColor: '#FFF' }]}
+            onPress={handleOfflineReset}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🔌 OFFLINE RESET</Text>
           </TouchableOpacity>
 
           {/* Add this new button at the top of troubleshooting section */}

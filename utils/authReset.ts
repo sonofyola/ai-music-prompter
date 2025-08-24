@@ -1279,3 +1279,55 @@ export const performManualReload = () => {
     console.error('📱 Manual reload error:', error);
   }
 };
+
+// Completely offline reset - no BasicTech calls whatsoever
+export const performOfflineReset = async () => {
+  try {
+    console.log('🔌 OFFLINE RESET - Starting (no server calls)...');
+    
+    // Clear all local storage without any server interaction
+    if (typeof window !== 'undefined') {
+      try { 
+        window.localStorage.clear(); 
+        console.log('🔌 localStorage cleared');
+      } catch (e) { 
+        console.log('🔌 localStorage clear failed:', e);
+      }
+      
+      try { 
+        window.sessionStorage.clear(); 
+        console.log('🔌 sessionStorage cleared');
+      } catch (e) { 
+        console.log('🔌 sessionStorage clear failed:', e);
+      }
+    }
+    
+    // Clear AsyncStorage
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      await AsyncStorage.clear();
+      console.log('🔌 AsyncStorage cleared');
+    } catch (e) {
+      console.log('🔌 AsyncStorage not available or failed:', e);
+    }
+    
+    // Clear any cookies manually
+    if (typeof document !== 'undefined') {
+      try {
+        document.cookie.split(";").forEach(function(c) { 
+          document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+        });
+        console.log('🔌 Cookies cleared');
+      } catch (e) {
+        console.log('🔌 Cookie clear failed:', e);
+      }
+    }
+    
+    console.log('🔌 Offline reset complete - ready for manual reload');
+    return true;
+    
+  } catch (error) {
+    console.error('🔌 Offline reset error:', error);
+    return false;
+  }
+};
