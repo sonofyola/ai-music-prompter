@@ -132,6 +132,8 @@ export default function PromptFormScreen() {
   };
 
   const handleClearForm = () => {
+    console.log('Clear button pressed!');
+    
     Alert.alert(
       'Clear Form',
       'Are you sure you want to clear all fields?',
@@ -141,6 +143,8 @@ export default function PromptFormScreen() {
           text: 'Clear', 
           style: 'destructive',
           onPress: () => {
+            console.log('Clear confirmed!');
+            
             // Reset form data to proper initial state with correct default values
             const initialFormData: MusicPromptData = {
               subject: '',
@@ -162,11 +166,16 @@ export default function PromptFormScreen() {
               general_freeform: ''
             };
             
+            console.log('Setting form data to:', initialFormData);
             setFormData(initialFormData);
             setGeneratedPrompt('');
             
             // Force re-render of all form components
-            setFormKey(prev => prev + 1);
+            setFormKey(prev => {
+              const newKey = prev + 1;
+              console.log('Setting form key to:', newKey);
+              return newKey;
+            });
             
             console.log('Form cleared successfully');
           }
@@ -331,7 +340,11 @@ export default function PromptFormScreen() {
               
               <TouchableOpacity 
                 style={styles.actionButton} 
-                onPress={handleClearForm}
+                onPress={() => {
+                  console.log('Clear button touched!');
+                  handleClearForm();
+                }}
+                activeOpacity={0.7}
               >
                 <Text style={[styles.actionButtonText, { color: colors.error }]}>Clear</Text>
               </TouchableOpacity>
