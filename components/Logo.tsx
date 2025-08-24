@@ -1,9 +1,9 @@
 import React from 'react';
-import { Image, StyleProp, ViewStyle } from 'react-native';
+import { Image, StyleProp, ImageStyle } from 'react-native';
 
 interface LogoProps {
   size?: number;
-  style?: StyleProp<ViewStyle>;
+  style?: StyleProp<ImageStyle>;
 }
 
 export default function Logo({ size = 40, style }: LogoProps) {
