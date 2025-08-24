@@ -317,14 +317,34 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <Text style={styles.debugText}>Total users shown: {users.length}</Text>
           <Text style={styles.debugText}>Beta testers loaded: {betaTesters.length}</Text>
           <Text style={styles.debugText}>Current user: {user?.email || 'None'}</Text>
+          <Text style={styles.debugText}>Looking for: discountsaas8@gmail.com</Text>
+          <Text style={styles.debugText}>Found in users: {users.some(u => u.email === 'discountsaas8@gmail.com') ? '✅ Yes' : '❌ No'}</Text>
           <TouchableOpacity 
             style={styles.debugButton}
-            onPress={() => {
+            onPress={async () => {
               console.log('🔍 Current users state:', users);
               console.log('🔍 Current beta testers state:', betaTesters);
+              
+              // Let's also check the raw database data
+              if (db) {
+                try {
+                  const rawUsers = await db.from('users').getAll();
+                  const rawProfiles = await db.from('user_profiles').getAll();
+                  console.log('🔍 Raw users table:', rawUsers);
+                  console.log('🔍 Raw user_profiles table:', rawProfiles);
+                  
+                  // Check specifically for the test user
+                  const testUser = rawUsers?.find((u: any) => u.email === 'discountsaas8@gmail.com');
+                  const testProfile = rawProfiles?.find((p: any) => p.email === 'discountsaas8@gmail.com');
+                  console.log('🔍 Test user in users table:', testUser);
+                  console.log('🔍 Test user in profiles table:', testProfile);
+                } catch (error) {
+                  console.error('Error fetching raw data:', error);
+                }
+              }
             }}
           >
-            <Text style={styles.debugButtonText}>📋 Log Current State</Text>
+            <Text style={styles.debugButtonText}>📋 Log Detailed State</Text>
           </TouchableOpacity>
         </View>
 
