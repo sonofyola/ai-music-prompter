@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -215,6 +214,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
       >
         {/* Header */}
         <View style={styles.header}>
+          <View style={styles.headerTop}>
+            <TouchableOpacity style={styles.backButton} onPress={onBackToApp}>
+              <Text style={styles.backButtonText}>← Back to App</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.title}>🛠️ Admin Dashboard</Text>
           <Text style={styles.subtitle}>Manage users, monitor usage, and system settings</Text>
         </View>
@@ -399,19 +403,23 @@ const createStyles = (colors: any) => StyleSheet.create({
     textAlign: 'center',
     marginBottom: 24,
   },
+  header: {
+    marginBottom: 24,
+  },
+  headerTop: {
+    marginBottom: 16,
+  },
   backButton: {
     backgroundColor: colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
     borderRadius: 8,
+    alignSelf: 'flex-start',
   },
   backButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600',
-  },
-  header: {
-    marginBottom: 24,
   },
   title: {
     fontSize: 28,
