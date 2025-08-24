@@ -22,6 +22,8 @@ import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import IconFallback from '../components/IconFallback';
+import Footer from '../components/Footer';
+import CookieConsent from '../components/CookieConsent';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -56,24 +58,10 @@ export default function PromptFormScreen() {
   const { savePrompt } = usePromptHistory();
   const { signout, user, db } = useBasic();
   
-  // Admin state
+  // Admin state - hidden from regular users
   const [showAdminScreen, setShowAdminScreen] = useState(false);
   const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
   
-  // Debug logging
-  console.log('🔍 PromptFormScreen Debug:', {
-    userEmail: user?.email,
-    userId: user?.id,
-    isAdmin,
-    userObject: user
-  });
-
-  // Debug: Let's also log what we're displaying
-  console.log('🔍 Display Debug:', {
-    displayedEmail: user?.email,
-    actualUserObject: JSON.stringify(user, null, 2)
-  });
-
   // Track user in database
   useEffect(() => {
     const trackUser = async () => {
@@ -205,36 +193,6 @@ export default function PromptFormScreen() {
     setFormData(prev => ({ ...prev, subject: randomIdea.subject }));
   };
 
-  const handleSavePrompt = () => {
-    if (!generatedPrompt) {
-      Alert.alert('No Prompt', 'Please generate a prompt first before saving.');
-      return;
-    }
-
-    Alert.prompt(
-      'Save Prompt',
-      'Enter a name for this prompt:',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Save',
-          onPress: async (name) => {
-            if (name && name.trim()) {
-              try {
-                await savePrompt(name.trim(), formData, generatedPrompt);
-                Alert.alert('Success', 'Prompt saved successfully!');
-              } catch (error) {
-                Alert.alert('Error', 'Failed to save prompt. Please try again.');
-              }
-            }
-          }
-        }
-      ],
-      'plain-text',
-      formData.subject || 'My Prompt'
-    );
-  };
-
   const handleLoadFromHistory = (formData: MusicPromptData) => {
     setFormData(formData);
     setShowHistoryModal(false);
@@ -255,6 +213,23 @@ export default function PromptFormScreen() {
     }
   };
 
+  // Hidden admin access (triple tap on logo)
+  const [adminTapCount, setAdminTapCount] = useState(0);
+  
+  const handleLogoPress = () => {
+    if (!isAdmin) return;
+    
+    setAdminTapCount(prev => prev + 1);
+    
+    if (adminTapCount >= 2) {
+      setShowAdminScreen(true);
+      setAdminTapCount(0);
+    }
+    
+    // Reset tap count after 2 seconds
+    setTimeout(() => setAdminTapCount(0), 2000);
+  };
+
   const handleSignOut = async () => {
     try {
       await signout();
@@ -263,34 +238,6 @@ export default function PromptFormScreen() {
       Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
   };
-
-  // Simple admin screen test
-  const SimpleAdminScreen = () => (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          onPress={() => setShowAdminScreen(false)} 
-          style={styles.adminButtonLeft}
-        >
-          <IconFallback name="arrow-back" size={20} color="#fff" />
-          <Text style={{ color: '#fff', marginLeft: 8 }}>Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Admin Panel</Text>
-      </View>
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
-        <IconFallback name="admin-panel-settings" size={48} color={colors.primary} />
-        <Text style={[styles.headerTitle, { marginTop: 16, textAlign: 'center' }]}>
-          Admin Panel
-        </Text>
-        <Text style={[styles.userIndicator, { marginTop: 8, textAlign: 'center' }]}>
-          Signed in as: {user?.email}
-        </Text>
-        <Text style={[styles.userIndicator, { marginTop: 4, textAlign: 'center' }]}>
-          Admin access confirmed ✅
-        </Text>
-      </View>
-    </SafeAreaView>
-  );
 
   if (showAdminScreen) {
     return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
@@ -304,23 +251,14 @@ export default function PromptFormScreen() {
       >
         {/* Header */}
         <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <TouchableOpacity 
-              onPress={() => setShowAdminScreen(true)} 
-              style={styles.adminButtonLeft}
-            >
-              <IconFallback name="admin-panel-settings" size={28} color="#fff" />
-            </TouchableOpacity>
-            <View>
-              <Text style={styles.headerTitle}>AI Music Prompter</Text>
-              {user && (
-                <Text style={styles.userIndicator}>
-                  {user.name || user.email || 'Signed In'}
-                  {isAdmin && ' (Admin)'}
-                </Text>
-              )}
-            </View>
-          </View>
+          <TouchableOpacity onPress={handleLogoPress} style={styles.headerLeft}>
+            <Text style={styles.headerTitle}>🎵 AI Music Prompter</Text>
+            {user && (
+              <Text style={styles.userIndicator}>
+                Welcome, {user.name || user.email?.split('@')[0] || 'User'}!
+              </Text>
+            )}
+          </TouchableOpacity>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
               <IconFallback name="history" size={24} color={colors.text} />
@@ -567,7 +505,13 @@ export default function PromptFormScreen() {
               <GeneratedPrompt prompt={generatedPrompt} />
             )}
           </View>
+          
+          {/* Footer */}
+          <Footer />
         </ScrollView>
+
+        {/* Cookie Consent */}
+        <CookieConsent />
 
         {/* Modals */}
         <TemplatesModal
@@ -616,20 +560,17 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderBottomColor: colors.border,
   },
   headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
     flex: 1,
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: colors.text,
-    marginLeft: 12,
   },
   userIndicator: {
     fontSize: 12,
     color: colors.textSecondary,
-    marginLeft: 12,
+    marginTop: 2,
     fontStyle: 'italic',
   },
   headerRight: {
@@ -639,16 +580,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerButton: {
     padding: 8,
     marginRight: 8,
-  },
-  adminButton: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-  },
-  adminButtonLeft: {
-    backgroundColor: colors.primary,
-    borderRadius: 8,
-    padding: 8,
-    marginRight: 4,
   },
   scrollView: {
     flex: 1,
@@ -721,24 +652,5 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.background,
     marginLeft: 12,
-  },
-  saveButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    marginTop: 12,
-    marginBottom: 24,
-  },
-  saveButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.primary,
-    marginLeft: 8,
   },
 });
