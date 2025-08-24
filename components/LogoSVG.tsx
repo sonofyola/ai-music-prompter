@@ -9,7 +9,7 @@ interface LogoSVGProps {
 export default function LogoSVG({ size = 32, style }: LogoSVGProps) {
   return (
     <Image
-      source={require('../assets/images/ai-music-prompter-logo-clean.png')}
+      source={require('../assets/images/ai-music-prompter-logo-final.png')}
       style={[
         {
           width: size,
