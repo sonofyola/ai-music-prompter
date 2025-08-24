@@ -451,48 +451,33 @@ export default function AuthScreen() {
     console.log('🔗 SIMPLE URL BREAK - Starting...');
     
     Alert.alert(
-      '🔗 Simple URL Session Break',
-      'This will clear storage and redirect with session-breaking parameters.',
+      '🔗 Simple Session Break',
+      'This will clear storage and reload the app safely for mobile.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: '🔗 Break Session',
           style: 'destructive',
-          onPress: () => {
-            console.log('🔗 Executing simple URL session break...');
+          onPress: async () => {
+            console.log('🔗 Executing mobile-safe session break...');
             setIsResetting(true);
             
             try {
-              // Clear storage immediately
-              if (typeof window !== 'undefined') {
-                console.log('🔗 Clearing storage...');
-                try { window.localStorage.clear(); } catch (e) { console.log('localStorage clear failed:', e); }
-                try { window.sessionStorage.clear(); } catch (e) { console.log('sessionStorage clear failed:', e); }
-                
-                // Set flags
-                window.localStorage.setItem('force_new_session', 'true');
-                window.localStorage.setItem('break_session_continuity', 'true');
-                window.localStorage.setItem('admin_session_override', 'drremotework@gmail.com');
-                window.localStorage.setItem('reject_sonofyola', 'true');
-                
-                console.log('🔗 Storage cleared, redirecting...');
-                
-                // Redirect with session-breaking parameters
-                setTimeout(() => {
-                  const url = new URL(window.location.origin);
-                  url.searchParams.set('session_break', 'true');
-                  url.searchParams.set('force_new_auth', 'true');
-                  url.searchParams.set('admin_override', 'drremotework@gmail.com');
-                  url.searchParams.set('reject_sonofyola', 'true');
-                  url.searchParams.set('timestamp', Date.now().toString());
-                  url.searchParams.set('nonce', Math.random().toString(36));
-                  
-                  console.log('🔗 Redirecting to:', url.toString());
-                  window.location.replace(url.toString());
-                }, 1000);
-              }
+              // Import the mobile-safe version
+              const { performMobileSafeSessionBreak } = await import('../utils/authReset');
+              await performMobileSafeSessionBreak();
             } catch (error) {
-              console.error('🔗 Simple URL break error:', error);
+              console.error('🔗 Mobile-safe session break error:', error);
+              // Emergency fallback - just clear and reload
+              try {
+                if (typeof window !== 'undefined') {
+                  window.localStorage.clear();
+                  window.sessionStorage.clear();
+                  setTimeout(() => window.location.reload(), 1000);
+                }
+              } catch (e) {
+                console.error('Emergency fallback failed:', e);
+              }
               setIsResetting(false);
             }
           }

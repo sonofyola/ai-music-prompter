@@ -1183,3 +1183,45 @@ export const performIframeContextReset = async () => {
     await performURLSessionBreak();
   }
 };
+
+// Mobile-safe session breaking - avoids server-side issues
+export const performMobileSafeSessionBreak = async () => {
+  try {
+    console.log('📱 MOBILE-SAFE SESSION BREAK - Starting...');
+    
+    // Clear everything locally first
+    if (typeof window !== 'undefined') {
+      try { window.localStorage.clear(); } catch (e) {}
+      try { window.sessionStorage.clear(); } catch (e) {}
+    }
+    
+    // Clear AsyncStorage for mobile
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      await AsyncStorage.clear();
+      console.log('📱 AsyncStorage cleared');
+    } catch (e) {
+      console.log('📱 AsyncStorage not available');
+    }
+    
+    // Set minimal flags without complex URL parameters
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem('mobile_session_break', 'true');
+      window.localStorage.setItem('force_fresh_auth', 'true');
+      window.localStorage.setItem('reject_sonofyola', 'true');
+      
+      // Use a simple reload instead of complex URL manipulation
+      setTimeout(() => {
+        console.log('📱 Performing simple reload...');
+        window.location.reload();
+      }, 1000);
+    }
+    
+  } catch (error) {
+    console.error('📱 Mobile-safe session break error:', error);
+    // Fallback to simple reload
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+  }
+};
