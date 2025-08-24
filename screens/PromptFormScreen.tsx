@@ -68,6 +68,12 @@ export default function PromptFormScreen() {
     userObject: user
   });
 
+  // Debug: Let's also log what we're displaying
+  console.log('🔍 Display Debug:', {
+    displayedEmail: user?.email,
+    actualUserObject: JSON.stringify(user, null, 2)
+  });
+
   // Track user in database
   useEffect(() => {
     const trackUser = async () => {
