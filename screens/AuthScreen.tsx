@@ -53,8 +53,8 @@ export default function AuthScreen() {
                   <Text style={styles.valuePropText}>Creative Templates</Text>
                 </View>
                 <View style={styles.valueProp}>
-                  <IconFallback name="trending-up" size={20} color="#FFD700" />
-                  <Text style={styles.valuePropText}>Professional Results</Text>
+                  <IconFallback name="security" size={20} color="#FFD700" />
+                  <Text style={styles.valuePropText}>No Credit Card Needed</Text>
                 </View>
               </View>
             </View>
@@ -63,6 +63,12 @@ export default function AuthScreen() {
 
         {/* Auth Section */}
         <View style={styles.authSection}>
+          {/* No Credit Card Badge */}
+          <View style={styles.noCreditCardBadge}>
+            <IconFallback name="security" size={20} color={colors.success} />
+            <Text style={styles.noCreditCardText}>No Credit Card Needed to Try</Text>
+          </View>
+
           <TouchableOpacity 
             style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
             onPress={handleLogin}
@@ -262,6 +268,23 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingVertical: 40,
     alignItems: 'center',
     backgroundColor: colors.background,
+  },
+  noCreditCardBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.success + '15',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 25,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: colors.success + '30',
+    gap: 8,
+  },
+  noCreditCardText: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: colors.success,
   },
   loginButton: {
     borderRadius: 16,
