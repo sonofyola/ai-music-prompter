@@ -24,10 +24,14 @@ import PromptHistoryModal from '../components/PromptHistoryModal';
 import IconFallback from '../components/IconFallback';
 import Footer from '../components/Footer';
 import CookieConsent from '../components/CookieConsent';
+import UsageIndicator from '../components/UsageIndicator';
+import UpgradeModal from '../components/UpgradeModal';
+import SubscriptionStatus from '../components/SubscriptionStatus';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
+import { useUsage } from '../contexts/UsageContext';
 
 // Screens
 import AdminScreen from './AdminScreen';
@@ -57,6 +61,13 @@ export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { savePrompt } = usePromptHistory();
   const { signout, user, db } = useBasic();
+  const { 
+    dailyUsage,
+    canGenerate, 
+    subscriptionStatus, 
+    incrementGeneration, 
+    upgradeToUnlimited 
+  } = useUsage();
   
   // Admin state - hidden from regular users
   const [showAdminScreen, setShowAdminScreen] = useState(false);
@@ -126,6 +137,9 @@ export default function PromptFormScreen() {
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // New modal state for upgrade
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+
   const styles = createStyles(colors);
 
   const updateFormData = (field: keyof MusicPromptData, value: any) => {
@@ -133,15 +147,34 @@ export default function PromptFormScreen() {
   };
 
   const handleGeneratePrompt = async () => {
+    // Check usage limits first
+    if (!canGenerate) {
+      setShowUpgradeModal(true);
+      return;
+    }
+
     setIsGenerating(true);
     try {
       const prompt = formatMusicPrompt(formData);
       setGeneratedPrompt(prompt);
+      
+      // Increment usage count after successful generation
+      await incrementGeneration();
     } catch (error) {
       console.error('Error generating prompt:', error);
       Alert.alert('Error', 'Failed to generate prompt. Please try again.');
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleUpgradeSuccess = async () => {
+    try {
+      await upgradeToUnlimited();
+      Alert.alert('Success!', 'You now have unlimited access to AI Music Prompter!');
+    } catch (error) {
+      console.error('Error upgrading:', error);
+      Alert.alert('Error', 'Failed to activate upgrade. Please contact support.');
     }
   };
 
@@ -256,6 +289,9 @@ export default function PromptFormScreen() {
             {user && (
               <Text style={styles.userIndicator}>
                 Welcome, {user.name || user.email?.split('@')[0] || 'User'}!
+                {subscriptionStatus !== 'unlimited' && (
+                  <Text style={styles.usageHint}> • {3 - (dailyUsage || 0)} free left today</Text>
+                )}
               </Text>
             )}
           </TouchableOpacity>
@@ -272,6 +308,14 @@ export default function PromptFormScreen() {
 
         <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
           <View style={styles.content}>
+            {/* Subscription Status - Show for premium users */}
+            {subscriptionStatus === 'unlimited' && <SubscriptionStatus />}
+            
+            {/* Usage Indicator - Show for free users */}
+            {subscriptionStatus !== 'unlimited' && (
+              <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
+            )}
+
             {/* Quick Actions */}
             <View style={styles.quickActions}>
               <TouchableOpacity style={styles.quickActionButton} onPress={handleRandomTrack}>
@@ -486,7 +530,10 @@ export default function PromptFormScreen() {
 
             {/* Generate Button */}
             <TouchableOpacity 
-              style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]}
+              style={[
+                styles.generateButton, 
+                (isGenerating || !canGenerate) && styles.generateButtonDisabled
+              ]}
               onPress={handleGeneratePrompt}
               disabled={isGenerating}
             >
@@ -496,7 +543,12 @@ export default function PromptFormScreen() {
                 color={colors.background} 
               />
               <Text style={styles.generateButtonText}>
-                {isGenerating ? 'Generating...' : 'Generate AI Prompt'}
+                {isGenerating 
+                  ? 'Generating...' 
+                  : !canGenerate 
+                    ? 'Upgrade for More Generations' 
+                    : 'Generate AI Prompt'
+                }
               </Text>
             </TouchableOpacity>
 
@@ -540,6 +592,13 @@ export default function PromptFormScreen() {
           currentFormData={formData}
           currentGeneratedPrompt={generatedPrompt}
         />
+
+        {/* Upgrade Modal */}
+        <UpgradeModal
+          visible={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgradeSuccess={handleUpgradeSuccess}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -572,6 +631,10 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     marginTop: 2,
     fontStyle: 'italic',
+  },
+  usageHint: {
+    color: colors.primary,
+    fontWeight: '600',
   },
   headerRight: {
     flexDirection: 'row',

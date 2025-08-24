@@ -19,13 +19,13 @@ export default function Footer() {
           </Text>
           
           <View style={styles.links}>
-            <TouchableOpacity onPress={() => setPrivacy(true)}>
+            <TouchableOpacity onPress={() => setShowPrivacy(true)}>
               <Text style={styles.link}>Privacy Policy</Text>
             </TouchableOpacity>
             
             <Text style={styles.separator}>•</Text>
             
-            <TouchableOpacity onPress={() => setTerms(true)}>
+            <TouchableOpacity onPress={() => setShowTerms(true)}>
               <Text style={styles.link}>Terms of Service</Text>
             </TouchableOpacity>
             

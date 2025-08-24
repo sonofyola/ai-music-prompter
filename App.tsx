@@ -8,6 +8,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
+import { UsageProvider } from './contexts/UsageContext';
 
 // Screens
 import PromptFormScreen from './screens/PromptFormScreen';
@@ -28,11 +29,13 @@ function AppContent() {
   return (
     <View style={{ flex: 1 }}>
       {isSignedIn && user ? (
-        <NotificationProvider>
-          <PromptHistoryProvider>
-            <PromptFormScreen />
-          </PromptHistoryProvider>
-        </NotificationProvider>
+        <UsageProvider>
+          <NotificationProvider>
+            <PromptHistoryProvider>
+              <PromptFormScreen />
+            </PromptHistoryProvider>
+          </NotificationProvider>
+        </UsageProvider>
       ) : (
         <AuthScreen />
       )}
@@ -43,7 +46,7 @@ function AppContent() {
 export default function App() {
   return (
     <SafeAreaProvider>
-      <BasicProvider project_id={schema.project_id} schema={schema}>
+      <BasicProvider project_id={schema.project_id} schema={schema as any}>
         <ThemeProvider>
           <AppContent />
         </ThemeProvider>
