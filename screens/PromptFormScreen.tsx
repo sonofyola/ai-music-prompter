@@ -261,7 +261,6 @@ export default function PromptFormScreen() {
                 style={styles.actionButton} 
                 onPress={() => setShowTemplates(true)}
               >
-                <IconFallback name="template" size={16} color={colors.primary} />
                 <Text style={styles.actionButtonText}>Templates</Text>
               </TouchableOpacity>
               
@@ -269,7 +268,6 @@ export default function PromptFormScreen() {
                 style={styles.actionButton} 
                 onPress={() => setShowRandomTrack(true)}
               >
-                <IconFallback name="dice" size={16} color={colors.primary} />
                 <Text style={styles.actionButtonText}>Random</Text>
               </TouchableOpacity>
               
@@ -277,7 +275,6 @@ export default function PromptFormScreen() {
                 style={styles.actionButton} 
                 onPress={() => setShowHistory(true)}
               >
-                <IconFallback name="history" size={16} color={colors.primary} />
                 <Text style={styles.actionButtonText}>History</Text>
               </TouchableOpacity>
               
@@ -285,7 +282,6 @@ export default function PromptFormScreen() {
                 style={styles.actionButton} 
                 onPress={handleClearForm}
               >
-                <IconFallback name="clear" size={16} color={colors.error} />
                 <Text style={[styles.actionButtonText, { color: colors.error }]}>Clear</Text>
               </TouchableOpacity>
             </View>
