@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "AI Music Prompter",
-    "slug": "ai-music-prompter",
+    "name": "AI Music Promptr",
+    "slug": "user-app-f9ba5f44",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/ai-music-prompter-logo.png",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aimusicpromptr.app",
+      "bundleIdentifier": "dev.kiki.userapp.f9ba5f44",
       "infoPlist": {
         "UIBackgroundModes": [
           "background-fetch",
@@ -31,7 +31,7 @@
       }
     },
     "android": {
-      "package": "com.aimusicpromptr.app",
+      "package": "dev.kiki.userapp.pjlkfpee",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/ai-music-prompter-logo.png",
         "backgroundColor": "#1a1a1a"
@@ -56,7 +56,11 @@
       "scope": "/",
       "lang": "en",
       "dir": "ltr",
-      "categories": ["music", "productivity", "entertainment"],
+      "categories": [
+        "music",
+        "productivity",
+        "entertainment"
+      ],
       "screenshots": [
         {
           "src": "/screenshot-wide.png",
@@ -80,6 +84,10 @@
     },
     "scheme": "aimusicpromptr",
     "privacy": "public",
-    "platforms": ["ios", "android", "web"]
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ]
   }
 }
