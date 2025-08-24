@@ -7,7 +7,9 @@ import {
   StyleSheet, 
   Platform,
   Alert,
-  KeyboardAvoidingView
+  KeyboardAvoidingView,
+  TextInput,
+  AccessibilityInfo
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
@@ -310,256 +312,212 @@ export default function PromptFormScreen() {
           </View>
         </View>
 
-        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            {/* Subscription Status - Show for premium users */}
-            {subscriptionStatus === 'unlimited' && <SubscriptionStatus />}
-            
-            {/* Usage Indicator - Show for free users */}
-            {subscriptionStatus !== 'unlimited' && (
-              <UsageIndicator onUpgradePress={() => setShowUpgradeModal(true)} />
-            )}
+        <ScrollView 
+          style={styles.container}
+          accessible={false}
+          accessibilityRole="main"
+        >
+          {/* Header with proper heading hierarchy */}
+          <View style={styles.header}>
+            <Text 
+              style={styles.title}
+              accessibilityRole="header"
+              accessibilityLevel={1}
+            >
+              AI Music Prompter
+            </Text>
+            <Text 
+              style={styles.subtitle}
+              accessibilityRole="text"
+            >
+              Create detailed prompts for AI music generation
+            </Text>
+          </View>
 
-            {/* Quick Actions */}
-            <View style={styles.quickActions}>
-              <TouchableOpacity style={styles.quickActionButton} onPress={handleRandomTrack}>
-                <IconFallback name="shuffle" size={20} color={colors.background} />
-                <Text style={styles.quickActionText}>Random Track</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowTemplatesModal(true)}>
-                <IconFallback name="dashboard" size={20} color={colors.background} />
-                <Text style={styles.quickActionText}>Templates</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.quickActionButton} onPress={() => setShowRandomModal(true)}>
-                <IconFallback name="casino" size={20} color={colors.background} />
-                <Text style={styles.quickActionText}>Ideas</Text>
-              </TouchableOpacity>
-            </View>
+          {/* Usage indicator with live region for screen readers */}
+          <View 
+            accessible={true}
+            accessibilityLabel={`Daily usage: ${dailyUsage} of ${subscriptionStatus === 'unlimited' ? 'unlimited' : '3'} generations used`}
+            accessibilityLiveRegion="polite"
+          >
+            <UsageIndicator />
+          </View>
 
-            {/* Subject/Theme */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Track Theme</Text>
-              <View style={styles.fieldWithDice}>
-                <View style={styles.fieldContainer}>
-                  <FormField
-                    label="Subject/Theme"
-                    value={formData.subject}
-                    onChangeText={(value) => updateFormData('subject', value)}
-                    placeholder="e.g., Lost love, Urban nightlife, Digital dreams"
-                  />
-                </View>
-                <TouchableOpacity style={styles.diceButton} onPress={handleRandomSubject}>
-                  <IconFallback name="casino" size={24} color={colors.primary} />
-                </TouchableOpacity>
-              </View>
-            </View>
-
-            {/* Genres */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Genres</Text>
-              
-              <MultiSelectField
-                label="Primary Genres"
-                values={formData.genres_primary}
-                onValuesChange={(items) => updateFormData('genres_primary', items)}
-                options={PRIMARY_GENRES}
-                placeholder="Select primary genres"
-                maxSelections={3}
-              />
-
-              <MultiSelectField
-                label="Electronic Subgenres"
-                values={formData.genres_electronic}
-                onValuesChange={(items) => updateFormData('genres_electronic', items)}
-                options={ELECTRONIC_GENRES}
-                placeholder="Select electronic subgenres"
-                maxSelections={4}
+          {/* Form section with proper fieldset semantics */}
+          <View 
+            style={styles.formSection}
+            accessibilityRole="group"
+            accessibilityLabel="Music prompt form"
+          >
+            {/* Genre input */}
+            <View style={styles.fieldContainer}>
+              <Text 
+                style={styles.fieldLabel}
+                accessibilityRole="text"
+              >
+                Genre *
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={genre}
+                onChangeText={setGenre}
+                placeholder="e.g., Pop, Rock, Jazz, Electronic"
+                accessible={true}
+                accessibilityLabel="Music genre"
+                accessibilityHint="Enter the musical genre or style for your prompt. This field is required."
+                accessibilityRequired={true}
               />
             </View>
 
-            {/* Mood & Energy */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Mood & Energy</Text>
-              
-              <MultiSelectField
-                label="Mood"
-                values={formData.mood}
-                onValuesChange={(items) => updateFormData('mood', items)}
-                options={MOODS}
-                placeholder="Select moods"
-                maxSelections={3}
-              />
-
-              <PickerField
-                label="Energy Level"
-                value={formData.energy}
-                onValueChange={(value) => updateFormData('energy', value)}
-                options={[
-                  { label: 'Select energy level...', value: '' },
-                  ...ENERGY_LEVELS
-                ]}
+            {/* Mood input */}
+            <View style={styles.fieldContainer}>
+              <Text 
+                style={styles.fieldLabel}
+                accessibilityRole="text"
+              >
+                Mood & Energy
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={mood}
+                onChangeText={setMood}
+                placeholder="e.g., Upbeat, Melancholic, Energetic, Chill"
+                accessible={true}
+                accessibilityLabel="Music mood and energy"
+                accessibilityHint="Describe the emotional tone and energy level of your music"
               />
             </View>
 
-            {/* Technical Specs */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Technical Specifications</Text>
-              
-              <FormField
-                label="Tempo (BPM)"
-                value={formData.tempo_bpm}
-                onChangeText={(value) => updateFormData('tempo_bpm', value)}
-                placeholder="e.g., 128, 174, 85"
-                keyboardType="numeric"
-              />
-
-              <PickerField
-                label="Key/Scale"
-                value={formData.key_scale}
-                onValueChange={(value) => updateFormData('key_scale', value)}
-                options={[
-                  { label: 'Select key...', value: '' },
-                  ...COMMON_KEYS.map(key => ({ label: key, value: key }))
-                ]}
-              />
-
-              <PickerField
-                label="Groove/Swing"
-                value={formData.groove_swing}
-                onValueChange={(value) => updateFormData('groove_swing', value)}
-                options={[
-                  { label: 'Select groove...', value: '' },
-                  ...GROOVE_SWINGS
-                ]}
+            {/* Instruments input */}
+            <View style={styles.fieldContainer}>
+              <Text 
+                style={styles.fieldLabel}
+                accessibilityRole="text"
+              >
+                Instruments
+              </Text>
+              <TextInput
+                style={styles.input}
+                value={instruments}
+                onChangeText={setInstruments}
+                placeholder="e.g., Guitar, Piano, Drums, Synthesizer"
+                accessible={true}
+                accessibilityLabel="Musical instruments"
+                accessibilityHint="List the instruments you want featured in your music"
               />
             </View>
 
-            {/* Rhythm & Bass */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Rhythm & Bass</Text>
-              
-              <MultiSelectField
-                label="Beat Styles"
-                values={formData.beat}
-                onValuesChange={(items) => updateFormData('beat', items)}
-                options={BEAT_STYLES}
-                placeholder="Select beat styles"
-                maxSelections={3}
-              />
-
-              <MultiSelectField
-                label="Bass Characteristics"
-                values={formData.bass}
-                onValuesChange={(items) => updateFormData('bass', items)}
-                options={BASS_CHARACTERISTICS}
-                placeholder="Select bass characteristics"
-                maxSelections={3}
+            {/* Additional details input */}
+            <View style={styles.fieldContainer}>
+              <Text 
+                style={styles.fieldLabel}
+                accessibilityRole="text"
+              >
+                Additional Details
+              </Text>
+              <TextInput
+                style={[styles.input, styles.textArea]}
+                value={additionalDetails}
+                onChangeText={setAdditionalDetails}
+                placeholder="Any specific requirements, tempo, key, or creative direction..."
+                multiline={true}
+                numberOfLines={3}
+                accessible={true}
+                accessibilityLabel="Additional music details"
+                accessibilityHint="Enter any specific requirements, tempo, key signature, or creative direction for your music prompt"
               />
             </View>
+          </View>
 
-            {/* Vocals */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Vocals</Text>
-              
-              <PickerField
-                label="Vocal Gender"
-                value={formData.vocal_gender}
-                onValueChange={(value) => updateFormData('vocal_gender', value)}
-                options={VOCAL_GENDERS}
-              />
-
-              <PickerField
-                label="Vocal Delivery"
-                value={formData.vocal_delivery}
-                onValueChange={(value) => updateFormData('vocal_delivery', value)}
-                options={VOCAL_DELIVERIES}
-              />
-            </View>
-
-            {/* Production & Style */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Production & Style</Text>
-              
-              <PickerField
-                label="Era/Style"
-                value={formData.era}
-                onValueChange={(value) => updateFormData('era', value)}
-                options={[
-                  { label: 'Select era...', value: '' },
-                  ...ERA_SUGGESTIONS.map(era => ({ label: era, value: era }))
-                ]}
-              />
-
-              <FormField
-                label="Track Length"
-                value={formData.length}
-                onChangeText={(value) => updateFormData('length', value)}
-                placeholder="e.g., 3:30, Radio edit, Extended club mix"
-              />
-
-              <FormField
-                label="Master Notes"
-                value={formData.master_notes}
-                onChangeText={(value) => updateFormData('master_notes', value)}
-                placeholder="e.g., Loud and punchy, Warm analog feel, Clean digital"
-                multiline
-              />
-            </View>
-
-            {/* Creativity Level */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Creativity Level</Text>
-              
-              <PickerField
-                label="Weirdness Level"
-                value={formData.weirdness_level}
-                onValueChange={(value) => updateFormData('weirdness_level', value)}
-                options={WEIRDNESS_LEVELS}
-              />
-            </View>
-
-            {/* Freeform */}
-            <View style={styles.formSection}>
-              <Text style={styles.sectionTitle}>Additional Notes</Text>
-              
-              <FormField
-                label="General Freeform"
-                value={formData.general_freeform}
-                onChangeText={(value) => updateFormData('general_freeform', value)}
-                placeholder="Add any specific details, references, or creative direction..."
-                multiline
-                numberOfLines={4}
-              />
-            </View>
-
-            {/* Generate Button */}
+          {/* Action buttons with proper button semantics */}
+          <View style={styles.buttonContainer}>
+            {/* Generate button */}
             <TouchableOpacity 
               style={[
-                styles.generateButton, 
-                (isGenerating || !canGenerate) && styles.generateButtonDisabled
+                styles.generateButton,
+                !canGenerate && styles.generateButtonDisabled
               ]}
-              onPress={handleGeneratePrompt}
-              disabled={isGenerating}
+              onPress={handleGenerate}
+              disabled={!canGenerate || isGenerating}
+              accessible={true}
+              accessibilityLabel={
+                !canGenerate 
+                  ? "Generate music prompt - daily limit reached" 
+                  : isGenerating 
+                    ? "Generating music prompt, please wait"
+                    : "Generate music prompt"
+              }
+              accessibilityHint={
+                !canGenerate 
+                  ? "You have reached your daily limit. Upgrade for unlimited access."
+                  : "Creates an AI music prompt based on your inputs"
+              }
+              accessibilityRole="button"
+              accessibilityState={{
+                disabled: !canGenerate || isGenerating,
+                busy: isGenerating
+              }}
             >
-              <Text style={styles.generateButtonText}>
-                {isGenerating 
-                  ? 'Generating...' 
-                  : !canGenerate 
-                    ? 'Upgrade for More Generations' 
-                    : 'Generate AI Prompt'
-                }
+              <Text style={[
+                styles.generateButtonText,
+                !canGenerate && styles.generateButtonTextDisabled
+              ]}>
+                {isGenerating ? 'Generating...' : 'Generate Prompt'}
               </Text>
             </TouchableOpacity>
 
-            {/* Generated Prompt */}
-            {generatedPrompt && (
-              <GeneratedPrompt prompt={generatedPrompt} />
-            )}
+            {/* Secondary action buttons */}
+            <View style={styles.secondaryButtons}>
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => setShowTemplates(true)}
+                accessible={true}
+                accessibilityLabel="Open prompt templates"
+                accessibilityHint="Browse pre-made music prompt templates"
+                accessibilityRole="button"
+              >
+                <Text style={styles.secondaryButtonText}>Templates</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => setShowHistory(true)}
+                accessible={true}
+                accessibilityLabel="View prompt history"
+                accessibilityHint="See your previously generated music prompts"
+                accessibilityRole="button"
+              >
+                <Text style={styles.secondaryButtonText}>History</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity 
+                style={styles.secondaryButton}
+                onPress={() => setShowRandomTrack(true)}
+                accessible={true}
+                accessibilityLabel="Generate random track"
+                accessibilityHint="Get a randomly generated music prompt for inspiration"
+                accessibilityRole="button"
+              >
+                <Text style={styles.secondaryButtonText}>🎲 Random</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-          
-          {/* Footer */}
-          <Footer />
+
+          {/* Generated prompt with live region */}
+          {generatedPrompt && (
+            <View 
+              style={styles.resultContainer}
+              accessible={true}
+              accessibilityLabel="Generated music prompt"
+              accessibilityLiveRegion="assertive"
+            >
+              <GeneratedPrompt prompt={generatedPrompt} />
+            </View>
+          )}
         </ScrollView>
+
+        {/* Footer */}
+        <Footer />
 
         {/* Cookie Consent */}
         <CookieConsent />
@@ -722,5 +680,61 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: colors.background,
     marginLeft: 12,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  input: {
+    height: 40,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  textArea: {
+    height: 100,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  secondaryButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  secondaryButton: {
+    padding: 12,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    color: colors.text,
+    fontWeight: '600',
+  },
+  resultContainer: {
+    padding: 20,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    marginBottom: 24,
   },
 });

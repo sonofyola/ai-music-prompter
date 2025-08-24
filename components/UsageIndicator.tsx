@@ -23,31 +23,47 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
   const isLow = remaining <= 1;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.textRow}>
-          <Text style={styles.usageText}>
-            {remaining} free generations remaining
-          </Text>
-          {isLow && (
-            <TouchableOpacity style={styles.upgradeButton} onPress={onUpgradePress}>
-              <Text style={styles.upgradeText}>Upgrade</Text>
-              <MaterialIcons name="arrow-forward" size={14} color={colors.primary} />
-            </TouchableOpacity>
-          )}
-        </View>
-        <View style={styles.progressBar}>
-          <View 
-            style={[
-              styles.progressFill, 
-              { 
-                width: `${(dailyUsage / 3) * 100}%`,
-                backgroundColor: isLow ? colors.warning : colors.primary
-              }
-            ]} 
-          />
-        </View>
+    <View 
+      style={styles.container}
+      accessible={true}
+      accessibilityLabel={getAccessibilityLabel()}
+      accessibilityRole="progressbar"
+      accessibilityValue={{
+        min: 0,
+        max: subscriptionStatus === 'unlimited' ? undefined : DAILY_FREE_LIMIT,
+        now: dailyUsage,
+        text: getAccessibilityValueText()
+      }}
+    >
+      {/* Usage bar */}
+      <View style={styles.usageBar}>
+        <View 
+          style={[styles.usageProgress, { width: `${progressPercentage}%` }]}
+          accessible={false}
+        />
       </View>
+
+      {/* Usage text */}
+      <Text 
+        style={styles.usageText}
+        accessible={false} // Parent handles accessibility
+      >
+        {getUsageText()}
+      </Text>
+
+      {/* Upgrade button for non-unlimited users */}
+      {subscriptionStatus !== 'unlimited' && (
+        <TouchableOpacity 
+          style={styles.upgradeButton}
+          onPress={onUpgrade}
+          accessible={true}
+          accessibilityLabel="Upgrade to premium subscription"
+          accessibilityHint="Get unlimited music prompt generations for $5.99 per month"
+          accessibilityRole="button"
+        >
+          <Text style={styles.upgradeButtonText}>Upgrade</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -108,3 +124,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.primary,
   },
 });
+
+// Helper functions for accessibility
+const getAccessibilityLabel = () => {
+  if (subscriptionStatus === 'unlimited') {
+    return 'Premium subscription active - unlimited generations available';
+  }
+  return `Daily usage: ${dailyUsage} of ${DAILY_FREE_LIMIT} free generations used`;
+};
+
+const getAccessibilityValueText = () => {
+  if (subscriptionStatus === 'unlimited') {
+    return 'Unlimited';
+  }
+  return `${dailyUsage} of ${DAILY_FREE_LIMIT}`;
+};

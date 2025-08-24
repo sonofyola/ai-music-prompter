@@ -25,22 +25,58 @@ export default function GeneratedPrompt({ prompt }: GeneratedPromptProps) {
   const styles = createStyles(colors);
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container}
+      accessible={true}
+      accessibilityLabel="Generated music prompt result"
+      accessibilityRole="region"
+    >
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Generated Prompt</Text>
-        <TouchableOpacity style={styles.copyButton} onPress={copyToClipboard}>
-          <IconFallback 
-            name={copied ? 'check' : 'content-copy'} 
-            size={20} 
-            color={copied ? colors.success : colors.primary} 
-          />
-          <Text style={[styles.copyText, copied && { color: colors.success }]}>
-            {copied ? 'Copied!' : 'Copy'}
-          </Text>
-        </TouchableOpacity>
+        <Text 
+          style={styles.title}
+          accessibilityRole="header"
+          accessibilityLevel={2}
+        >
+          🎵 Your Music Prompt
+        </Text>
       </View>
-      <View style={styles.promptContainer}>
-        <Text style={styles.promptText}>{prompt}</Text>
+
+      {/* Prompt content */}
+      <View 
+        style={styles.promptContainer}
+        accessible={true}
+        accessibilityLabel={`Generated prompt: ${prompt}`}
+        accessibilityRole="text"
+      >
+        <Text style={styles.promptText} accessible={false}>
+          {prompt}
+        </Text>
+      </View>
+
+      {/* Action buttons */}
+      <View style={styles.actions}>
+        <TouchableOpacity 
+          style={styles.copyButton}
+          onPress={handleCopy}
+          accessible={true}
+          accessibilityLabel="Copy prompt to clipboard"
+          accessibilityHint="Copies the generated music prompt to your device clipboard"
+          accessibilityRole="button"
+        >
+          <Text style={styles.copyButtonText}>📋 Copy</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={styles.shareButton}
+          onPress={handleShare}
+          accessible={true}
+          accessibilityLabel="Share music prompt"
+          accessibilityHint="Share the generated prompt with other apps"
+          accessibilityRole="button"
+        >
+          <Text style={styles.shareButtonText}>📤 Share</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
