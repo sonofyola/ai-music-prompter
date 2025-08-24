@@ -1,26 +1,5 @@
 export const schema = {
   "tables": {
-    "maintenance": {
-      "type": "collection" as const,
-      "fields": {
-        "enabled": {
-          "type": "boolean" as const,
-          "indexed": true
-        },
-        "message": {
-          "type": "string" as const,
-          "indexed": true
-        },
-        "timestamp": {
-          "type": "number" as const,
-          "indexed": true
-        },
-        "adminEmail": {
-          "type": "string" as const,
-          "indexed": true
-        }
-      }
-    },
     "user_profiles": {
       "type": "collection" as const,
       "fields": {

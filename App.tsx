@@ -1,16 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet, AppState } from 'react-native';
-import { AccessibilityInfo } from 'react-native';
 
 // Context Providers
 import { ThemeProvider } from './contexts/ThemeContext';
 import { NotificationProvider } from './contexts/NotificationContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import { UsageProvider } from './contexts/UsageContext';
-import { MaintenanceProvider } from './contexts/MaintenanceContext';
 
 // Screens
 import PromptFormScreen from './screens/PromptFormScreen';
@@ -67,55 +65,17 @@ function AppContent() {
 }
 
 export default function App() {
-  const [isScreenReaderEnabled, setIsScreenReaderEnabled] = useState(false);
-  const [isReduceMotionEnabled, setIsReduceMotionEnabled] = useState(false);
-
-  useEffect(() => {
-    // Check accessibility settings on app start
-    const checkAccessibilitySettings = async () => {
-      try {
-        const screenReaderEnabled = await AccessibilityInfo.isScreenReaderEnabled();
-        const reduceMotionEnabled = await AccessibilityInfo.isReduceMotionEnabled();
-        
-        setIsScreenReaderEnabled(screenReaderEnabled);
-        setIsReduceMotionEnabled(reduceMotionEnabled);
-      } catch (error) {
-        console.log('Error checking accessibility settings:', error);
-      }
-    };
-
-    checkAccessibilitySettings();
-
-    // Listen for accessibility changes
-    const screenReaderSubscription = AccessibilityInfo.addEventListener(
-      'screenReaderChanged',
-      setIsScreenReaderEnabled
-    );
-
-    const reduceMotionSubscription = AccessibilityInfo.addEventListener(
-      'reduceMotionChanged',
-      setIsReduceMotionEnabled
-    );
-
-    return () => {
-      screenReaderSubscription?.remove();
-      reduceMotionSubscription?.remove();
-    };
-  }, []);
-
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
         <ThemeProvider>
-          <MaintenanceProvider>
-            <UsageProvider>
-              <PromptHistoryProvider>
-                <NotificationProvider>
-                  <AppContent />
-                </NotificationProvider>
-              </PromptHistoryProvider>
-            </UsageProvider>
-          </MaintenanceProvider>
+          <UsageProvider>
+            <PromptHistoryProvider>
+              <NotificationProvider>
+                <AppContent />
+              </NotificationProvider>
+            </PromptHistoryProvider>
+          </UsageProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </BasicProvider>
