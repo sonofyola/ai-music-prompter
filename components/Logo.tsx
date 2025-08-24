@@ -9,7 +9,7 @@ interface LogoProps {
 export default function Logo({ size = 40, style }: LogoProps) {
   return (
     <Image
-      source={require('../assets/images/FINAL_LOGO_AI_MUSIC_PROMPTR.png')}
+      source={require('../assets/images/ff0f3bfe-d5db-43e6-a3d1-2553a8a65707.png')}
       style={[
         {
           width: size,
