@@ -41,11 +41,18 @@ const iconFallbacks: Record<string, string> = {
   'expand-less': '▲',
   'zap': '⚡',
   'flash': '⚡',
+  'bolt': '⚡',
+  'electric-bolt': '⚡',
   'headphones': '🎧',
   'headset': '🎧',
   'star': '⭐',
   'upgrade': '🚀',
   'verified': '✅',
+  'infinity': '∞',
+  'all-inclusive': '∞',
+  'trending-up': '📈',
+  'support': '🎧',
+  'cancel': '🔄',
 };
 
 export default function IconFallback({ 
