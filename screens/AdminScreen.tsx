@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
@@ -163,6 +163,63 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
+  const exportUserEmails = async () => {
+    if (!users.length) {
+      Alert.alert('No Data', 'No users to export.');
+      return;
+    }
+
+    try {
+      const emailList = users.map(user => user.email).join('\n');
+      const csvContent = 'Email,Name,Created,Last Login,Is Admin\n' + 
+        users.map(user => 
+          `${user.email},"${user.name || ''}",${user.created_at},${user.last_login || ''},${user.is_admin}`
+        ).join('\n');
+      
+      // For web, we can use the clipboard
+      if (Platform.OS === 'web') {
+        await navigator.clipboard.writeText(csvContent);
+        Alert.alert('Success', 'User data copied to clipboard as CSV format.');
+      } else {
+        // For mobile, we'll use Expo Clipboard
+        const Clipboard = require('expo-clipboard');
+        await Clipboard.setStringAsync(csvContent);
+        Alert.alert('Success', 'User data copied to clipboard as CSV format.');
+      }
+    } catch (error) {
+      console.error('Error exporting users:', error);
+      Alert.alert('Error', 'Failed to export user data.');
+    }
+  };
+
+  const upgradeUser = async (userId: string, userEmail: string) => {
+    if (!db || !isAdmin) return;
+
+    Alert.alert(
+      'Upgrade User',
+      `Upgrade "${userEmail}" to premium?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Upgrade',
+          onPress: async () => {
+            try {
+              await db.from('users').update(userId, { 
+                is_premium: true,
+                premium_upgraded_at: new Date().toISOString()
+              });
+              await loadUsers();
+              Alert.alert('Success', `${userEmail} has been upgraded to premium.`);
+            } catch (error) {
+              console.error('Error upgrading user:', error);
+              Alert.alert('Error', 'Failed to upgrade user. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
   const styles = createStyles(colors);
 
   return (
@@ -226,6 +283,15 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
               </View>
             </View>
 
+            {/* Export Users Button */}
+            <TouchableOpacity 
+              style={styles.exportButton}
+              onPress={exportUserEmails}
+            >
+              <IconFallback name="download" size={20} color="#fff" />
+              <Text style={styles.exportButtonText}>Export User Emails</Text>
+            </TouchableOpacity>
+
             {isLoadingUsers ? (
               <View style={styles.loadingContainer}>
                 <Text style={styles.loadingText}>Loading users...</Text>
@@ -286,6 +352,14 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
                           )}
                           
                           <TouchableOpacity
+                            style={styles.upgradeUserButton}
+                            onPress={() => upgradeUser(userData.id, userData.email)}
+                          >
+                            <IconFallback name="upgrade" size={16} color="#fff" />
+                            <Text style={styles.actionButtonText}>Upgrade</Text>
+                          </TouchableOpacity>
+                          
+                          <TouchableOpacity
                             style={styles.deleteUserButton}
                             onPress={() => deleteUser(userData.id, userData.email)}
                           >
@@ -315,15 +389,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Admin Status:</Text>
-            <Text style={[styles.infoValue, { color: colors.success }]}>
-              {isAdmin ? 'Active' : 'Not Admin'}
-            </Text>
+            <Text style={styles.infoValue}>{isAdmin ? 'Active' : 'Not Admin'}</Text>
           </View>
           <View style={styles.infoItem}>
             <Text style={styles.infoLabel}>Database:</Text>
-            <Text style={[styles.infoValue, { color: db ? colors.success : colors.error }]}>
-              {db ? 'Connected' : 'Disconnected'}
-            </Text>
+            <Text style={styles.infoValue}>{db ? 'Connected' : 'Disconnected'}</Text>
           </View>
         </View>
       </ScrollView>
@@ -555,6 +625,15 @@ const createStyles = (colors: any) => StyleSheet.create({
     borderRadius: 6,
     gap: 4,
   },
+  upgradeUserButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.success,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+  },
   actionButtonText: {
     color: '#fff',
     fontSize: 12,
@@ -583,6 +662,21 @@ const createStyles = (colors: any) => StyleSheet.create({
   infoValue: {
     fontSize: 14,
     color: colors.text,
+    fontWeight: '600',
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.success,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 8,
+    gap: 8,
+    marginBottom: 16,
+  },
+  exportButtonText: {
+    color: '#fff',
+    fontSize: 14,
     fontWeight: '600',
   },
 });
