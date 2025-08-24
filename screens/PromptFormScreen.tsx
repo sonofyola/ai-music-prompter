@@ -26,6 +26,8 @@ import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import Disclaimer from '../components/Disclaimer';
 import Logo from '../components/Logo';
+import SubscriptionStatus from '../components/SubscriptionStatus';
+import UpgradeModal from '../components/UpgradeModal';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -73,6 +75,7 @@ export default function PromptFormScreen() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showRandomTrack, setShowRandomTrack] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -224,6 +227,17 @@ export default function PromptFormScreen() {
     }
   };
 
+  const handleUpgradePress = () => {
+    if (subscriptionStatus === 'free') {
+      setShowUpgradeModal(true);
+    }
+  };
+
+  const handleUpgradeSuccess = () => {
+    setShowUpgradeModal(false);
+    Alert.alert('Success!', 'Welcome to Premium! 🎉');
+  };
+
   // Hidden admin access (triple tap on logo)
   const [adminTapCount, setAdminTapCount] = useState(0);
   
@@ -290,16 +304,31 @@ export default function PromptFormScreen() {
 
         <ScrollView style={styles.scrollView}>
           <View style={styles.content}>
-            {/* Usage indicator */}
+            {/* Subscription Status */}
+            <SubscriptionStatus />
+
+            {/* Usage indicator with upgrade button */}
             <View style={styles.usageContainer}>
-              <Text style={styles.usageText}>
-                {subscriptionStatus === 'unlimited' 
-                  ? 'Unlimited generations' 
-                  : `${dailyUsage}/3 generations used today`
-                }
-              </Text>
-              {subscriptionStatus === 'unlimited' && (
-                <Text style={styles.premiumBadge}>Premium</Text>
+              <View style={styles.usageInfo}>
+                <Text style={styles.usageText}>
+                  {subscriptionStatus === 'unlimited' 
+                    ? 'Unlimited generations' 
+                    : `${dailyUsage}/3 generations used today`
+                  }
+                </Text>
+                {subscriptionStatus === 'unlimited' && (
+                  <Text style={styles.premiumBadge}>Premium</Text>
+                )}
+              </View>
+              
+              {subscriptionStatus === 'free' && (
+                <TouchableOpacity 
+                  style={styles.upgradeButton}
+                  onPress={handleUpgradePress}
+                >
+                  <IconFallback name="upgrade" size={16} color="#fff" />
+                  <Text style={styles.upgradeButtonText}>Upgrade</Text>
+                </TouchableOpacity>
               )}
             </View>
 
@@ -567,6 +596,12 @@ export default function PromptFormScreen() {
           currentGeneratedPrompt={generatedPrompt}
         />
 
+        <UpgradeModal
+          visible={showUpgradeModal}
+          onClose={() => setShowUpgradeModal(false)}
+          onUpgradeSuccess={handleUpgradeSuccess}
+        />
+
         {/* Footer */}
         <Footer />
 
@@ -635,6 +670,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerButton: {
     padding: 8,
     marginRight: 8,
+    backgroundColor: colors.surface,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   scrollView: {
     flex: 1,
@@ -652,6 +691,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+  },
+  usageInfo: {
+    flex: 1,
   },
   usageText: {
     fontSize: 14,
@@ -717,5 +759,19 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   generateButtonTextDisabled: {
     color: colors.textTertiary,
+  },
+  upgradeButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    gap: 4,
+  },
+  upgradeButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });

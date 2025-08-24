@@ -27,7 +27,6 @@ export default function SubscriptionStatus() {
       style={styles.container}
       accessible={true}
       accessibilityLabel="Premium subscription status"
-      accessibilityRole="region"
     >
       <View style={styles.content}>
         <View 
