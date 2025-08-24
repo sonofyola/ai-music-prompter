@@ -46,7 +46,11 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     if (!db || !isAdmin) return;
     
     try {
+      console.log('🔍 Loading users from database...');
       const allUsers = await db.from('user_profiles').getAll();
+      console.log('📊 Raw users data:', allUsers);
+      console.log('📊 Number of users found:', allUsers?.length || 0);
+      
       const typedUsers: User[] = (allUsers || []).map(user => ({
         id: user.id,
         email: user.email as string,
@@ -56,6 +60,8 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         stripe_customer_id: user.stripe_customer_id as string,
         last_reset_date: user.last_reset_date as string,
       }));
+      
+      console.log('📊 Processed users:', typedUsers);
       setUsers(typedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
@@ -66,7 +72,10 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const loadBetaTesters = useCallback(async () => {
     if (!db) return;
     try {
+      console.log('🔍 Loading beta testers...');
       const testers = await getBetaTesters(db);
+      console.log('👥 Beta testers found:', testers);
+      console.log('👥 Number of beta testers:', testers?.length || 0);
       setBetaTesters(testers);
     } catch (error) {
       console.error('Error loading beta testers:', error);
@@ -221,6 +230,16 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </View>
           <Text style={styles.title}>🛠️ Admin Dashboard</Text>
           <Text style={styles.subtitle}>Manage users, monitor usage, and system settings</Text>
+        </View>
+
+        {/* Debug info */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>🐛 Debug Info</Text>
+          <Text style={styles.debugText}>Database connected: {db ? '✅ Yes' : '❌ No'}</Text>
+          <Text style={styles.debugText}>Is Admin: {isAdmin ? '✅ Yes' : '❌ No'}</Text>
+          <Text style={styles.debugText}>Users loaded: {users.length}</Text>
+          <Text style={styles.debugText}>Beta testers loaded: {betaTesters.length}</Text>
+          <Text style={styles.debugText}>Current user: {user?.email || 'None'}</Text>
         </View>
 
         {/* Quick stats */}
@@ -660,5 +679,11 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  debugText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+    fontFamily: 'monospace',
   },
 });
