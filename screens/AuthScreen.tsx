@@ -205,7 +205,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   problemText: {
     fontSize: 18,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: 'justify',
     lineHeight: 26,
     marginBottom: 24,
     maxWidth: 600,
@@ -213,7 +213,7 @@ const createStyles = (colors: any) => StyleSheet.create({
   solutionText: {
     fontSize: 18,
     color: colors.textSecondary,
-    textAlign: 'center',
+    textAlign: 'justify',
     lineHeight: 26,
     maxWidth: 600,
   },
@@ -320,6 +320,7 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+    textAlign: 'justify',
   },
   footerSection: {
     paddingHorizontal: 20,
