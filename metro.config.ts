@@ -21,6 +21,12 @@ config.resolver.alias = {
   'missing-asset-registry-path': path.resolve(__dirname, 'utils/asset-registry.js'),
 };
 
+// Add asset search paths to include both assets/images and images directories
+config.resolver.assetExts = [
+  ...config.resolver.assetExts,
+  'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg', 'ttf', 'otf', 'woff', 'woff2'
+];
+
 // Enhanced server configuration with proper CORS handling
 config.server = {
   port: 8081,
