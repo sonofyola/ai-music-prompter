@@ -95,6 +95,9 @@ export default function PromptFormScreen() {
     general_freeform: ''
   });
 
+  // Add a form key to force re-render when clearing
+  const [formKey, setFormKey] = useState(0);
+
   // Generated prompt state
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
@@ -162,6 +165,9 @@ export default function PromptFormScreen() {
             setFormData(initialFormData);
             setGeneratedPrompt('');
             
+            // Force re-render of all form components
+            setFormKey(prev => prev + 1);
+            
             console.log('Form cleared successfully');
           }
         }
@@ -199,6 +205,9 @@ export default function PromptFormScreen() {
     setFormData(validatedTrackData);
     setShowRandomTrack(false);
     
+    // Force re-render of form components
+    setFormKey(prev => prev + 1);
+    
     // Clear any existing generated prompt since we're loading new data
     setGeneratedPrompt('');
   };
@@ -206,6 +215,9 @@ export default function PromptFormScreen() {
   const handleLoadPrompt = (savedFormData: MusicPromptData) => {
     setFormData(savedFormData);
     setShowHistory(false);
+    
+    // Force re-render of form components
+    setFormKey(prev => prev + 1);
   };
 
   const handleSaveCurrentPrompt = async (name: string) => {
@@ -326,7 +338,7 @@ export default function PromptFormScreen() {
             </View>
 
             {/* Form sections */}
-            <View style={styles.formSection}>
+            <View key={formKey} style={styles.formSection}>
               <Text style={styles.sectionTitle}>🎯 Core Concept</Text>
               
               <FormField
@@ -342,6 +354,7 @@ export default function PromptFormScreen() {
               <Text style={styles.sectionTitle}>🎵 Genre & Style</Text>
               
               <MultiSelectField
+                key={`genres_primary_${formKey}`}
                 label="Primary Genres"
                 values={formData.genres_primary}
                 options={PRIMARY_GENRES}
@@ -350,6 +363,7 @@ export default function PromptFormScreen() {
               />
               
               <MultiSelectField
+                key={`genres_electronic_${formKey}`}
                 label="Electronic Sub-genres"
                 values={formData.genres_electronic}
                 options={ELECTRONIC_GENRES}
@@ -369,6 +383,7 @@ export default function PromptFormScreen() {
               <Text style={styles.sectionTitle}>🎭 Mood & Energy</Text>
               
               <MultiSelectField
+                key={`mood_${formKey}`}
                 label="Mood"
                 values={formData.mood}
                 options={MOODS}
@@ -377,6 +392,7 @@ export default function PromptFormScreen() {
               />
               
               <PickerField
+                key={`energy_${formKey}`}
                 label="Energy Level"
                 value={formData.energy}
                 options={ENERGY_LEVELS}
@@ -384,6 +400,7 @@ export default function PromptFormScreen() {
               />
               
               <PickerField
+                key={`weirdness_${formKey}`}
                 label="Weirdness Level"
                 value={formData.weirdness_level}
                 options={WEIRDNESS_LEVELS}
@@ -403,6 +420,7 @@ export default function PromptFormScreen() {
               />
               
               <PickerField
+                key={`key_scale_${formKey}`}
                 label="Key/Scale"
                 value={formData.key_scale}
                 options={COMMON_KEYS.map(key => ({ label: key, value: key }))}
@@ -410,6 +428,7 @@ export default function PromptFormScreen() {
               />
               
               <PickerField
+                key={`groove_swing_${formKey}`}
                 label="Groove/Swing"
                 value={formData.groove_swing}
                 options={GROOVE_SWINGS}
@@ -421,6 +440,7 @@ export default function PromptFormScreen() {
               <Text style={styles.sectionTitle}>🥁 Rhythm & Bass</Text>
               
               <MultiSelectField
+                key={`beat_${formKey}`}
                 label="Beat Style"
                 values={formData.beat}
                 options={BEAT_STYLES}
@@ -429,6 +449,7 @@ export default function PromptFormScreen() {
               />
               
               <MultiSelectField
+                key={`bass_${formKey}`}
                 label="Bass Characteristics"
                 values={formData.bass}
                 options={BASS_CHARACTERISTICS}
@@ -441,6 +462,7 @@ export default function PromptFormScreen() {
               <Text style={styles.sectionTitle}>🎤 Vocals</Text>
               
               <PickerField
+                key={`vocal_gender_${formKey}`}
                 label="Vocal Gender"
                 value={formData.vocal_gender}
                 options={VOCAL_GENDERS}
@@ -449,6 +471,7 @@ export default function PromptFormScreen() {
               
               {formData.vocal_gender !== 'none' && (
                 <PickerField
+                  key={`vocal_delivery_${formKey}`}
                   label="Vocal Delivery"
                   value={formData.vocal_delivery}
                   options={VOCAL_DELIVERIES}
