@@ -25,7 +25,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [isLoadingUsers, setIsLoadingUsers] = useState(false);
 
   // Check if current user is admin
-  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
+  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
 
   console.log('🔍 AdminScreen Debug:', {
     userEmail: user?.email,

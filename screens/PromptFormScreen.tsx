@@ -58,7 +58,7 @@ export default function PromptFormScreen() {
   
   // Admin state
   const [showAdminScreen, setShowAdminScreen] = useState(false);
-  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
+  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
   
   // Debug logging
   console.log('🔍 PromptFormScreen Debug:', {
