@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
-import LogoSVG from '../components/LogoSVG';
+import Logo from '../components/Logo';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
@@ -35,7 +35,7 @@ export default function AuthScreen() {
       >
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <LogoSVG size={80} style={styles.heroLogo} />
+          <Logo size={80} style={styles.heroLogo} />
           <Text style={styles.mainTitle}>
             Create Perfect AI Music{'\n'}Prompts in Seconds
           </Text>
