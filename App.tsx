@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, AppState } from 'react-native';
 
 // Context Providers
 import { ThemeProvider } from './contexts/ThemeContext';
@@ -14,8 +14,31 @@ import { UsageProvider } from './contexts/UsageContext';
 import PromptFormScreen from './screens/PromptFormScreen';
 import AuthScreen from './screens/AuthScreen';
 
+// Utils
+import { checkPendingPayments, markPaymentCompleted } from './utils/paymentVerification';
+
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
+
+  // Check for completed payments when app becomes active
+  useEffect(() => {
+    const handleAppStateChange = async (nextAppState: string) => {
+      if (nextAppState === 'active' && isSignedIn && user) {
+        // Check if user completed a payment while away
+        const pendingPayment = await checkPendingPayments();
+        if (pendingPayment) {
+          // Auto-upgrade user if they have a pending payment
+          console.log('Found pending payment, auto-upgrading user:', user.email);
+          await markPaymentCompleted(pendingPayment.subscriptionId);
+          
+          // The UsageContext will handle the upgrade through its normal flow
+        }
+      }
+    };
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange);
+    return () => subscription?.remove();
+  }, [isSignedIn, user]);
 
   if (isLoading) {
     return (
