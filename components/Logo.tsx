@@ -1,23 +1,23 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
-import LogoSVG from './LogoSVG';
+import { Image, ImageStyle, StyleProp } from 'react-native';
 
 interface LogoProps {
   size?: number;
-  style?: any;
+  style?: StyleProp<ImageStyle>;
 }
 
-export default function Logo({ size = 32, style }: LogoProps) {
+export default function Logo({ size = 40, style }: LogoProps) {
   return (
-    <View style={[styles.container, style]}>
-      <LogoSVG size={size} />
-    </View>
+    <Image
+      source={require('../assets/images/ai-music-prompter-logo-new.png')}
+      style={[
+        {
+          width: size,
+          height: size,
+          resizeMode: 'contain',
+        },
+        style,
+      ]}
+    />
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
