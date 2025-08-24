@@ -148,12 +148,15 @@ const createStyles = (colors: any) => StyleSheet.create({
   valueSection: {
     paddingHorizontal: 20,
     paddingVertical: 16,
+    alignItems: 'center',
   },
   valueItem: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 20,
     paddingHorizontal: 16,
+    maxWidth: 400,
+    width: '100%',
   },
   valueIcon: {
     width: 44,
