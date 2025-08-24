@@ -134,90 +134,42 @@ export default function PromptFormScreen() {
   const handleClearForm = () => {
     console.log('Clear button pressed!');
     
-    // Use a more reliable Alert approach
-    try {
-      Alert.alert(
-        'Clear Form',
-        'Are you sure you want to clear all fields?',
-        [
-          { 
-            text: 'Cancel', 
-            style: 'cancel',
-            onPress: () => console.log('Clear cancelled')
-          },
-          { 
-            text: 'Clear', 
-            style: 'destructive',
-            onPress: () => {
-              console.log('Clear confirmed!');
-              
-              // Reset form data to proper initial state with correct default values
-              const initialFormData: MusicPromptData = {
-                subject: '',
-                genres_primary: [],
-                genres_electronic: [],
-                mood: [],
-                tempo_bpm: '',
-                key_scale: '',
-                energy: '',
-                beat: [],
-                bass: [],
-                groove_swing: '',
-                vocal_gender: 'none',
-                vocal_delivery: '',
-                era: '',
-                master_notes: '',
-                length: '',
-                weirdness_level: '',
-                general_freeform: ''
-              };
-              
-              console.log('Setting form data to:', initialFormData);
-              setFormData(initialFormData);
-              setGeneratedPrompt('');
-              
-              // Force re-render of all form components
-              setFormKey(prev => {
-                const newKey = prev + 1;
-                console.log('Setting form key to:', newKey);
-                return newKey;
-              });
-              
-              console.log('Form cleared successfully');
-            }
-          }
-        ],
-        { cancelable: true }
-      );
-    } catch (error) {
-      console.error('Alert error:', error);
-      // Fallback: clear immediately if Alert fails
-      console.log('Alert failed, clearing immediately...');
-      
-      const initialFormData: MusicPromptData = {
-        subject: '',
-        genres_primary: [],
-        genres_electronic: [],
-        mood: [],
-        tempo_bpm: '',
-        key_scale: '',
-        energy: '',
-        beat: [],
-        bass: [],
-        groove_swing: '',
-        vocal_gender: 'none',
-        vocal_delivery: '',
-        era: '',
-        master_notes: '',
-        length: '',
-        weirdness_level: '',
-        general_freeform: ''
-      };
-      
-      setFormData(initialFormData);
-      setGeneratedPrompt('');
-      setFormKey(prev => prev + 1);
-    }
+    // Direct clear without Alert for now - more reliable
+    console.log('Clearing form directly...');
+    
+    // Reset form data to proper initial state with correct default values
+    const initialFormData: MusicPromptData = {
+      subject: '',
+      genres_primary: [],
+      genres_electronic: [],
+      mood: [],
+      tempo_bpm: '',
+      key_scale: '',
+      energy: '',
+      beat: [],
+      bass: [],
+      groove_swing: '',
+      vocal_gender: 'none',
+      vocal_delivery: '',
+      era: '',
+      master_notes: '',
+      length: '',
+      weirdness_level: '',
+      general_freeform: ''
+    };
+    
+    console.log('Setting form data to:', initialFormData);
+    setFormData(initialFormData);
+    setGeneratedPrompt('');
+    
+    // Force re-render of all form components
+    setFormKey(prev => {
+      const newKey = prev + 1;
+      console.log('Setting form key to:', newKey);
+      return newKey;
+    });
+    
+    console.log('Form cleared successfully');
   };
 
   const handleRandomTrackSelect = (trackData: any) => {
