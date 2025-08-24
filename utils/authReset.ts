@@ -1109,8 +1109,8 @@ export const performURLSessionBreak = async () => {
         newUrl.searchParams.set('handle_override', 'true');
         newUrl.searchParams.set('account_unlink', 'true');
         newUrl.searchParams.set('timestamp', Date.now().toString());
-        newUrl.searchParams.set('nonce', Math.random().toString(36).substring(2));
-        newUrl.searchParams.set('cache_bust', Math.random().toString(36).substring(2));
+        newUrl.searchParams.set('nonce', Math.random().toString(36));
+        newUrl.searchParams.set('cache_bust', Math.random().toString(36));
         
         // Also add a hash to further break any caching
         newUrl.hash = '#session_break_' + Date.now();
@@ -1223,5 +1223,59 @@ export const performMobileSafeSessionBreak = async () => {
     if (typeof window !== 'undefined') {
       window.location.reload();
     }
+  }
+};
+
+// Ultra-minimal mobile reset - no server interaction
+export const performUltraMinimalReset = async () => {
+  try {
+    console.log('📱 ULTRA-MINIMAL RESET - Starting...');
+    
+    // Only clear local storage, no server calls
+    if (typeof window !== 'undefined') {
+      // Clear storage without any flags that might trigger server calls
+      try { 
+        window.localStorage.clear(); 
+        console.log('📱 localStorage cleared');
+      } catch (e) { 
+        console.log('📱 localStorage clear failed:', e);
+      }
+      
+      try { 
+        window.sessionStorage.clear(); 
+        console.log('📱 sessionStorage cleared');
+      } catch (e) { 
+        console.log('📱 sessionStorage clear failed:', e);
+      }
+    }
+    
+    // Clear AsyncStorage for React Native
+    try {
+      const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+      await AsyncStorage.clear();
+      console.log('📱 AsyncStorage cleared');
+    } catch (e) {
+      console.log('📱 AsyncStorage not available or failed:', e);
+    }
+    
+    console.log('📱 Ultra-minimal reset complete');
+    
+  } catch (error) {
+    console.error('📱 Ultra-minimal reset error:', error);
+  }
+};
+
+// Manual reload function - separate from reset
+export const performManualReload = () => {
+  try {
+    console.log('📱 MANUAL RELOAD - Starting...');
+    
+    if (typeof window !== 'undefined') {
+      // Just reload without any parameters
+      window.location.reload();
+    }
+    
+  } catch (error) {
+    console.error('📱 Manual reload error:', error);
   }
 };

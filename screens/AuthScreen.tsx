@@ -451,80 +451,44 @@ export default function AuthScreen() {
     console.log('🔗 SIMPLE URL BREAK - Starting...');
     
     Alert.alert(
-      '🔗 Simple URL Session Break',
-      'This will clear storage and redirect with session-breaking parameters.',
+      '🔗 Ultra-Minimal Reset',
+      'This will clear storage only (no server calls) and then you can manually reload.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: '🔗 Break Session',
-          style: 'destructive',
+          text: '🔗 Clear Storage',
           onPress: async () => {
-            console.log('🔗 Executing simple URL session break...');
+            console.log('🔗 Executing ultra-minimal reset...');
             setIsResetting(true);
             
             try {
-              // Check if we're on web or mobile
-              const isWeb = typeof window !== 'undefined' && window.location && window.location.href;
+              // Import the ultra-minimal version
+              const { performUltraMinimalReset } = await import('../utils/authReset');
+              await performUltraMinimalReset();
               
-              if (isWeb) {
-                // Web platform - use URL manipulation
-                console.log('🔗 Web platform - using URL manipulation...');
-                
-                // Clear storage immediately
-                console.log('🔗 Clearing web storage...');
-                try { window.localStorage.clear(); } catch (e) { console.log('localStorage clear failed:', e); }
-                try { window.sessionStorage.clear(); } catch (e) { console.log('sessionStorage clear failed:', e); }
-                
-                // Set flags
-                window.localStorage.setItem('force_new_session', 'true');
-                window.localStorage.setItem('break_session_continuity', 'true');
-                window.localStorage.setItem('admin_session_override', 'drremotework@gmail.com');
-                window.localStorage.setItem('reject_sonofyola', 'true');
-                
-                console.log('🔗 Web storage cleared, redirecting...');
-                
-                // Redirect with session-breaking parameters
-                setTimeout(() => {
-                  const url = new URL(window.location.origin);
-                  url.searchParams.set('session_break', 'true');
-                  url.searchParams.set('force_new_auth', 'true');
-                  url.searchParams.set('admin_override', 'drremotework@gmail.com');
-                  url.searchParams.set('reject_sonofyola', 'true');
-                  url.searchParams.set('timestamp', Date.now().toString());
-                  url.searchParams.set('nonce', Math.random().toString(36));
-                  
-                  console.log('🔗 Redirecting to:', url.toString());
-                  window.location.replace(url.toString());
-                }, 1000);
-              } else {
-                // Mobile platform - use AsyncStorage and complete reset
-                console.log('🔗 Mobile platform - using AsyncStorage and complete reset...');
-                
-                // Clear AsyncStorage
-                try {
-                  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
-                  console.log('🔗 Clearing AsyncStorage...');
-                  await AsyncStorage.clear();
-                  
-                  // Set session break flags
-                  await AsyncStorage.setItem('session_break', 'true');
-                  await AsyncStorage.setItem('force_new_auth', 'true');
-                  await AsyncStorage.setItem('admin_override', 'drremotework@gmail.com');
-                  await AsyncStorage.setItem('reject_sonofyola', 'true');
-                  await AsyncStorage.setItem('mobile_session_break', Date.now().toString());
-                  
-                  console.log('🔗 AsyncStorage cleared and flags set');
-                } catch (e) {
-                  console.log('🔗 AsyncStorage operations failed:', e);
-                }
-                
-                // For mobile, perform a complete auth reset instead of URL redirect
-                console.log('🔗 Performing complete auth reset for mobile...');
-                await performCompleteAuthReset();
-              }
+              // Show success and offer manual reload
+              Alert.alert(
+                '✅ Storage Cleared',
+                'Local storage has been cleared. Tap "Reload App" to complete the reset.',
+                [
+                  { text: 'Not Now', style: 'cancel', onPress: () => setIsResetting(false) },
+                  {
+                    text: 'Reload App',
+                    onPress: async () => {
+                      const { performManualReload } = await import('../utils/authReset');
+                      performManualReload();
+                    }
+                  }
+                ]
+              );
+              
             } catch (error) {
-              console.error('🔗 Simple URL break error:', error);
-              setIsResetting(false);
+              console.error('🔗 Ultra-minimal reset error:', error);
+              Alert.alert(
+                'Reset Error',
+                'There was an issue with the reset. Try the other reset options.',
+                [{ text: 'OK', onPress: () => setIsResetting(false) }]
+              );
             }
           }
         }
@@ -746,6 +710,33 @@ export default function AuthScreen() {
     );
   };
 
+  const handleBasicSignOut = async () => {
+    console.log('🔓 BASIC SIGN OUT - Starting...');
+    
+    Alert.alert(
+      '🔓 Basic Sign Out',
+      'This will just sign you out without any reset functions.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🔓 Sign Out',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              console.log('🔓 Performing basic signout...');
+              await signout();
+              console.log('🔓 Basic signout complete');
+            } catch (error) {
+              console.error('🔓 Basic signout error:', error);
+            } finally {
+              setIsResetting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -887,7 +878,7 @@ export default function AuthScreen() {
           
           {/* Diagnostic Tools */}
           <TouchableOpacity 
-            style={[styles.troubleshootButton, { backgroundColor: '#007AFF' }]}
+            style={[styles.troubleshootButton, { backgroundColor: '#007AFF', borderWidth: 2, borderColor: '#FFF' }]}
             onPress={handleAccountDiagnostic}
             disabled={isResetting}
           >
@@ -974,6 +965,15 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFD700' }]}>💥 STANDALONE NUCLEAR</Text>
+          </TouchableOpacity>
+
+          {/* Add this new button at the top of troubleshooting section */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#007AFF', borderWidth: 2, borderColor: '#FFF' }]}
+            onPress={handleBasicSignOut}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🔓 BASIC SIGN OUT</Text>
           </TouchableOpacity>
         </View>
 
