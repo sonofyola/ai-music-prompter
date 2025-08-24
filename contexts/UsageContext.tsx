@@ -48,6 +48,9 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       setIsEmailCaptured(emailCaptured === 'true');
     } catch (error) {
       console.error('Error loading local usage:', error);
+      // Set safe defaults on error
+      setDailyUsage(0);
+      setIsEmailCaptured(false);
     }
   }, []);
 
@@ -62,11 +65,16 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         
         if (today !== lastResetDate) {
           // Reset daily usage for new day
-          await db.from('user_profiles').update(user.id, {
-            usage_count: 0,
-            last_reset_date: new Date().toISOString(),
-          });
-          setDailyUsage(0);
+          try {
+            await db.from('user_profiles').update(user.id, {
+              usage_count: 0,
+              last_reset_date: new Date().toISOString(),
+            });
+            setDailyUsage(0);
+          } catch (updateError) {
+            console.error('Error resetting daily usage:', updateError);
+            setDailyUsage(0);
+          }
         } else {
           setDailyUsage(Number(userProfile.usage_count) || 0);
         }
@@ -77,9 +85,13 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           status = 'unlimited';
           // Update admin status in database if not already set
           if (userProfile.subscription_status !== 'unlimited') {
-            await db.from('user_profiles').update(user.id, {
-              subscription_status: 'unlimited',
-            });
+            try {
+              await db.from('user_profiles').update(user.id, {
+                subscription_status: 'unlimited',
+              });
+            } catch (adminUpdateError) {
+              console.error('Error updating admin status:', adminUpdateError);
+            }
           }
         }
         setSubscriptionStatus(status || 'free');
@@ -88,17 +100,23 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       } else {
         // Create new user profile if it doesn't exist
         const initialStatus = isAdmin ? 'unlimited' : 'free';
-        await db.from('user_profiles').add({
-          email: user.email || '',
-          subscription_status: initialStatus,
-          usage_count: 0,
-          last_reset_date: new Date().toISOString(),
-          created_at: new Date().toISOString(),
-          stripe_customer_id: '',
-        });
-        setDailyUsage(0);
-        setSubscriptionStatus(initialStatus);
-        setIsEmailCaptured(true);
+        try {
+          await db.from('user_profiles').add({
+            email: user.email || '',
+            subscription_status: initialStatus,
+            usage_count: 0,
+            last_reset_date: new Date().toISOString(),
+            created_at: new Date().toISOString(),
+            stripe_customer_id: '',
+          });
+          setDailyUsage(0);
+          setSubscriptionStatus(initialStatus);
+          setIsEmailCaptured(true);
+        } catch (createError) {
+          console.error('Error creating user profile:', createError);
+          // Fall back to local storage
+          await loadLocalUsage();
+        }
       }
     } catch (error) {
       console.error('Error loading user usage:', error);
@@ -111,13 +129,25 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     if (isSignedIn && user && db) {
       loadUserUsage().catch(error => {
         console.error('Failed to load user usage, falling back to local storage:', error);
-        loadLocalUsage();
+        loadLocalUsage().catch(localError => {
+          console.error('Failed to load local usage:', localError);
+          // Set safe defaults
+          setDailyUsage(0);
+          setIsEmailCaptured(false);
+          setSubscriptionStatus(isAdmin ? 'unlimited' : 'free');
+        });
       });
     } else {
       // Fallback to local storage for non-authenticated users
-      loadLocalUsage();
+      loadLocalUsage().catch(error => {
+        console.error('Failed to load local usage:', error);
+        // Set safe defaults
+        setDailyUsage(0);
+        setIsEmailCaptured(false);
+        setSubscriptionStatus('free');
+      });
     }
-  }, [isSignedIn, user, db, loadUserUsage, loadLocalUsage]);
+  }, [isSignedIn, user, db, loadUserUsage, loadLocalUsage, isAdmin]);
 
   // Auto-upgrade admins on login
   useEffect(() => {
@@ -139,6 +169,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         });
       } catch (error) {
         console.error('Error updating user usage:', error);
+        // Continue anyway - the local state is updated
       }
     } else {
       // Update local storage
@@ -146,6 +177,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem('dailyUsage', newUsage.toString());
       } catch (error) {
         console.error('Error updating local usage:', error);
+        // Continue anyway - the state is updated
       }
     }
   };
@@ -157,6 +189,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem('emailCaptured', captured.toString());
       } catch (error) {
         console.error('Error setting email captured:', error);
+        // Continue anyway - the state is updated
       }
     }
   };
@@ -171,6 +204,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         });
       } catch (error) {
         console.error('Error upgrading user:', error);
+        // Continue anyway - the state is updated
       }
     }
   };
@@ -186,6 +220,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         });
       } catch (error) {
         console.error('Error resetting user usage:', error);
+        // Continue anyway - the state is updated
       }
     } else {
       try {
@@ -193,6 +228,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         await AsyncStorage.setItem('lastUsageDate', new Date().toDateString());
       } catch (error) {
         console.error('Error resetting local usage:', error);
+        // Continue anyway - the state is updated
       }
     }
   };
@@ -215,6 +251,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
       console.log('✅ UsageContext: AsyncStorage cleared');
     } catch (error) {
       console.error('❌ UsageContext: Error clearing AsyncStorage:', error);
+      // Continue anyway - the state is cleared
     }
   };
 

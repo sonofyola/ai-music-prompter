@@ -9,15 +9,20 @@ export interface PaymentVerification {
 
 // Store payment attempt
 export const storePaymentAttempt = async (email: string, subscriptionId: string) => {
-  const paymentData: PaymentVerification = {
-    email,
-    timestamp: Date.now(),
-    subscriptionId,
-    status: 'pending'
-  };
-  
-  await AsyncStorage.setItem('pendingPayment', JSON.stringify(paymentData));
-  return paymentData;
+  try {
+    const paymentData: PaymentVerification = {
+      email,
+      timestamp: Date.now(),
+      subscriptionId,
+      status: 'pending'
+    };
+    
+    await AsyncStorage.setItem('pendingPayment', JSON.stringify(paymentData));
+    return paymentData;
+  } catch (error) {
+    console.error('Error storing payment attempt:', error);
+    throw error;
+  }
 };
 
 // Check for pending payments on app resume
@@ -31,7 +36,11 @@ export const checkPendingPayments = async (): Promise<PaymentVerification | null
     // If payment is older than 30 minutes, consider it expired
     const thirtyMinutes = 30 * 60 * 1000;
     if (Date.now() - payment.timestamp > thirtyMinutes) {
-      await AsyncStorage.removeItem('pendingPayment');
+      try {
+        await AsyncStorage.removeItem('pendingPayment');
+      } catch (removeError) {
+        console.error('Error removing expired payment:', removeError);
+      }
       return null;
     }
     
@@ -56,6 +65,7 @@ export const markPaymentCompleted = async (subscriptionId: string) => {
     }
   } catch (error) {
     console.error('Error marking payment completed:', error);
+    // Don't throw - this is not critical
   }
 };
 
@@ -65,5 +75,6 @@ export const clearPaymentData = async () => {
     await AsyncStorage.multiRemove(['pendingPayment', 'completedPayment']);
   } catch (error) {
     console.error('Error clearing payment data:', error);
+    // Don't throw - this is not critical
   }
 };

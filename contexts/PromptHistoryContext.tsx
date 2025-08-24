@@ -19,7 +19,10 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
   const { db, user, isSignedIn } = useBasic();
 
   const loadPrompts = useCallback(async () => {
-    if (!db || !user) return;
+    if (!db || !user) {
+      setPrompts([]);
+      return;
+    }
     
     setIsLoading(true);
     try {
@@ -28,14 +31,22 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
       // Filter prompts for current user and parse the data
       const filteredPrompts = userPrompts
         .filter((prompt: any) => prompt.user_id === user.id)
-        .map((prompt: any) => ({
-          id: String(prompt.id),
-          name: String(prompt.name),
-          formData: JSON.parse(String(prompt.form_data)),
-          generatedPrompt: String(prompt.generated_prompt),
-          createdAt: String(prompt.created_at),
-          userId: String(prompt.user_id),
-        }))
+        .map((prompt: any) => {
+          try {
+            return {
+              id: String(prompt.id),
+              name: String(prompt.name),
+              formData: JSON.parse(String(prompt.form_data)),
+              generatedPrompt: String(prompt.generated_prompt),
+              createdAt: String(prompt.created_at),
+              userId: String(prompt.user_id),
+            };
+          } catch (parseError) {
+            console.error('Error parsing prompt data:', parseError);
+            return null;
+          }
+        })
+        .filter(Boolean) // Remove null entries
         .sort((a: SavedPrompt, b: SavedPrompt) => 
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
@@ -51,9 +62,14 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     if (isSignedIn && db && user) {
-      loadPrompts();
+      loadPrompts().catch(error => {
+        console.error('Failed to load prompts:', error);
+        setPrompts([]);
+        setIsLoading(false);
+      });
     } else {
       setPrompts([]);
+      setIsLoading(false);
     }
   }, [isSignedIn, db, user, loadPrompts]);
 
@@ -74,16 +90,22 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
       const savedPrompt = await db.from('prompt_history').add(promptData);
       
       if (savedPrompt) {
-        const newPrompt: SavedPrompt = {
-          id: String(savedPrompt.id),
-          name: String(savedPrompt.name),
-          formData: JSON.parse(String(savedPrompt.form_data)),
-          generatedPrompt: String(savedPrompt.generated_prompt),
-          createdAt: String(savedPrompt.created_at),
-          userId: String(savedPrompt.user_id),
-        };
-        
-        setPrompts(prev => [newPrompt, ...prev]);
+        try {
+          const newPrompt: SavedPrompt = {
+            id: String(savedPrompt.id),
+            name: String(savedPrompt.name),
+            formData: JSON.parse(String(savedPrompt.form_data)),
+            generatedPrompt: String(savedPrompt.generated_prompt),
+            createdAt: String(savedPrompt.created_at),
+            userId: String(savedPrompt.user_id),
+          };
+          
+          setPrompts(prev => [newPrompt, ...prev]);
+        } catch (parseError) {
+          console.error('Error parsing saved prompt:', parseError);
+          // Reload prompts to ensure consistency
+          await loadPrompts();
+        }
       }
     } catch (error) {
       console.error('Error saving prompt to database:', error);
@@ -115,7 +137,12 @@ export function PromptHistoryProvider({ children }: { children: React.ReactNode 
       const userPrompts = prompts.filter(p => p.userId === user.id);
       
       for (const prompt of userPrompts) {
-        await db.from('prompt_history').delete(prompt.id);
+        try {
+          await db.from('prompt_history').delete(prompt.id);
+        } catch (deleteError) {
+          console.error('Error deleting individual prompt:', deleteError);
+          // Continue with other deletions
+        }
       }
       
       setPrompts([]);

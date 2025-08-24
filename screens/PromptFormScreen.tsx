@@ -137,93 +137,115 @@ export default function PromptFormScreen() {
   const handleClearForm = () => {
     console.log('Clear button pressed!');
     
-    // Direct clear without Alert for now - more reliable
-    console.log('Clearing form directly...');
-    
-    // Reset form data to proper initial state with correct default values
-    const initialFormData: MusicPromptData = {
-      subject: '',
-      genres_primary: [],
-      genres_electronic: [],
-      mood: [],
-      tempo_bpm: '',
-      key_scale: '',
-      energy: '',
-      beat: [],
-      bass: [],
-      groove_swing: '',
-      vocal_gender: 'none',
-      vocal_delivery: '',
-      era: '',
-      master_notes: '',
-      length: '',
-      weirdness_level: '',
-      general_freeform: ''
-    };
-    
-    console.log('Setting form data to:', initialFormData);
-    setFormData(initialFormData);
-    setGeneratedPrompt('');
-    
-    // Force re-render of all form components
-    setFormKey(prev => {
-      const newKey = prev + 1;
-      console.log('Setting form key to:', newKey);
-      return newKey;
-    });
-    
-    console.log('Form cleared successfully');
+    try {
+      // Direct clear without Alert for now - more reliable
+      console.log('Clearing form directly...');
+      
+      // Reset form data to proper initial state with correct default values
+      const initialFormData: MusicPromptData = {
+        subject: '',
+        genres_primary: [],
+        genres_electronic: [],
+        mood: [],
+        tempo_bpm: '',
+        key_scale: '',
+        energy: '',
+        beat: [],
+        bass: [],
+        groove_swing: '',
+        vocal_gender: 'none',
+        vocal_delivery: '',
+        era: '',
+        master_notes: '',
+        length: '',
+        weirdness_level: '',
+        general_freeform: ''
+      };
+      
+      console.log('Setting form data to:', initialFormData);
+      setFormData(initialFormData);
+      setGeneratedPrompt('');
+      
+      // Force re-render of all form components
+      setFormKey(prev => {
+        const newKey = prev + 1;
+        console.log('Setting form key to:', newKey);
+        return newKey;
+      });
+      
+      console.log('Form cleared successfully');
+    } catch (error) {
+      console.error('Error clearing form:', error);
+      Alert.alert('Error', 'Failed to clear form. Please try again.');
+    }
   };
 
   const handleRandomTrackSelect = (trackData: any) => {
-    console.log('Random track data received:', trackData);
-    
-    // Ensure all required fields are present and properly formatted
-    const validatedTrackData: MusicPromptData = {
-      subject: trackData.subject || '',
-      genres_primary: Array.isArray(trackData.genres_primary) ? trackData.genres_primary : [],
-      genres_electronic: Array.isArray(trackData.genres_electronic) ? trackData.genres_electronic : [],
-      mood: Array.isArray(trackData.mood) ? trackData.mood : [],
-      tempo_bpm: trackData.tempo_bpm || '',
-      key_scale: trackData.key_scale || '',
-      energy: trackData.energy || '',
-      beat: Array.isArray(trackData.beat) ? trackData.beat : [],
-      bass: Array.isArray(trackData.bass) ? trackData.bass : [],
-      groove_swing: trackData.groove_swing || '',
-      vocal_gender: trackData.vocal_gender || 'none',
-      vocal_delivery: trackData.vocal_delivery || '',
-      era: trackData.era || '',
-      master_notes: trackData.master_notes || '',
-      length: trackData.length || '',
-      weirdness_level: trackData.weirdness_level || '',
-      general_freeform: trackData.general_freeform || ''
-    };
-    
-    console.log('Validated track data:', validatedTrackData);
-    
-    // Load the complete random track configuration
-    setFormData(validatedTrackData);
-    setShowRandomTrack(false);
-    
-    // Force re-render of form components
-    setFormKey(prev => prev + 1);
-    
-    // Clear any existing generated prompt since we're loading new data
-    setGeneratedPrompt('');
+    try {
+      console.log('Random track data received:', trackData);
+      
+      // Ensure all required fields are present and properly formatted
+      const validatedTrackData: MusicPromptData = {
+        subject: trackData.subject || '',
+        genres_primary: Array.isArray(trackData.genres_primary) ? trackData.genres_primary : [],
+        genres_electronic: Array.isArray(trackData.genres_electronic) ? trackData.genres_electronic : [],
+        mood: Array.isArray(trackData.mood) ? trackData.mood : [],
+        tempo_bpm: trackData.tempo_bpm || '',
+        key_scale: trackData.key_scale || '',
+        energy: trackData.energy || '',
+        beat: Array.isArray(trackData.beat) ? trackData.beat : [],
+        bass: Array.isArray(trackData.bass) ? trackData.bass : [],
+        groove_swing: trackData.groove_swing || '',
+        vocal_gender: trackData.vocal_gender || 'none',
+        vocal_delivery: trackData.vocal_delivery || '',
+        era: trackData.era || '',
+        master_notes: trackData.master_notes || '',
+        length: trackData.length || '',
+        weirdness_level: trackData.weirdness_level || '',
+        general_freeform: trackData.general_freeform || ''
+      };
+      
+      console.log('Validated track data:', validatedTrackData);
+      
+      // Load the complete random track configuration
+      setFormData(validatedTrackData);
+      setShowRandomTrack(false);
+      
+      // Force re-render of form components
+      setFormKey(prev => prev + 1);
+      
+      // Clear any existing generated prompt since we're loading new data
+      setGeneratedPrompt('');
+    } catch (error) {
+      console.error('Error handling random track selection:', error);
+      Alert.alert('Error', 'Failed to load random track. Please try again.');
+      setShowRandomTrack(false);
+    }
   };
 
   const handleLoadPrompt = (savedFormData: MusicPromptData) => {
-    setFormData(savedFormData);
-    setShowHistory(false);
-    
-    // Force re-render of form components
-    setFormKey(prev => prev + 1);
+    try {
+      setFormData(savedFormData);
+      setShowHistory(false);
+      
+      // Force re-render of form components
+      setFormKey(prev => prev + 1);
+    } catch (error) {
+      console.error('Error loading prompt:', error);
+      Alert.alert('Error', 'Failed to load prompt. Please try again.');
+      setShowHistory(false);
+    }
   };
 
   const handleSaveCurrentPrompt = async (name: string) => {
-    if (generatedPrompt) {
-      await savePrompt(name, formData, generatedPrompt);
-      setShowHistory(false);
+    try {
+      if (generatedPrompt) {
+        await savePrompt(name, formData, generatedPrompt);
+        setShowHistory(false);
+      }
+    } catch (error) {
+      console.error('Error saving prompt:', error);
+      Alert.alert('Error', 'Failed to save prompt. Please try again.');
     }
   };
 

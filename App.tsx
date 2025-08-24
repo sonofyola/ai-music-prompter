@@ -36,6 +36,7 @@ function AppContent() {
           }
         } catch (error) {
           console.error('Error checking pending payments:', error);
+          // Don't crash the app - this is not critical
         }
       }
     };
