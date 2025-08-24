@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
 import IconFallback from '../components/IconFallback';
+import * as Clipboard from 'expo-clipboard';
 
 interface User {
   id: string;
@@ -170,22 +171,14 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     }
 
     try {
-      const emailList = users.map(user => user.email).join('\n');
       const csvContent = 'Email,Name,Created,Last Login,Is Admin\n' + 
         users.map(user => 
           `${user.email},"${user.name || ''}",${user.created_at},${user.last_login || ''},${user.is_admin}`
         ).join('\n');
       
-      // For web, we can use the clipboard
-      if (Platform.OS === 'web') {
-        await navigator.clipboard.writeText(csvContent);
-        Alert.alert('Success', 'User data copied to clipboard as CSV format.');
-      } else {
-        // For mobile, we'll use Expo Clipboard
-        const Clipboard = require('expo-clipboard');
-        await Clipboard.setStringAsync(csvContent);
-        Alert.alert('Success', 'User data copied to clipboard as CSV format.');
-      }
+      // Use expo-clipboard for both web and mobile
+      await Clipboard.setStringAsync(csvContent);
+      Alert.alert('Success', 'User data copied to clipboard as CSV format.');
     } catch (error) {
       console.error('Error exporting users:', error);
       Alert.alert('Error', 'Failed to export user data.');
