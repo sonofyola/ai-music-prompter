@@ -1,53 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-        http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">
   
-  <!-- Homepage -->
+  <!-- Main page -->
   <url>
     <loc>https://aimusicpromptr.com/</loc>
-    <lastmod>2024-01-15</lastmod>
-    <changefreq>weekly</changefreq>
+    <lastmod>2024-01-15T00:00:00+00:00</lastmod>
+    <changefreq>daily</changefreq>
     <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://aimusicpromptr.com/og-image.png</image:loc>
+      <image:title>AI Music Prompter - Professional AI Music Prompt Generator</image:title>
+      <image:caption>Create professional prompts for Suno AI, Udio, Riffusion, MusicGen and other AI music tools</image:caption>
+    </image:image>
   </url>
   
-  <!-- Main App -->
+  <!-- App page (if different from main) -->
   <url>
     <loc>https://aimusicpromptr.com/app</loc>
-    <lastmod>2024-01-15</lastmod>
+    <lastmod>2024-01-15T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- Subscription Page -->
+  <!-- Privacy Policy -->
   <url>
-    <loc>https://aimusicpromptr.com/subscription</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>https://aimusicpromptr.com/privacy</loc>
+    <lastmod>2024-01-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.3</priority>
   </url>
   
-  <!-- Blog/Guide Pages -->
+  <!-- Terms of Service -->
   <url>
-    <loc>https://aimusicpromptr.com/how-to-use-suno-ai-prompts</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>https://aimusicpromptr.com/terms</loc>
+    <lastmod>2024-01-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.3</priority>
   </url>
   
+  <!-- Contact -->
   <url>
-    <loc>https://aimusicpromptr.com/best-ai-music-generators</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>https://aimusicpromptr.com/contact</loc>
+    <lastmod>2024-01-10T00:00:00+00:00</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
+    <priority>0.4</priority>
   </url>
   
+  <!-- Blog section (for future content) -->
   <url>
-    <loc>https://aimusicpromptr.com/music-prompt-examples</loc>
-    <lastmod>2024-01-15</lastmod>
+    <loc>https://aimusicpromptr.com/blog</loc>
+    <lastmod>2024-01-15T00:00:00+00:00</lastmod>
     <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <!-- Future blog posts can be added here -->
+  <!-- Example:
+  <url>
+    <loc>https://aimusicpromptr.com/blog/best-ai-music-prompts-for-electronic-music</loc>
+    <lastmod>2024-01-15T00:00:00+00:00</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+  -->
   
 </urlset>

@@ -1,38 +1,111 @@
 {
-  "name": "AI Music Prompter",
-  "short_name": "AI Prompter",
-  "description": "Generate professional AI music prompts for Suno AI, Udio, MusicGen and more",
-  "icons": [
-    {
-      "src": "/android-chrome-192x192.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/android-chrome-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ],
-  "theme_color": "#6366f1",
-  "background_color": "#ffffff",
-  "display": "standalone",
-  "orientation": "portrait",
+  "name": "AI Music Prompter - Professional AI Music Prompt Generator",
+  "short_name": "AI Music Prompter",
+  "description": "Generate professional AI music prompts for Suno AI, Udio, Riffusion, MusicGen and other AI music tools. Advanced genre, mood, and tempo controls.",
   "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
   "scope": "/",
-  "categories": ["music", "productivity", "entertainment"],
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["music", "productivity", "entertainment", "utilities"],
   "screenshots": [
     {
       "src": "/screenshot-wide.png",
       "sizes": "1280x720",
       "type": "image/png",
-      "form_factor": "wide"
+      "form_factor": "wide",
+      "label": "AI Music Prompter main interface on desktop"
     },
     {
       "src": "/screenshot-narrow.png",
-      "sizes": "750x1334",
+      "sizes": "640x1136",
       "type": "image/png",
-      "form_factor": "narrow"
+      "form_factor": "narrow",
+      "label": "AI Music Prompter mobile interface"
     }
-  ]
+  ],
+  "icons": [
+    {
+      "src": "/favicon-16x16.png",
+      "sizes": "16x16",
+      "type": "image/png"
+    },
+    {
+      "src": "/favicon-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Create New Prompt",
+      "short_name": "New Prompt",
+      "description": "Start creating a new AI music prompt",
+      "url": "/?action=new",
+      "icons": [
+        {
+          "src": "/shortcut-new.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Browse Templates",
+      "short_name": "Templates",
+      "description": "Browse prompt templates",
+      "url": "/?action=templates",
+      "icons": [
+        {
+          "src": "/shortcut-templates.png",
+          "sizes": "96x96"
+        }
+      ]
+    },
+    {
+      "name": "Prompt History",
+      "short_name": "History",
+      "description": "View your prompt history",
+      "url": "/?action=history",
+      "icons": [
+        {
+          "src": "/shortcut-history.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://aimusicpromptr.com/manifest.json"
+    }
+  ],
+  "prefer_related_applications": false,
+  "edge_side_panel": {
+    "preferred_width": 400
+  },
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  }
 }

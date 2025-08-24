@@ -24,6 +24,7 @@ import GeneratedPrompt from '../components/GeneratedPrompt';
 import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
+import Disclaimer from '../components/Disclaimer';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -501,6 +502,9 @@ export default function PromptFormScreen() {
 
         {/* Footer */}
         <Footer />
+
+        {/* Disclaimer */}
+        <Disclaimer compact style={{ marginBottom: 8 }} />
 
         {/* Cookie Consent */}
         <CookieConsent />

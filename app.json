@@ -1,23 +1,23 @@
 {
   "expo": {
-    "name": "AI Music Promptr",
-    "slug": "user-app-f9ba5f44",
+    "name": "AI Music Prompter",
+    "slug": "ai-music-prompter",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/splash-icon.png",
     "userInterfaceStyle": "automatic",
-    "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
+    "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, Riffusion, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#6366f1"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "dev.kiki.userapp.f9ba5f44",
+      "bundleIdentifier": "com.aimusicpromptr.app",
       "infoPlist": {
         "UIBackgroundModes": [
           "background-fetch",
@@ -25,20 +25,20 @@
         ],
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": true
-        }
+        },
+        "CFBundleDisplayName": "AI Music Prompter",
+        "CFBundleName": "AI Music Prompter"
       }
     },
     "android": {
-      "package": "dev.kiki.userapp.pjlkfpee",
+      "package": "com.aimusicpromptr.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#6366f1"
       },
       "permissions": [
-        "android.permission.RECEIVE_BOOT_COMPLETED",
-        "android.permission.VIBRATE",
-        "android.permission.WAKE_LOCK",
-        "android.permission.INTERNET"
+        "android.permission.INTERNET",
+        "android.permission.VIBRATE"
       ]
     },
     "web": {
@@ -47,18 +47,39 @@
       "output": "single",
       "name": "AI Music Prompter",
       "shortName": "AI Prompter",
-      "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, MusicGen and other AI music tools",
+      "description": "Professional AI music prompt generator for Suno AI, Udio, Riffusion, MusicGen and other AI music tools",
       "themeColor": "#6366f1",
       "backgroundColor": "#ffffff",
       "startUrl": "/",
       "display": "standalone",
-      "orientation": "portrait"
+      "orientation": "portrait-primary",
+      "scope": "/",
+      "lang": "en",
+      "dir": "ltr",
+      "categories": ["music", "productivity", "entertainment"],
+      "screenshots": [
+        {
+          "src": "/screenshot-wide.png",
+          "sizes": "1280x720",
+          "type": "image/png",
+          "form_factor": "wide"
+        },
+        {
+          "src": "/screenshot-narrow.png",
+          "sizes": "640x1136",
+          "type": "image/png",
+          "form_factor": "narrow"
+        }
+      ]
     },
     "plugins": [],
     "extra": {
       "eas": {
         "projectId": "your-eas-project-id"
       }
-    }
+    },
+    "scheme": "aimusicpromptr",
+    "privacy": "public",
+    "platforms": ["ios", "android", "web"]
   }
 }

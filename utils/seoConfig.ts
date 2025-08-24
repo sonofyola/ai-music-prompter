@@ -1,128 +1,143 @@
-export interface SEOConfig {
-  title: string;
-  description: string;
-  keywords: string[];
-  ogImage?: string;
-  canonicalUrl?: string;
-  structuredData?: any;
-}
-
-export const defaultSEOConfig: SEOConfig = {
-  title: "AI Music Prompter - Create Professional Music Prompts for Suno, Udio & More",
-  description: "AI Music Prompter generates professional AI music prompts instantly. Perfect for Suno AI, Udio, MusicGen, and other AI music tools. Create detailed prompts with genre, mood, instruments, and more. Free daily generations + premium unlimited access.",
+export const SEO_CONFIG = {
+  // Primary SEO Data
+  title: 'AI Music Prompter - Professional Prompts for Suno AI, Udio, Riffusion & MusicGen',
+  description: 'Generate professional AI music prompts instantly for Suno AI, Udio, Riffusion, MusicGen & more. Advanced genre selection, mood control, tempo settings. 3 free daily generations + unlimited premium access.',
   keywords: [
-    "AI music prompter",
-    "AI music prompts",
-    "Suno AI prompts", 
-    "Udio prompts",
-    "MusicGen prompts",
-    "AI music generator",
-    "music prompt creator",
-    "AI songwriting",
-    "music production AI",
-    "artificial intelligence music",
-    "automated music prompts",
-    "music AI tools",
-    "song prompt generator",
-    "AI music creation",
-    "music generation prompts",
-    "Suno AI generator",
-    "Udio music AI",
-    "AI music composition",
-    "music prompt optimization"
-  ]
-};
-
-export const pageConfigs = {
-  home: {
-    ...defaultSEOConfig,
-    canonicalUrl: "https://aimusicpromptr.com/"
-  },
-  
-  app: {
-    title: "AI Music Prompter App - Create Music Prompts Now",
-    description: "Use AI Music Prompter to create professional prompts for Suno AI, Udio, MusicGen and more. Generate detailed music descriptions with genre, mood, instruments, and advanced parameters.",
-    keywords: [...defaultSEOConfig.keywords, "music prompt app", "online music generator", "free music prompts"],
-    canonicalUrl: "https://aimusicpromptr.com/app"
-  },
-  
-  subscription: {
-    title: "Premium Plans - Unlimited AI Music Prompts | AI Music Prompter",
-    description: "Upgrade AI Music Prompter to premium for unlimited AI music prompt generations. Perfect for professional musicians, content creators, and music producers. Only $5.99/month for unlimited access.",
-    keywords: [...defaultSEOConfig.keywords, "premium music prompts", "unlimited music generation", "music prompt subscription"],
-    canonicalUrl: "https://aimusicpromptr.com/subscription"
-  }
-};
-
-// High-value long-tail keywords for content creation
-export const contentKeywords = {
-  howToGuides: [
-    "how to use AI Music Prompter",
-    "AI Music Prompter tutorial",
-    "how to write prompts for Suno AI",
-    "best Suno AI prompts examples",
-    "Udio prompt writing guide",
-    "MusicGen prompt optimization",
-    "AI music prompt best practices",
-    "creating effective music prompts",
-    "Suno AI v4 prompt guide",
-    "professional music prompt writing"
+    'AI music prompter',
+    'AI music prompts',
+    'Suno AI prompts',
+    'Udio prompts', 
+    'Riffusion prompts',
+    'MusicGen prompts',
+    'AI music generator',
+    'music prompt creator',
+    'AI songwriting',
+    'music production AI',
+    'artificial intelligence music',
+    'automated music prompts',
+    'music AI tools',
+    'song prompt generator',
+    'AI music creation',
+    'text to music',
+    'music AI assistant'
   ],
   
-  comparisons: [
-    "AI Music Prompter vs competitors",
-    "Suno AI vs Udio prompts",
-    "best AI music generators 2024",
-    "MusicGen vs Suno AI comparison",
-    "AI music tools comparison",
-    "Udio vs Suno AI which is better"
+  // URLs and Social
+  siteUrl: 'https://aimusicpromptr.com',
+  siteName: 'AI Music Prompter',
+  twitterHandle: '@aimusicpromptr',
+  
+  // Images
+  ogImage: 'https://aimusicpromptr.com/og-image.png',
+  twitterImage: 'https://aimusicpromptr.com/twitter-image.png',
+  logo: 'https://aimusicpromptr.com/logo.png',
+  
+  // App Info
+  appName: 'AI Music Prompter',
+  appShortName: 'AI Prompter',
+  themeColor: '#6366f1',
+  backgroundColor: '#ffffff',
+  
+  // Features for structured data
+  features: [
+    'AI Music Prompt Generation',
+    'Multiple Genre Support (Electronic, Rock, Pop, Hip-Hop, etc.)',
+    'Advanced Mood and Energy Controls',
+    'Instrument and Vocal Specifications',
+    'Tempo and Key Selection',
+    'Custom Creative Direction',
+    'Prompt History and Templates',
+    'Export and Copy Functionality',
+    'Mobile and Desktop Responsive'
   ],
   
-  tutorials: [
-    "AI Music Prompter beginner guide",
-    "Suno AI tutorial for beginners",
-    "how to use Udio effectively",
-    "MusicGen prompt examples",
-    "AI music creation workflow",
-    "music production with AI tools"
-  ]
-};
-
-// SEO-optimized content suggestions
-export const contentSuggestions = {
-  blogPosts: [
+  // Supported AI Tools
+  supportedTools: [
+    'Suno AI',
+    'Udio',
+    'Riffusion', 
+    'MusicGen',
+    'AIVA',
+    'Amper Music',
+    'Soundful',
+    'Boomy'
+  ],
+  
+  // FAQ Data
+  faq: [
     {
-      title: "The Complete Guide to AI Music Prompter: 50+ Examples That Work",
-      slug: "complete-guide-ai-music-prompter-examples",
-      keywords: ["AI Music Prompter", "AI music prompts", "Suno AI examples", "best music prompts"],
-      description: "Master AI Music Prompter with our comprehensive guide featuring 50+ proven prompt examples, tips, and best practices for creating amazing AI music."
+      question: 'What is AI Music Prompter?',
+      answer: 'AI Music Prompter is a professional tool that creates detailed text descriptions to guide AI music generators like Suno AI, Udio, Riffusion, and MusicGen. It combines genre, mood, instruments, tempo, vocal styles, and other parameters into optimized prompts that produce better AI-generated music.'
     },
     {
-      title: "AI Music Prompter vs Competitors: Why We're the Best Choice in 2024",
-      slug: "ai-music-prompter-vs-competitors-2024",
-      keywords: ["AI Music Prompter", "best AI music prompt generator", "AI music comparison"],
-      description: "Compare AI Music Prompter with other tools. Features, pricing, quality, and why AI Music Prompter is the best choice for your needs in 2024."
+      question: 'Which AI music tools work with AI Music Prompter?',
+      answer: 'AI Music Prompter works with all major AI music generators including Suno AI, Udio, Riffusion, MusicGen, AIVA, Amper Music, Soundful, Boomy, and any other text-to-music AI platform that accepts descriptive prompts.'
     },
     {
-      title: "How to Write Perfect Music Prompts with AI Music Prompter",
-      slug: "how-to-write-perfect-music-prompts-ai-music-prompter",
-      keywords: ["AI Music Prompter tutorial", "music prompt writing", "AI music prompts"],
-      description: "Learn the art of writing effective music prompts using AI Music Prompter. Tips, techniques, and examples for better AI music results."
+      question: 'Is AI Music Prompter free to use?',
+      answer: 'Yes! AI Music Prompter offers 3 free professional prompt generations per day. For unlimited access with advanced features, premium plans start at just $5.99/month.'
+    },
+    {
+      question: 'How does AI Music Prompter improve my AI music results?',
+      answer: 'AI Music Prompter uses advanced prompt engineering techniques to create detailed, structured descriptions that AI music tools understand better. This results in more accurate genre matching, better mood control, proper instrumentation, and overall higher quality AI-generated music.'
+    },
+    {
+      question: 'Can I save and reuse my prompts?',
+      answer: 'Absolutely! AI Music Prompter includes prompt history, templates, and export functionality. You can save your best prompts, create custom templates, and build a library of go-to prompts for different music styles.'
     }
   ],
   
-  landingPages: [
-    {
-      title: "AI Music Prompter for Suno AI - Create Perfect Suno Prompts",
-      slug: "suno-ai-prompt-generator",
-      keywords: ["AI Music Prompter Suno", "Suno AI prompt generator", "Suno prompts"],
-      description: "Use AI Music Prompter to generate optimized prompts specifically for Suno AI. Create better music with our specialized Suno prompt generator."
-    },
-    {
-      title: "AI Music Prompter for Udio - Professional Udio Music Prompts",
-      slug: "udio-prompt-generator", 
-      keywords: ["AI Music Prompter Udio", "Udio prompt generator", "Udio prompts"],
-      description: "Create professional prompts for Udio AI music generator using AI Music Prompter. Optimized for Udio's unique capabilities and features."
+  // Blog topics for future content
+  blogTopics: [
+    'Best AI Music Prompts for Electronic Music',
+    'How to Write Perfect Prompts for Suno AI',
+    'Udio vs Suno AI: Complete Comparison Guide',
+    'Advanced Prompt Engineering for AI Music',
+    'Genre-Specific Prompt Templates',
+    'Mood and Energy Control in AI Music',
+    'The Future of AI Music Generation',
+    'Tips for Better AI Music Results'
+  ],
+  
+  // Disclaimer
+  disclaimer: 'AI Music Prompter is an independent tool and is not affiliated with, endorsed by, or connected to Suno AI, Udio, Riffusion, MusicGen, or any other AI music generation platforms. All trademarks and product names are the property of their respective owners.'
+};
+
+// Helper function to generate meta tags
+export const generateMetaTags = (pageTitle?: string, pageDescription?: string) => {
+  const title = pageTitle || SEO_CONFIG.title;
+  const description = pageDescription || SEO_CONFIG.description;
+  
+  return {
+    title,
+    description,
+    keywords: SEO_CONFIG.keywords.join(', '),
+    ogTitle: title,
+    ogDescription: description,
+    ogImage: SEO_CONFIG.ogImage,
+    twitterTitle: title,
+    twitterDescription: description,
+    twitterImage: SEO_CONFIG.twitterImage,
+    canonical: SEO_CONFIG.siteUrl
+  };
+};
+
+// Helper function for structured data
+export const generateStructuredData = () => {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: SEO_CONFIG.appName,
+    description: SEO_CONFIG.description,
+    url: SEO_CONFIG.siteUrl,
+    applicationCategory: 'MultimediaApplication',
+    operatingSystem: 'Web Browser, iOS, Android',
+    featureList: SEO_CONFIG.features,
+    offers: {
+      '@type': 'Offer',
+      price: '0',
+      priceCurrency: 'USD',
+      description: 'Free with premium options available'
     }
-  ]
+  };
 };
