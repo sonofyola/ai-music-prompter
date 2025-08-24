@@ -66,9 +66,10 @@ export const downgradeBetaTester = async (db: any, userEmail: string) => {
 export const getBetaTesters = async (db: any) => {
   try {
     const allUsers = await db.from('user_profiles').getAll();
+    const adminEmails = ['ibeme8@gmail.com', 'drremotework@gmail.com', 'sonofyola@gmail.com'];
+    
     return allUsers.filter((user: any) => 
-      user.subscription_status !== 'admin' && 
-      user.email !== 'sonofyola@gmail.com' // Exclude your admin email
+      !adminEmails.includes(user.email)
     );
   } catch (error) {
     console.error('Error getting beta testers:', error);

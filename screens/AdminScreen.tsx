@@ -133,6 +133,7 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         [{ text: 'OK', onPress: () => {
           if (result.success) {
             setUpgradeEmail('');
+            loadUsers();
             loadBetaTesters();
           }
         }}]
@@ -159,12 +160,56 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             Alert.alert(
               result.success ? 'Success!' : 'Error',
               result.message,
-              [{ text: 'OK', onPress: loadBetaTesters }]
+              [{ text: 'OK', onPress: () => {
+                loadUsers();
+                loadBetaTesters();
+              }}]
             );
           }
         }
       ]
     );
+  };
+
+  const handleCreateMissingProfiles = async () => {
+    if (!db) return;
+    
+    try {
+      const allUsers = await db.from('users').getAll();
+      const allUserProfiles = await db.from('user_profiles').getAll();
+      
+      const usersWithoutProfiles = allUsers.filter((user: any) => 
+        !allUserProfiles.find((profile: any) => profile.email === user.email)
+      );
+      
+      if (usersWithoutProfiles.length === 0) {
+        Alert.alert('Info', 'All users already have profiles.');
+        return;
+      }
+      
+      for (const user of usersWithoutProfiles) {
+        await db.from('user_profiles').add({
+          email: user.email,
+          created_at: user.created_at || new Date().toISOString(),
+          usage_count: 0,
+          last_reset_date: new Date().toISOString(),
+          subscription_status: 'free',
+          stripe_customer_id: '',
+        });
+      }
+      
+      Alert.alert(
+        'Success!', 
+        `Created profiles for ${usersWithoutProfiles.length} users.`,
+        [{ text: 'OK', onPress: () => {
+          loadUsers();
+          loadBetaTesters();
+        }}]
+      );
+    } catch (error) {
+      console.error('Error creating profiles:', error);
+      Alert.alert('Error', 'Failed to create user profiles.');
+    }
   };
 
   const handleExportUsers = async () => {
@@ -229,44 +274,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         }
       ]
     );
-  };
-
-  const handleCreateMissingProfiles = async () => {
-    if (!db) return;
-    
-    try {
-      const allUsers = await db.from('users').getAll();
-      const allUserProfiles = await db.from('user_profiles').getAll();
-      
-      const usersWithoutProfiles = allUsers.filter((user: any) => 
-        !allUserProfiles.find((profile: any) => profile.email === user.email)
-      );
-      
-      if (usersWithoutProfiles.length === 0) {
-        Alert.alert('Info', 'All users already have profiles.');
-        return;
-      }
-      
-      for (const user of usersWithoutProfiles) {
-        await db.from('user_profiles').add({
-          email: user.email,
-          created_at: user.created_at || new Date().toISOString(),
-          usage_count: 0,
-          last_reset_date: new Date().toISOString(),
-          subscription_status: 'free',
-          stripe_customer_id: '',
-        });
-      }
-      
-      Alert.alert(
-        'Success!', 
-        `Created profiles for ${usersWithoutProfiles.length} users.`,
-        [{ text: 'OK', onPress: loadUsers }]
-      );
-    } catch (error) {
-      console.error('Error creating profiles:', error);
-      Alert.alert('Error', 'Failed to create user profiles.');
-    }
   };
 
   const styles = createStyles(colors);
@@ -344,6 +351,63 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           </View>
         </View>
 
+        {/* All Users List */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>👤 All Users ({users.length})</Text>
+          
+          {users.length > 0 ? (
+            <View style={styles.usersContainer}>
+              {/* Table header */}
+              <View style={styles.tableHeader}>
+                <Text style={[styles.tableHeaderText, styles.emailColumn]}>Email</Text>
+                <Text style={[styles.tableHeaderText, styles.statusColumn]}>Status</Text>
+                <Text style={[styles.tableHeaderText, styles.usageColumn]}>Usage</Text>
+                <Text style={[styles.tableHeaderText, styles.dateColumn]}>Created</Text>
+                <Text style={[styles.tableHeaderText, styles.actionsColumn]}>Actions</Text>
+              </View>
+
+              {/* Table rows */}
+              {users
+                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+                .map((user) => (
+                <View key={user.id} style={styles.tableRow}>
+                  <Text style={[styles.tableCellText, styles.emailColumn]} numberOfLines={1}>
+                    {user.email}
+                  </Text>
+                  <View style={[styles.tableCell, styles.statusColumn]}>
+                    <Text style={[
+                      styles.statusBadge,
+                      user.subscription_status === 'unlimited' && styles.statusUnlimited,
+                      user.subscription_status === 'premium' && styles.statusPremium,
+                      user.subscription_status === 'free' && styles.statusFree
+                    ]}>
+                      {user.subscription_status || 'free'}
+                    </Text>
+                  </View>
+                  <Text style={[styles.tableCellText, styles.usageColumn]}>
+                    {user.usage_count || 0}
+                  </Text>
+                  <Text style={[styles.tableCellText, styles.dateColumn]} numberOfLines={1}>
+                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
+                  </Text>
+                  <View style={[styles.tableCell, styles.actionsColumn]}>
+                    {user.subscription_status !== 'unlimited' && (
+                      <TouchableOpacity 
+                        style={styles.quickUpgradeButton}
+                        onPress={() => handleQuickUpgrade(user.email)}
+                      >
+                        <Text style={styles.quickUpgradeButtonText}>⬆️</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={styles.noDataText}>No users found</Text>
+          )}
+        </View>
+
         {/* Beta Tester Management */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>👥 Beta Tester Management</Text>
@@ -417,9 +481,9 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           )}
         </View>
 
-        {/* User Management */}
+        {/* User Management Actions */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>👤 User Management</Text>
+          <Text style={styles.sectionTitle}>🔧 User Management Actions</Text>
           <View style={styles.actionButtons}>
             <TouchableOpacity 
               style={styles.actionButton}
@@ -551,6 +615,25 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
     marginBottom: 16,
   },
+  debugText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+    fontFamily: 'monospace',
+  },
+  debugButton: {
+    backgroundColor: colors.textTertiary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
   statsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -576,6 +659,16 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     textAlign: 'center',
+  },
+  usersContainer: {
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    fontStyle: 'italic',
+    paddingVertical: 20,
   },
   upgradeControls: {
     marginBottom: 20,
@@ -645,18 +738,22 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.text,
   },
   emailColumn: {
-    flex: 2,
+    flex: 2.5,
   },
   statusColumn: {
     flex: 1,
     alignItems: 'center',
   },
   usageColumn: {
+    flex: 0.8,
+    textAlign: 'center',
+  },
+  dateColumn: {
     flex: 1,
     textAlign: 'center',
   },
   actionsColumn: {
-    flex: 1,
+    flex: 0.8,
     alignItems: 'center',
   },
   statusBadge: {
@@ -765,25 +862,6 @@ const createStyles = (colors: any) => StyleSheet.create({
   signOutButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-  },
-  debugText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 4,
-    fontFamily: 'monospace',
-  },
-  debugButton: {
-    backgroundColor: colors.textTertiary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 8,
-    alignSelf: 'flex-start',
-  },
-  debugButtonText: {
-    color: '#fff',
-    fontSize: 12,
     fontWeight: '600',
   },
 });
