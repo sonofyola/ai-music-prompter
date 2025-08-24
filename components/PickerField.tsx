@@ -14,6 +14,12 @@ export default function PickerField({ label, value, onValueChange, options }: Pi
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
+  // Add a default "Select..." option if not already present
+  const allOptions = [
+    { label: 'Select...', value: '' },
+    ...options.filter(option => option.value !== '')
+  ];
+
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
@@ -24,7 +30,7 @@ export default function PickerField({ label, value, onValueChange, options }: Pi
           style={styles.picker}
           dropdownIconColor={colors.textSecondary}
         >
-          {options.map((option) => (
+          {allOptions.map((option) => (
             <Picker.Item
               key={option.value}
               label={option.label}

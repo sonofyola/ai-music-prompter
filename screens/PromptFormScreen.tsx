@@ -138,34 +138,31 @@ export default function PromptFormScreen() {
           text: 'Clear', 
           style: 'destructive',
           onPress: () => {
-            // Reset form data to initial state
+            // Reset form data to proper initial state with correct default values
             const initialFormData: MusicPromptData = {
               subject: '',
               genres_primary: [],
               genres_electronic: [],
               mood: [],
               tempo_bpm: '',
-              key_scale: '',
-              energy: '',
+              key_scale: '', // This should be empty string to show "Select..." in picker
+              energy: '', // This should be empty string to show "Select..." in picker
               beat: [],
               bass: [],
-              groove_swing: '',
-              vocal_gender: 'none',
-              vocal_delivery: '',
+              groove_swing: '', // This should be empty string to show "Select..." in picker
+              vocal_gender: 'none', // Default to 'none' as per VOCAL_GENDERS
+              vocal_delivery: '', // This should be empty string
               era: '',
               master_notes: '',
               length: '',
-              weirdness_level: '',
+              weirdness_level: '', // This should be empty string to show "Select..." in picker
               general_freeform: ''
             };
             
             setFormData(initialFormData);
             setGeneratedPrompt('');
             
-            // Force a re-render by updating state
-            setTimeout(() => {
-              console.log('Form cleared successfully');
-            }, 100);
+            console.log('Form cleared successfully');
           }
         }
       ]
