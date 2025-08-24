@@ -6,7 +6,6 @@ import { View, Text, StyleSheet, AppState } from 'react-native';
 
 // Context Providers
 import { ThemeProvider } from './contexts/ThemeContext';
-import { NotificationProvider } from './contexts/NotificationContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import { UsageProvider } from './contexts/UsageContext';
 
@@ -90,9 +89,7 @@ export default function App() {
         <ThemeProvider>
           <UsageProvider>
             <PromptHistoryProvider>
-              <NotificationProvider>
-                <AppContent />
-              </NotificationProvider>
+              <AppContent />
             </PromptHistoryProvider>
           </UsageProvider>
         </ThemeProvider>
