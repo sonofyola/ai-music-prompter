@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
   View, 
   Text, 
@@ -43,8 +43,7 @@ import {
   COMMON_KEYS, 
   BEAT_STYLES, 
   BASS_CHARACTERISTICS, 
-  WEIRDNESS_LEVELS, 
-  ERA_SUGGESTIONS 
+  WEIRDNESS_LEVELS
 } from '../utils/musicData';
 
 // Types
@@ -62,7 +61,7 @@ export default function PromptFormScreen() {
     subscriptionStatus, 
     incrementGeneration
   } = useUsage();
-  const { savePrompt, loadPrompt } = usePromptHistory();
+  const { savePrompt } = usePromptHistory();
   
   // Admin state - hidden from regular users
   const [showAdminScreen, setShowAdminScreen] = useState(false);
@@ -309,17 +308,17 @@ export default function PromptFormScreen() {
               
               <MultiSelectField
                 label="Primary Genres"
-                selectedValues={formData.genres_primary}
+                values={formData.genres_primary}
                 options={PRIMARY_GENRES}
-                onSelectionChange={(values) => updateFormData('genres_primary', values)}
+                onValuesChange={(values) => updateFormData('genres_primary', values)}
                 placeholder="Select primary genres..."
               />
               
               <MultiSelectField
                 label="Electronic Sub-genres"
-                selectedValues={formData.genres_electronic}
+                values={formData.genres_electronic}
                 options={ELECTRONIC_GENRES}
-                onSelectionChange={(values) => updateFormData('genres_electronic', values)}
+                onValuesChange={(values) => updateFormData('genres_electronic', values)}
                 placeholder="Select electronic sub-genres..."
               />
               
@@ -328,7 +327,6 @@ export default function PromptFormScreen() {
                 value={formData.era}
                 onChangeText={(value) => updateFormData('era', value)}
                 placeholder="e.g., 1990s rave, 2000s French house, modern 2025..."
-                suggestions={ERA_SUGGESTIONS}
               />
             </View>
 
@@ -337,26 +335,24 @@ export default function PromptFormScreen() {
               
               <MultiSelectField
                 label="Mood"
-                selectedValues={formData.mood}
+                values={formData.mood}
                 options={MOODS}
-                onSelectionChange={(values) => updateFormData('mood', values)}
+                onValuesChange={(values) => updateFormData('mood', values)}
                 placeholder="Select moods..."
               />
               
               <PickerField
                 label="Energy Level"
-                selectedValue={formData.energy}
+                value={formData.energy}
                 options={ENERGY_LEVELS}
                 onValueChange={(value) => updateFormData('energy', value)}
-                placeholder="Select energy level..."
               />
               
               <PickerField
                 label="Weirdness Level"
-                selectedValue={formData.weirdness_level}
+                value={formData.weirdness_level}
                 options={WEIRDNESS_LEVELS}
                 onValueChange={(value) => updateFormData('weirdness_level', value)}
-                placeholder="How experimental should it be?"
               />
             </View>
 
@@ -373,18 +369,16 @@ export default function PromptFormScreen() {
               
               <PickerField
                 label="Key/Scale"
-                selectedValue={formData.key_scale}
+                value={formData.key_scale}
                 options={COMMON_KEYS.map(key => ({ label: key, value: key }))}
                 onValueChange={(value) => updateFormData('key_scale', value)}
-                placeholder="Select key..."
               />
               
               <PickerField
                 label="Groove/Swing"
-                selectedValue={formData.groove_swing}
+                value={formData.groove_swing}
                 options={GROOVE_SWINGS}
                 onValueChange={(value) => updateFormData('groove_swing', value)}
-                placeholder="Select groove style..."
               />
             </View>
 
@@ -393,17 +387,17 @@ export default function PromptFormScreen() {
               
               <MultiSelectField
                 label="Beat Style"
-                selectedValues={formData.beat}
+                values={formData.beat}
                 options={BEAT_STYLES}
-                onSelectionChange={(values) => updateFormData('beat', values)}
+                onValuesChange={(values) => updateFormData('beat', values)}
                 placeholder="Select beat styles..."
               />
               
               <MultiSelectField
                 label="Bass Characteristics"
-                selectedValues={formData.bass}
+                values={formData.bass}
                 options={BASS_CHARACTERISTICS}
-                onSelectionChange={(values) => updateFormData('bass', values)}
+                onValuesChange={(values) => updateFormData('bass', values)}
                 placeholder="Select bass characteristics..."
               />
             </View>
@@ -413,19 +407,17 @@ export default function PromptFormScreen() {
               
               <PickerField
                 label="Vocal Gender"
-                selectedValue={formData.vocal_gender}
+                value={formData.vocal_gender}
                 options={VOCAL_GENDERS}
                 onValueChange={(value) => updateFormData('vocal_gender', value)}
-                placeholder="Select vocal gender..."
               />
               
               {formData.vocal_gender !== 'none' && (
                 <PickerField
                   label="Vocal Delivery"
-                  selectedValue={formData.vocal_delivery}
+                  value={formData.vocal_delivery}
                   options={VOCAL_DELIVERIES}
                   onValueChange={(value) => updateFormData('vocal_delivery', value)}
-                  placeholder="Select vocal style..."
                 />
               )}
             </View>
