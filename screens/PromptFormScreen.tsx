@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   View, 
   Text, 
@@ -27,6 +27,9 @@ import IconFallback from '../components/IconFallback';
 import { useTheme } from '../contexts/ThemeContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
 
+// Screens
+import AdminScreen from './AdminScreen';
+
 // Types
 import { MusicPromptData } from '../types';
 
@@ -40,7 +43,6 @@ import {
   VOCAL_DELIVERIES, 
   ENERGY_LEVELS, 
   GROOVE_SWINGS, 
-  TIME_SIGNATURES, 
   COMMON_KEYS, 
   BEAT_STYLES, 
   BASS_CHARACTERISTICS, 
@@ -52,8 +54,46 @@ import { generateRandomTrackIdea } from '../utils/randomTrackGenerator';
 export default function PromptFormScreen() {
   const { colors } = useTheme();
   const { savePrompt } = usePromptHistory();
-  const { signout, user } = useBasic();
+  const { signout, user, db } = useBasic();
   
+  // Admin state
+  const [showAdminScreen, setShowAdminScreen] = useState(false);
+  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
+
+  // Track user in database
+  useEffect(() => {
+    const trackUser = async () => {
+      if (!user || !db) return;
+
+      try {
+        // Check if user already exists
+        const existingUsers = await db.from('users').getAll();
+        const existingUser = existingUsers?.find(u => u.email === user.email);
+
+        if (!existingUser) {
+          // Create new user record
+          await db.from('users').add({
+            email: user.email,
+            name: user.name || '',
+            created_at: new Date().toISOString(),
+            last_login: new Date().toISOString(),
+            is_admin: isAdmin
+          });
+        } else {
+          // Update last login
+          await db.from('users').update(existingUser.id, {
+            last_login: new Date().toISOString(),
+            is_admin: isAdmin // Update admin status if needed
+          });
+        }
+      } catch (error) {
+        console.error('Error tracking user:', error);
+      }
+    };
+
+    trackUser();
+  }, [user, db, isAdmin]);
+
   // Form state with full original parameters
   const [formData, setFormData] = useState<MusicPromptData>({
     subject: '',
@@ -196,6 +236,7 @@ export default function PromptFormScreen() {
       await savePrompt(name, formData, generatedPrompt);
       Alert.alert('Success', 'Prompt saved successfully!');
     } catch (error) {
+      console.error('Error saving prompt:', error);
       Alert.alert('Error', 'Failed to save prompt. Please try again.');
     }
   };
@@ -208,6 +249,10 @@ export default function PromptFormScreen() {
       Alert.alert('Error', 'Failed to sign out. Please try again.');
     }
   };
+
+  if (showAdminScreen) {
+    return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -224,11 +269,20 @@ export default function PromptFormScreen() {
               {user && (
                 <Text style={styles.userIndicator}>
                   {user.name || user.email || 'Signed In'}
+                  {isAdmin && ' (Admin)'}
                 </Text>
               )}
             </View>
           </View>
           <View style={styles.headerRight}>
+            {isAdmin && (
+              <TouchableOpacity 
+                onPress={() => setShowAdminScreen(true)} 
+                style={[styles.headerButton, styles.adminButton]}
+              >
+                <IconFallback name="admin-panel-settings" size={24} color="#fff" />
+              </TouchableOpacity>
+            )}
             <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
               <IconFallback name="history" size={24} color={colors.text} />
             </TouchableOpacity>
@@ -546,6 +600,10 @@ const createStyles = (colors: any) => StyleSheet.create({
   headerButton: {
     padding: 8,
     marginRight: 8,
+  },
+  adminButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
   },
   scrollView: {
     flex: 1,

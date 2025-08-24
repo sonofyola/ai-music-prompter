@@ -18,6 +18,15 @@ interface EmailRecord {
   source: 'registration' | 'upgrade';
 }
 
+interface User {
+  id: string;
+  email: string;
+  name?: string;
+  created_at: string;
+  last_login?: string;
+  is_admin: boolean;
+}
+
 interface ValidationResult {
   valid: EmailRecord[];
   invalid: EmailRecord[];
@@ -31,8 +40,9 @@ interface AdminScreenProps {
 export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const { colors } = useTheme();
   const { subscriptionStatus, upgradeToUnlimited } = useUsage();
-  const { user, signout } = useBasic();
+  const { user, signout, db } = useBasic();
   const [emails, setEmails] = useState<EmailRecord[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isValidating, setIsValidating] = useState(false);
@@ -40,6 +50,139 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
   const [manualUpgradeEmail, setManualUpgradeEmail] = useState('');
   const [isUpgrading, setIsUpgrading] = useState(false);
   const [unlimitedEmails, setUnlimitedEmails] = useState<string[]>([]);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false);
+
+  // Check if current user is admin
+  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
+
+  useEffect(() => {
+    loadEmails();
+    loadUnlimitedEmails();
+    if (isAdmin) {
+      loadUsers();
+    }
+  }, [isAdmin]);
+
+  const loadUsers = async () => {
+    if (!db || !isAdmin) return;
+    
+    setIsLoadingUsers(true);
+    try {
+      const allUsers = await db.from('users').getAll();
+      // Convert the database records to our User type
+      const typedUsers: User[] = (allUsers || []).map(user => ({
+        id: user.id,
+        email: user.email as string,
+        name: user.name as string,
+        created_at: user.created_at as string,
+        last_login: user.last_login as string,
+        is_admin: user.is_admin as boolean
+      }));
+      setUsers(typedUsers);
+    } catch (error) {
+      console.error('Error loading users:', error);
+      setUsers([]);
+    } finally {
+      setIsLoadingUsers(false);
+    }
+  };
+
+  const deleteUser = async (userId: string, userEmail: string) => {
+    if (!db || !isAdmin) return;
+
+    Alert.alert(
+      'Delete User',
+      `Are you sure you want to permanently delete user "${userEmail}"? This will also delete all their data including prompts and profile information.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              // Delete from users table
+              await db.from('users').delete(userId);
+              
+              // Delete from user_profiles table (find by email)
+              const userProfiles = await db.from('user_profiles').getAll();
+              const userProfile = userProfiles?.find(profile => profile.email === userEmail);
+              if (userProfile) {
+                await db.from('user_profiles').delete(userProfile.id);
+              }
+              
+              // Delete from prompt_history table (find by user_id)
+              const promptHistory = await db.from('prompt_history').getAll();
+              const userPrompts = promptHistory?.filter(prompt => prompt.user_id === userId);
+              if (userPrompts) {
+                for (const prompt of userPrompts) {
+                  await db.from('prompt_history').delete(prompt.id);
+                }
+              }
+              
+              // Refresh users list
+              await loadUsers();
+              
+              Alert.alert('Success', `User "${userEmail}" has been deleted.`);
+            } catch (error) {
+              console.error('Error deleting user:', error);
+              Alert.alert('Error', 'Failed to delete user. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const makeUserAdmin = async (userId: string, userEmail: string) => {
+    if (!db || !isAdmin) return;
+
+    Alert.alert(
+      'Make Admin',
+      `Grant admin privileges to "${userEmail}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Make Admin',
+          onPress: async () => {
+            try {
+              await db.from('users').update(userId, { is_admin: true });
+              await loadUsers();
+              Alert.alert('Success', `${userEmail} is now an admin.`);
+            } catch (error) {
+              console.error('Error making user admin:', error);
+              Alert.alert('Error', 'Failed to update user. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const removeAdminPrivileges = async (userId: string, userEmail: string) => {
+    if (!db || !isAdmin) return;
+
+    Alert.alert(
+      'Remove Admin',
+      `Remove admin privileges from "${userEmail}"?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove Admin',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await db.from('users').update(userId, { is_admin: false });
+              await loadUsers();
+              Alert.alert('Success', `${userEmail} is no longer an admin.`);
+            } catch (error) {
+              console.error('Error removing admin privileges:', error);
+              Alert.alert('Error', 'Failed to update user. Please try again.');
+            }
+          }
+        }
+      ]
+    );
+  };
 
   // Enhanced email validation
   const isValidEmail = (email: string): boolean => {
@@ -60,11 +203,6 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
            noConsecutiveDots && 
            noStartEndDots;
   };
-
-  useEffect(() => {
-    loadEmails();
-    loadUnlimitedEmails();
-  }, []);
 
   const loadEmails = async () => {
     try {
@@ -398,6 +536,109 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             </Text>
           </View>
         </View>
+
+        {/* User Management Section */}
+        {isAdmin && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>👥 User Management</Text>
+            <Text style={styles.sectionSubtitle}>
+              Manage all registered users and their permissions
+            </Text>
+            
+            <View style={styles.statsGrid}>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{users.length}</Text>
+                <Text style={styles.statLabel}>Total Users</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{users.filter(u => u.is_admin).length}</Text>
+                <Text style={styles.statLabel}>Admins</Text>
+              </View>
+              <View style={styles.statCard}>
+                <Text style={styles.statNumber}>{users.filter(u => !u.is_admin).length}</Text>
+                <Text style={styles.statLabel}>Regular Users</Text>
+              </View>
+            </View>
+
+            {isLoadingUsers ? (
+              <View style={styles.loadingContainer}>
+                <Text style={styles.loadingText}>Loading users...</Text>
+              </View>
+            ) : (
+              <View style={styles.usersList}>
+                <Text style={styles.listTitle}>All Users:</Text>
+                {users.map((userData) => (
+                  <View key={userData.id} style={[
+                    styles.userItem,
+                    userData.is_admin && styles.adminUserItem
+                  ]}>
+                    <View style={styles.userHeader}>
+                      <View style={styles.userInfo}>
+                        <Text style={styles.userEmail}>{userData.email}</Text>
+                        {userData.name && (
+                          <Text style={styles.userName}>{userData.name}</Text>
+                        )}
+                        <Text style={styles.userMeta}>
+                          Created: {new Date(userData.created_at).toLocaleDateString()}
+                        </Text>
+                        {userData.last_login && (
+                          <Text style={styles.userMeta}>
+                            Last login: {new Date(userData.last_login).toLocaleDateString()}
+                          </Text>
+                        )}
+                      </View>
+                      
+                      <View style={styles.userBadges}>
+                        {userData.is_admin && (
+                          <Text style={styles.adminBadge}>ADMIN</Text>
+                        )}
+                        {userData.email === user?.email && (
+                          <Text style={styles.currentUserBadge}>YOU</Text>
+                        )}
+                      </View>
+                    </View>
+                    
+                    <View style={styles.userActions}>
+                      {userData.email !== user?.email && (
+                        <>
+                          {!userData.is_admin ? (
+                            <TouchableOpacity
+                              style={styles.makeAdminButton}
+                              onPress={() => makeUserAdmin(userData.id, userData.email)}
+                            >
+                              <MaterialIcons name="admin-panel-settings" size={16} color="#fff" />
+                              <Text style={styles.actionButtonText}>Make Admin</Text>
+                            </TouchableOpacity>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.removeAdminButton}
+                              onPress={() => removeAdminPrivileges(userData.id, userData.email)}
+                            >
+                              <MaterialIcons name="remove-moderator" size={16} color="#fff" />
+                              <Text style={styles.actionButtonText}>Remove Admin</Text>
+                            </TouchableOpacity>
+                          )}
+                          
+                          <TouchableOpacity
+                            style={styles.deleteUserButton}
+                            onPress={() => deleteUser(userData.id, userData.email)}
+                          >
+                            <MaterialIcons name="delete-forever" size={16} color="#fff" />
+                            <Text style={styles.actionButtonText}>Delete</Text>
+                          </TouchableOpacity>
+                        </>
+                      )}
+                    </View>
+                  </View>
+                ))}
+                
+                {users.length === 0 && (
+                  <Text style={styles.noUsersText}>No users found.</Text>
+                )}
+              </View>
+            )}
+          </View>
+        )}
 
         {/* Email Management Section */}
         <View style={styles.section}>
@@ -972,5 +1213,121 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     marginTop: 8,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: 'center',
+  },
+  loadingText: {
+    color: colors.textSecondary,
+    fontSize: 14,
+  },
+  usersList: {
+    marginTop: 16,
+  },
+  userItem: {
+    backgroundColor: colors.background,
+    padding: 16,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  adminUserItem: {
+    borderColor: colors.primary,
+    backgroundColor: colors.primary + '10',
+  },
+  userHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  userInfo: {
+    flex: 1,
+  },
+  userEmail: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 4,
+  },
+  userName: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 4,
+  },
+  userMeta: {
+    fontSize: 12,
+    color: colors.textTertiary,
+    marginBottom: 2,
+  },
+  userBadges: {
+    alignItems: 'flex-end',
+    gap: 4,
+  },
+  adminBadge: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    textTransform: 'uppercase',
+  },
+  currentUserBadge: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#fff',
+    backgroundColor: colors.success,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
+    textTransform: 'uppercase',
+  },
+  userActions: {
+    flexDirection: 'row',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+  makeAdminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+  },
+  removeAdminButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.warning,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+  },
+  deleteUserButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.error,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+  },
+  actionButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  noUsersText: {
+    textAlign: 'center',
+    color: colors.textSecondary,
+    fontSize: 14,
+    fontStyle: 'italic',
+    padding: 20,
   },
 });
