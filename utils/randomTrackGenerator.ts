@@ -13,7 +13,7 @@ const LOVE_SITUATIONS = [
   'You left your hoodie here and it still smells like you',
   'We\'ve been friends for years but I want more',
   'You said you needed space but you\'re all over social media',
-  'I wrote you a letter I'll never send',
+  'I wrote you a letter I\'ll never send',
   'We keep running into each other everywhere',
   'You\'re getting married but I still think about us'
 ];
