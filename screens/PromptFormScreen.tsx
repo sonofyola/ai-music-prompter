@@ -138,7 +138,8 @@ export default function PromptFormScreen() {
           text: 'Clear', 
           style: 'destructive',
           onPress: () => {
-            setFormData({
+            // Reset form data to initial state
+            const initialFormData: MusicPromptData = {
               subject: '',
               genres_primary: [],
               genres_electronic: [],
@@ -156,16 +157,24 @@ export default function PromptFormScreen() {
               length: '',
               weirdness_level: '',
               general_freeform: ''
-            });
+            };
+            
+            setFormData(initialFormData);
             setGeneratedPrompt('');
+            
+            // Force a re-render by updating state
+            setTimeout(() => {
+              console.log('Form cleared successfully');
+            }, 100);
           }
         }
       ]
     );
   };
 
-  const handleRandomSubject = (subject: string) => {
-    updateFormData('subject', subject);
+  const handleRandomTrackSelect = (trackData: any) => {
+    // Load the complete random track configuration
+    setFormData(trackData);
     setShowRandomTrack(false);
   };
 
@@ -210,12 +219,6 @@ export default function PromptFormScreen() {
   if (showAdminScreen) {
     return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
   }
-
-  const handleRandomTrackSelect = (trackData: any) => {
-    // Load the complete random track configuration
-    setFormData(trackData);
-    setShowRandomTrack(false);
-  };
 
   return (
     <SafeAreaView style={styles.container}>

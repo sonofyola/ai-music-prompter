@@ -124,55 +124,48 @@ const REAL_SETTINGS = [
   'your high school reunion', 'the airport security line', 'your ex\'s Instagram'
 ];
 
-// Template patterns for real-life situations
-const REAL_LIFE_TEMPLATES = [
-  // Direct situation
-  (situation: string) => ({
-    subject: situation,
-    description: `A song about the very real and relatable experience of: ${situation}`
-  }),
-  
-  // Situation + emotion
-  (situation: string, emotion: string) => ({
-    subject: situation,
-    description: `Capturing the ${emotion} feeling of ${situation.toLowerCase()}`
-  }),
-  
-  // Situation + setting
-  (situation: string, setting: string) => ({
-    subject: `${situation} in ${setting}`,
-    description: `The story of ${situation.toLowerCase()} while you're in ${setting}`
-  }),
-  
-  // Emotional take on situation
-  (situation: string, emotion: string) => ({
-    subject: `${situation} (and it's ${emotion})`,
-    description: `A ${emotion} anthem about ${situation.toLowerCase()}`
-  })
-];
-
 function getRandomElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
 export function generateRandomTrackIdea(): TrackIdea {
-  // Choose a random template
-  const template = getRandomElement(REAL_LIFE_TEMPLATES);
-  
-  // Get random elements
+  // Get random elements first
   const situation = getRandomElement(ALL_SITUATIONS);
   const emotion = getRandomElement(REAL_EMOTIONS);
   const setting = getRandomElement(REAL_SETTINGS);
   
-  // Apply template
-  if (template.length === 1) {
-    return template(situation);
-  } else if (template.length === 2) {
-    return Math.random() > 0.5 
-      ? template(situation, emotion)
-      : template(situation, setting);
-  } else {
-    return template(situation, emotion);
+  // Choose a random template approach
+  const templateChoice = Math.floor(Math.random() * 4);
+  
+  switch (templateChoice) {
+    case 0:
+      // Direct situation
+      return {
+        subject: situation,
+        description: `A song about the very real and relatable experience of: ${situation}`
+      };
+    
+    case 1:
+      // Situation + emotion
+      return {
+        subject: situation,
+        description: `Capturing the ${emotion} feeling of ${situation.toLowerCase()}`
+      };
+    
+    case 2:
+      // Situation + setting
+      return {
+        subject: `${situation} in ${setting}`,
+        description: `The story of ${situation.toLowerCase()} while you're in ${setting}`
+      };
+    
+    case 3:
+    default:
+      // Emotional take on situation
+      return {
+        subject: `${situation} (and it's ${emotion})`,
+        description: `A ${emotion} anthem about ${situation.toLowerCase()}`
+      };
   }
 }
 
