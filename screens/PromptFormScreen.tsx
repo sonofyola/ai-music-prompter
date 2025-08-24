@@ -257,8 +257,36 @@ export default function PromptFormScreen() {
     }
   };
 
+  // Simple admin screen test
+  const SimpleAdminScreen = () => (
+    <SafeAreaView style={styles.container}>
+      <View style={styles.header}>
+        <TouchableOpacity 
+          onPress={() => setShowAdminScreen(false)} 
+          style={styles.adminButtonLeft}
+        >
+          <IconFallback name="arrow-back" size={20} color="#fff" />
+          <Text style={{ color: '#fff', marginLeft: 8 }}>Back</Text>
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Admin Panel</Text>
+      </View>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+        <IconFallback name="admin-panel-settings" size={48} color={colors.primary} />
+        <Text style={[styles.headerTitle, { marginTop: 16, textAlign: 'center' }]}>
+          Admin Panel
+        </Text>
+        <Text style={[styles.userIndicator, { marginTop: 8, textAlign: 'center' }]}>
+          Signed in as: {user?.email}
+        </Text>
+        <Text style={[styles.userIndicator, { marginTop: 4, textAlign: 'center' }]}>
+          Admin access confirmed ✅
+        </Text>
+      </View>
+    </SafeAreaView>
+  );
+
   if (showAdminScreen) {
-    return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
+    return <SimpleAdminScreen />;
   }
 
   return (
