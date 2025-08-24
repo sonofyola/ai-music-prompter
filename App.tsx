@@ -45,6 +45,18 @@ function AppContent() {
     return () => subscription?.remove();
   }, [isSignedIn, user]);
 
+  // Add debug logging for user state changes
+  useEffect(() => {
+    if (user) {
+      console.log('🔍 User state changed:', {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isSignedIn
+      });
+    }
+  }, [user, isSignedIn]);
+
   // Add debug logging
   console.log('AppContent render:', { isLoading, isSignedIn, user: user?.email });
 

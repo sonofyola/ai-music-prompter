@@ -317,13 +317,15 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <Text style={styles.debugText}>Total users shown: {users.length}</Text>
           <Text style={styles.debugText}>Beta testers loaded: {betaTesters.length}</Text>
           <Text style={styles.debugText}>Current user: {user?.email || 'None'}</Text>
-          <Text style={styles.debugText}>Looking for: discountsaas8@gmail.com</Text>
-          <Text style={styles.debugText}>Found in users: {users.some(u => u.email === 'discountsaas8@gmail.com') ? '✅ Yes' : '❌ No'}</Text>
+          <Text style={styles.debugText}>Current user ID: {user?.id || 'None'}</Text>
+          <Text style={styles.debugText}>Current user name: {user?.name || 'None'}</Text>
+          
           <TouchableOpacity 
             style={styles.debugButton}
             onPress={async () => {
               console.log('🔍 Current users state:', users);
               console.log('🔍 Current beta testers state:', betaTesters);
+              console.log('🔍 Current user object:', user);
               
               // Let's also check the raw database data
               if (db) {
@@ -333,18 +335,114 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
                   console.log('🔍 Raw users table:', rawUsers);
                   console.log('🔍 Raw user_profiles table:', rawProfiles);
                   
-                  // Check specifically for the test user
-                  const testUser = rawUsers?.find((u: any) => u.email === 'discountsaas8@gmail.com');
-                  const testProfile = rawProfiles?.find((p: any) => p.email === 'discountsaas8@gmail.com');
-                  console.log('🔍 Test user in users table:', testUser);
-                  console.log('🔍 Test user in profiles table:', testProfile);
+                  // Show in alert for easier viewing
+                  Alert.alert(
+                    'Debug Info',
+                    `Users table: ${rawUsers?.length || 0} entries\nProfiles table: ${rawProfiles?.length || 0} entries\n\nCheck console for detailed data`,
+                    [{ text: 'OK' }]
+                  );
                 } catch (error) {
                   console.error('Error fetching raw data:', error);
+                  Alert.alert('Error', 'Failed to fetch debug data: ' + error);
                 }
               }
             }}
           >
             <Text style={styles.debugButtonText}>📋 Log Detailed State</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.debugButton, { marginTop: 8 }]}
+            onPress={async () => {
+              if (!db || !user) {
+                Alert.alert('Error', 'Database or user not available');
+                return;
+              }
+              
+              try {
+                console.log('🧪 Testing user creation for current user:', user.email);
+                
+                // Check if current user exists in both tables
+                const allUsers = await db.from('users').getAll();
+                const allProfiles = await db.from('user_profiles').getAll();
+                
+                const userInUsersTable = allUsers?.find((u: any) => u.email === user.email);
+                const userInProfilesTable = allProfiles?.find((p: any) => p.email === user.email);
+                
+                console.log('User in users table:', userInUsersTable);
+                console.log('User in profiles table:', userInProfilesTable);
+                
+                let message = `Current user (${user.email}):\n`;
+                message += `• In users table: ${userInUsersTable ? '✅ Yes' : '❌ No'}\n`;
+                message += `• In profiles table: ${userInProfilesTable ? '✅ Yes' : '❌ No'}\n`;
+                message += `• User ID: ${user.id}\n`;
+                message += `• User name: ${user.name || 'None'}`;
+                
+                Alert.alert('Current User Status', message, [{ text: 'OK' }]);
+              } catch (error) {
+                console.error('Error checking current user:', error);
+                Alert.alert('Error', 'Failed to check user status: ' + error);
+              }
+            }}
+          >
+            <Text style={styles.debugButtonText}>👤 Check Current User</Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.debugButton, { marginTop: 8 }]}
+            onPress={async () => {
+              if (!db || !user) {
+                Alert.alert('Error', 'Database or user not available');
+                return;
+              }
+              
+              Alert.alert(
+                'Force Create User',
+                `Create entries for ${user.email} in both tables?`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  {
+                    text: 'Create',
+                    onPress: async () => {
+                      try {
+                        // Create in users table
+                        const newUser = await db.from('users').add({
+                          email: user.email || '',
+                          name: user.name || user.email?.split('@')[0] || 'User',
+                          created_at: new Date().toISOString(),
+                          last_login: new Date().toISOString(),
+                          is_admin: isAdmin || false,
+                        });
+                        console.log('✅ Force created user:', newUser);
+                        
+                        // Create in user_profiles table
+                        const newProfile = await db.from('user_profiles').add({
+                          email: user.email || '',
+                          subscription_status: isAdmin ? 'unlimited' : 'free',
+                          usage_count: 0,
+                          last_reset_date: new Date().toISOString(),
+                          created_at: new Date().toISOString(),
+                          stripe_customer_id: '',
+                        });
+                        console.log('✅ Force created profile:', newProfile);
+                        
+                        Alert.alert('Success', 'User entries created successfully!', [
+                          { text: 'OK', onPress: () => {
+                            loadUsers();
+                            loadBetaTesters();
+                          }}
+                        ]);
+                      } catch (error) {
+                        console.error('Error force creating user:', error);
+                        Alert.alert('Error', 'Failed to create user: ' + error);
+                      }
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Text style={styles.debugButtonText}>🔧 Force Create Current User</Text>
           </TouchableOpacity>
         </View>
 

@@ -58,7 +58,10 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     if (!db || !user) return;
 
     try {
-      const userProfile = await db.from('user_profiles').get(user.id);
+      // Use email to find user profile instead of user.id
+      const allUserProfiles = await db.from('user_profiles').getAll();
+      const userProfile = allUserProfiles?.find((profile: any) => profile.email === user.email);
+      
       if (userProfile) {
         const today = new Date().toDateString();
         const lastResetDate = new Date(String(userProfile.last_reset_date)).toDateString();
@@ -66,7 +69,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         if (today !== lastResetDate) {
           // Reset daily usage for new day
           try {
-            await db.from('user_profiles').update(user.id, {
+            await db.from('user_profiles').update(userProfile.id, {
               usage_count: 0,
               last_reset_date: new Date().toISOString(),
             });
@@ -86,7 +89,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           // Update admin status in database if not already set
           if (userProfile.subscription_status !== 'unlimited') {
             try {
-              await db.from('user_profiles').update(user.id, {
+              await db.from('user_profiles').update(userProfile.id, {
                 subscription_status: 'unlimited',
               });
             } catch (adminUpdateError) {
@@ -101,8 +104,10 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         // Create new user profile if it doesn't exist
         const initialStatus = isAdmin ? 'unlimited' : 'free';
         try {
+          console.log('🆕 Creating new user profile for:', user.email);
+          
           // First, create the user profile
-          await db.from('user_profiles').add({
+          const newProfile = await db.from('user_profiles').add({
             email: user.email || '',
             subscription_status: initialStatus,
             usage_count: 0,
@@ -110,20 +115,26 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
             created_at: new Date().toISOString(),
             stripe_customer_id: '',
           });
+          
+          console.log('✅ Created user profile:', newProfile);
 
           // Also ensure the user exists in the users table for admin panel
           try {
-            // Check if user already exists in users table
-            const existingUser = await db.from('users').get(user.id);
+            // Check if user already exists in users table by email
+            const allUsers = await db.from('users').getAll();
+            const existingUser = allUsers?.find((u: any) => u.email === user.email);
+            
             if (!existingUser) {
-              await db.from('users').add({
+              const newUser = await db.from('users').add({
                 email: user.email || '',
                 name: user.name || user.email?.split('@')[0] || 'User',
                 created_at: new Date().toISOString(),
                 last_login: new Date().toISOString(),
                 is_admin: isAdmin || false,
               });
-              console.log('✅ Created user entry in users table for:', user.email);
+              console.log('✅ Created user entry in users table:', newUser);
+            } else {
+              console.log('ℹ️ User already exists in users table:', existingUser.email);
             }
           } catch (userTableError) {
             console.error('Error creating user in users table:', userTableError);
@@ -134,7 +145,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
           setSubscriptionStatus(initialStatus);
           setIsEmailCaptured(true);
           
-          console.log('✅ Created new user profile and user entry for:', user.email);
+          console.log('✅ Successfully set up new user:', user.email);
         } catch (createError) {
           console.error('Error creating user profile:', createError);
           // Fall back to local storage
@@ -185,11 +196,18 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     setDailyUsage(newUsage);
 
     if (isSignedIn && user && db) {
-      // Update user profile in database
+      // Update user profile in database - find by email first
       try {
-        await db.from('user_profiles').update(user.id, {
-          usage_count: newUsage,
-        });
+        const allUserProfiles = await db.from('user_profiles').getAll();
+        const userProfile = allUserProfiles?.find((profile: any) => profile.email === user.email);
+        
+        if (userProfile) {
+          await db.from('user_profiles').update(userProfile.id, {
+            usage_count: newUsage,
+          });
+        } else {
+          console.warn('User profile not found for usage increment:', user.email);
+        }
       } catch (error) {
         console.error('Error updating user usage:', error);
         // Continue anyway - the local state is updated
@@ -222,9 +240,17 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     
     if (isSignedIn && user && db) {
       try {
-        await db.from('user_profiles').update(user.id, {
-          subscription_status: 'unlimited',
-        });
+        // Find user profile by email
+        const allUserProfiles = await db.from('user_profiles').getAll();
+        const userProfile = allUserProfiles?.find((profile: any) => profile.email === user.email);
+        
+        if (userProfile) {
+          await db.from('user_profiles').update(userProfile.id, {
+            subscription_status: 'unlimited',
+          });
+        } else {
+          console.warn('User profile not found for upgrade:', user.email);
+        }
       } catch (error) {
         console.error('Error upgrading user:', error);
         // Continue anyway - the state is updated
@@ -237,10 +263,18 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
     
     if (isSignedIn && user && db) {
       try {
-        await db.from('user_profiles').update(user.id, {
-          usage_count: 0,
-          last_reset_date: new Date().toISOString(),
-        });
+        // Find user profile by email
+        const allUserProfiles = await db.from('user_profiles').getAll();
+        const userProfile = allUserProfiles?.find((profile: any) => profile.email === user.email);
+        
+        if (userProfile) {
+          await db.from('user_profiles').update(userProfile.id, {
+            usage_count: 0,
+            last_reset_date: new Date().toISOString(),
+          });
+        } else {
+          console.warn('User profile not found for reset:', user.email);
+        }
       } catch (error) {
         console.error('Error resetting user usage:', error);
         // Continue anyway - the state is updated
