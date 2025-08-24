@@ -4,13 +4,13 @@
     "slug": "ai-music-prompter",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/splash-icon.png",
+    "icon": "./assets/images/ai-music-prompter-logo.png",
     "userInterfaceStyle": "automatic",
     "description": "AI Music Prompter generates professional AI music prompts for Suno AI, Udio, Riffusion, MusicGen and other AI music tools. Create detailed prompts with genre, mood, instruments, and advanced parameters. Free daily generations with premium unlimited access.",
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/ai-music-prompter-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#6366f1"
+      "backgroundColor": "#1a1a1a"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -33,8 +33,8 @@
     "android": {
       "package": "com.aimusicpromptr.app",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#6366f1"
+        "foregroundImage": "./assets/images/ai-music-prompter-logo.png",
+        "backgroundColor": "#1a1a1a"
       },
       "permissions": [
         "android.permission.INTERNET",
@@ -42,7 +42,7 @@
       ]
     },
     "web": {
-      "favicon": "./assets/images/favicon.png",
+      "favicon": "./assets/images/ai-music-prompter-logo.png",
       "bundler": "metro",
       "output": "single",
       "name": "AI Music Prompter",

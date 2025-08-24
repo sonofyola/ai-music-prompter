@@ -25,6 +25,7 @@ import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import Disclaimer from '../components/Disclaimer';
+import Logo from '../components/Logo';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -219,7 +220,10 @@ export default function PromptFormScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleLogoPress} style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>🎵 AI Music Prompter</Text>
+            <View style={styles.headerTitleContainer}>
+              <Logo size={28} style={styles.headerLogo} />
+              <Text style={styles.headerTitle}>AI Music Prompter</Text>
+            </View>
             {user && (
               <Text style={styles.userIndicator}>
                 Welcome, {user.name || user.email?.split('@')[0] || 'User'}!
@@ -529,6 +533,14 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   headerLeft: {
     flex: 1,
+  },
+  headerTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  headerLogo: {
+    // Logo styling handled by Logo component
   },
   headerTitle: {
     fontSize: 20,

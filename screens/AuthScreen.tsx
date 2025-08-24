@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 import { useTheme } from '../contexts/ThemeContext';
+import Logo from '../components/Logo';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
@@ -34,6 +35,7 @@ export default function AuthScreen() {
       >
         {/* Hero Section */}
         <View style={styles.heroSection}>
+          <Logo size={80} style={styles.heroLogo} />
           <Text style={styles.mainTitle}>
             Create Perfect AI Music{'\n'}Prompts in Seconds
           </Text>
@@ -161,6 +163,9 @@ const createStyles = (colors: any) => StyleSheet.create({
     paddingTop: 60,
     paddingHorizontal: 20,
     paddingBottom: 80,
+  },
+  heroLogo: {
+    marginBottom: 32,
   },
   mainTitle: {
     fontSize: 48,
