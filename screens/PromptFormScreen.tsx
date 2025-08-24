@@ -263,7 +263,16 @@ export default function PromptFormScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            <IconFallback name="auto-awesome" size={28} color={colors.primary} />
+            {isAdmin ? (
+              <TouchableOpacity 
+                onPress={() => setShowAdminScreen(true)} 
+                style={styles.adminButtonLeft}
+              >
+                <IconFallback name="admin-panel-settings" size={28} color="#fff" />
+              </TouchableOpacity>
+            ) : (
+              <IconFallback name="auto-awesome" size={28} color={colors.primary} />
+            )}
             <View>
               <Text style={styles.headerTitle}>AI Music Prompter</Text>
               {user && (
@@ -275,14 +284,6 @@ export default function PromptFormScreen() {
             </View>
           </View>
           <View style={styles.headerRight}>
-            {isAdmin && (
-              <TouchableOpacity 
-                onPress={() => setShowAdminScreen(true)} 
-                style={[styles.headerButton, styles.adminButton]}
-              >
-                <IconFallback name="admin-panel-settings" size={24} color="#fff" />
-              </TouchableOpacity>
-            )}
             <TouchableOpacity onPress={() => setShowHistoryModal(true)} style={styles.headerButton}>
               <IconFallback name="history" size={24} color={colors.text} />
             </TouchableOpacity>
@@ -604,6 +605,12 @@ const createStyles = (colors: any) => StyleSheet.create({
   adminButton: {
     backgroundColor: colors.primary,
     borderRadius: 8,
+  },
+  adminButtonLeft: {
+    backgroundColor: colors.primary,
+    borderRadius: 8,
+    padding: 8,
+    marginRight: 4,
   },
   scrollView: {
     flex: 1,
