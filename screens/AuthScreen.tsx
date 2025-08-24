@@ -362,7 +362,7 @@ export default function AuthScreen() {
   const handleDeleteSonofyola = async () => {
     Alert.alert(
       '🗑️ Delete Sonofyola Account',
-      'This will search the database for any sonofyola accounts and delete them completely. This should break the link between your admin email and the sonofyola account. This works even if you\'re currently stuck with the sonofyola account.',
+      'This will search the database for any sonofyola accounts and delete them completely. This should break the link between your admin email and the sonofyola account. This works even if you are currently stuck with the sonofyola account.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -462,7 +462,7 @@ export default function AuthScreen() {
             <MaterialIcons name="warning" size={24} color="#FF3B30" />
             <Text style={styles.warningTitle}>Account Issue Detected</Text>
             <Text style={styles.warningText}>
-              You&apos;re stuck with the &quot;sonofyola&quot; account. Use the reset button below to clear this and sign in with a different account.
+              You are stuck with the sonofyola account. Use the reset button below to clear this and sign in with a different account.
             </Text>
             <TouchableOpacity 
               style={styles.warningButton}

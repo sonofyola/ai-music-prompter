@@ -92,5 +92,35 @@
     throw new Error('Module ' + moduleName + ' not found');
   };
   
+  // Also handle React Native's NativeModules system
+  if (typeof window.nativeModules === 'undefined') {
+    window.nativeModules = {};
+  }
+  window.nativeModules.ExponentConstants = mockConstants;
+  
+  // Handle the specific case where BasicTech might be looking for native modules
+  if (typeof window.__fbBatchedBridge === 'undefined') {
+    window.__fbBatchedBridge = {
+      getCallableModule: function(name) {
+        if (name === 'ExponentConstants') {
+          return mockConstants;
+        }
+        return null;
+      }
+    };
+  }
+
+  // Intercept console.warn to suppress the specific expo-constants warning
+  const originalWarn = console.warn;
+  console.warn = function() {
+    const message = Array.from(arguments).join(' ');
+    if (message.includes('No native ExponentConstants module found') || 
+        message.includes('expo-constants') && message.includes('module is linked properly')) {
+      // Suppress this specific warning since we're providing a polyfill
+      return;
+    }
+    originalWarn.apply(console, arguments);
+  };
+  
   console.log('[Constants Polyfill] ExponentConstants polyfill applied successfully');
 })();
