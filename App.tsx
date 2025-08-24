@@ -44,11 +44,15 @@ function AppContent() {
     return () => subscription?.remove();
   }, [isSignedIn, user]);
 
+  // Add debug logging
+  console.log('AppContent render:', { isLoading, isSignedIn, user: user?.email });
+
   if (isLoading) {
     return (
       <View style={styles.loadingContainer}>
         <Text style={styles.loadingTitle}>🎵 AI Music Prompter</Text>
         <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.debugText}>BasicTech is initializing...</Text>
       </View>
     );
   }
@@ -65,6 +69,8 @@ function AppContent() {
 }
 
 export default function App() {
+  console.log('App render - BasicProvider project_id:', schema.project_id);
+  
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
@@ -99,5 +105,11 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#666',
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#999',
+    fontStyle: 'italic',
   },
 });
