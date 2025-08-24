@@ -73,6 +73,7 @@ export default function PromptFormScreen() {
   const [showTemplates, setShowTemplates] = useState(false);
   const [showRandomTrack, setShowRandomTrack] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
+  const [randomModalVisible, setRandomModalVisible] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<MusicPromptData>({
@@ -210,6 +211,12 @@ export default function PromptFormScreen() {
   if (showAdminScreen) {
     return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
   }
+
+  const handleRandomTrackSelect = (trackData: any) => {
+    // Load the complete random track configuration
+    setFormData(trackData);
+    setRandomModalVisible(false);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -490,9 +497,9 @@ export default function PromptFormScreen() {
         />
         
         <RandomTrackModal
-          visible={showRandomTrack}
-          onClose={() => setShowRandomTrack(false)}
-          onSelectIdea={handleRandomSubject}
+          visible={randomModalVisible}
+          onClose={() => setRandomModalVisible(false)}
+          onSelectIdea={handleRandomTrackSelect}
         />
         
         <PromptHistoryModal

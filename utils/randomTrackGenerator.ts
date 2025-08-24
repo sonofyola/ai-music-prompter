@@ -172,3 +172,118 @@ export function generateMultipleTrackIdeas(count: number = 5): TrackIdea[] {
   
   return ideas;
 }
+
+// Additional arrays for complete track generation
+const GENRES_PRIMARY = [
+  ['Electronic'], ['Hip Hop'], ['Pop'], ['Rock'], ['Jazz'], ['Classical'], 
+  ['Ambient'], ['Folk'], ['R&B'], ['Country'], ['Reggae'], ['Latin'],
+  ['Electronic', 'Pop'], ['Hip Hop', 'R&B'], ['Rock', 'Electronic'], 
+  ['Jazz', 'Electronic'], ['Pop', 'Rock'], ['Ambient', 'Electronic']
+];
+
+const ELECTRONIC_SUBGENRES = [
+  ['House'], ['Techno'], ['Trance'], ['Dubstep'], ['Drum & Bass'], ['Synthwave'],
+  ['Chillout'], ['Progressive House'], ['Deep House'], ['Tech House'], ['Ambient Techno'],
+  ['IDM'], ['Glitch'], ['Downtempo'], ['Trip Hop'], ['Breakbeat']
+];
+
+const MOODS = [
+  ['Energetic'], ['Calm'], ['Dark'], ['Uplifting'], ['Melancholic'], ['Aggressive'],
+  ['Peaceful'], ['Mysterious'], ['Euphoric'], ['Nostalgic'], ['Romantic'], ['Epic'],
+  ['Energetic', 'Uplifting'], ['Dark', 'Mysterious'], ['Calm', 'Peaceful'],
+  ['Melancholic', 'Nostalgic'], ['Aggressive', 'Energetic']
+];
+
+const TEMPOS = [
+  '60-70', '70-80', '80-90', '90-100', '100-110', '110-120', 
+  '120-130', '130-140', '140-150', '150-160', '160-170', '170-180'
+];
+
+const ENERGY_LEVELS = ['Very Low', 'Low', 'Medium', 'High', 'Very High'];
+
+const KEYS = [
+  'C Major', 'G Major', 'D Major', 'A Major', 'E Major', 'F Major',
+  'A Minor', 'E Minor', 'B Minor', 'D Minor', 'G Minor', 'C Minor'
+];
+
+const BEATS = [
+  ['Four-on-the-floor'], ['Breakbeat'], ['Swing'], ['Laid-back'], ['Driving'],
+  ['Syncopated'], ['Minimal'], ['Complex'], ['Groove'], ['Punchy'],
+  ['Atmospheric'], ['Industrial'], ['Tribal'], ['Latin'], ['Shuffle']
+];
+
+const BASS_STYLES = [
+  ['Deep'], ['Punchy'], ['Warm'], ['Heavy'], ['Subtle'], ['Driving'],
+  ['Melodic'], ['Rhythmic'], ['Distorted'], ['Clean'], ['Synthetic'], ['Organic']
+];
+
+const VOCAL_STYLES = [
+  'Powerful', 'Soft', 'Raspy', 'Smooth', 'Ethereal', 'Aggressive',
+  'Whispered', 'Soulful', 'Robotic', 'Emotional', 'Anthemic', 'Intimate'
+];
+
+const VOCAL_GENDERS = ['Male', 'Female', 'Non-binary'];
+
+const WEIRDNESS_LEVELS = ['Normal', 'Slightly Weird', 'Weird', 'Very Weird'];
+
+const LENGTHS = [
+  '2:30 short', '3:00 standard', '3:30 radio edit', '4:00 extended',
+  '4:30 album version', '5:00 club mix', '6:00 extended mix', '8:00 journey'
+];
+
+const ERAS = [
+  '60s vintage', '70s funk', '80s synth', '90s grunge', '2000s pop',
+  '2010s EDM', 'modern 2024', 'futuristic 2030', 'retro-futuristic',
+  'timeless classic', 'neo-vintage', 'contemporary'
+];
+
+// Generate complete random track configuration
+export function generateRandomTrackConfiguration(subject?: string): any {
+  const primaryGenres = getRandomElement(GENRES_PRIMARY);
+  const hasElectronic = primaryGenres.includes('Electronic');
+  
+  const config: any = {
+    subject: subject || generateRandomTrackIdea().subject,
+    genres_primary: primaryGenres,
+    mood: getRandomElement(MOODS),
+    tempo_bpm: getRandomElement(TEMPOS),
+    energy: getRandomElement(ENERGY_LEVELS),
+    beat: getRandomElement(BEATS),
+    bass: getRandomElement(BASS_STYLES),
+    weirdness_level: getRandomElement(WEIRDNESS_LEVELS),
+  };
+
+  // Add electronic subgenres if Electronic is selected
+  if (hasElectronic && Math.random() > 0.3) {
+    config.genres_electronic = getRandomElement(ELECTRONIC_SUBGENRES);
+  }
+
+  // Randomly add optional fields
+  if (Math.random() > 0.4) {
+    config.key_scale = getRandomElement(KEYS);
+  }
+
+  if (Math.random() > 0.5) {
+    config.vocal_gender = getRandomElement(VOCAL_GENDERS);
+    config.vocal_delivery = getRandomElement(VOCAL_STYLES);
+  }
+
+  if (Math.random() > 0.6) {
+    config.length = getRandomElement(LENGTHS);
+  }
+
+  if (Math.random() > 0.7) {
+    config.era = getRandomElement(ERAS);
+  }
+
+  // Add some genre-specific fields
+  if (primaryGenres.includes('Hip Hop') && Math.random() > 0.5) {
+    config.groove_swing = Math.random() > 0.5 ? 'Swing' : 'Straight';
+  }
+
+  if (primaryGenres.includes('Rock') && Math.random() > 0.6) {
+    config.guitar_style = getRandomElement(['Clean', 'Distorted', 'Overdriven', 'Acoustic']);
+  }
+
+  return config;
+}

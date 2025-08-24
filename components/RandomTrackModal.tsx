@@ -9,13 +9,13 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../contexts/ThemeContext';
-import { generateMultipleTrackIdeas, TrackIdea } from '../utils/randomTrackGenerator';
+import { generateMultipleTrackIdeas, TrackIdea, generateRandomTrackConfiguration } from '../utils/randomTrackGenerator';
 import IconFallback from './IconFallback';
 
 interface RandomTrackModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelectIdea: (subject: string) => void;
+  onSelectIdea: (trackData: any) => void;
 }
 
 export default function RandomTrackModal({ visible, onClose, onSelectIdea }: RandomTrackModalProps) {
@@ -41,24 +41,51 @@ export default function RandomTrackModal({ visible, onClose, onSelectIdea }: Ran
   }, [visible]);
 
   const handleSelectIdea = (idea: TrackIdea) => {
-    onSelectIdea(idea.subject);
+    // Generate a complete random track configuration
+    const randomTrackData = generateRandomTrackConfiguration(idea.subject);
+    onSelectIdea(randomTrackData);
   };
 
-  const renderIdea = (idea: TrackIdea, index: number) => (
-    <TouchableOpacity
-      key={index}
-      style={styles.ideaCard}
-      onPress={() => handleSelectIdea(idea)}
-    >
-      <View style={styles.ideaHeader}>
-        <View style={styles.ideaIcon}>
-          <IconFallback name="lightbulb" size={20} color={colors.primary} />
+  const renderIdea = (idea: TrackIdea, index: number) => {
+    // Generate preview of what the full track would look like
+    const previewData = generateRandomTrackConfiguration(idea.subject);
+    
+    return (
+      <TouchableOpacity
+        key={index}
+        style={styles.ideaCard}
+        onPress={() => handleSelectIdea(idea)}
+      >
+        <View style={styles.ideaHeader}>
+          <View style={styles.ideaIcon}>
+            <IconFallback name="lightbulb" size={20} color={colors.primary} />
+          </View>
+          <Text style={styles.ideaSubject}>{idea.subject}</Text>
         </View>
-        <Text style={styles.ideaSubject}>{idea.subject}</Text>
-      </View>
-      <Text style={styles.ideaDescription}>{idea.description}</Text>
-    </TouchableOpacity>
-  );
+        <Text style={styles.ideaDescription}>{idea.description}</Text>
+        
+        {/* Preview of generated settings */}
+        <View style={styles.previewContainer}>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Genres:</Text>
+            <Text style={styles.previewValue}>{previewData.genres_primary.join(', ')}</Text>
+          </View>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Mood:</Text>
+            <Text style={styles.previewValue}>{previewData.mood.join(', ')}</Text>
+          </View>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Tempo:</Text>
+            <Text style={styles.previewValue}>{previewData.tempo_bpm} BPM</Text>
+          </View>
+          <View style={styles.previewRow}>
+            <Text style={styles.previewLabel}>Energy:</Text>
+            <Text style={styles.previewValue}>{previewData.energy}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -201,5 +228,26 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 14,
     color: colors.textSecondary,
     lineHeight: 20,
+  },
+  previewContainer: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  previewLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  previewValue: {
+    fontSize: 12,
+    color: colors.text,
+    fontWeight: '500',
   },
 });
