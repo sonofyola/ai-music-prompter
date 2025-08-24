@@ -25,7 +25,7 @@ import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
 import PromptHistoryModal from '../components/PromptHistoryModal';
 import Disclaimer from '../components/Disclaimer';
-import Logo from '../components/Logo';
+import LogoSVG from '../components/LogoSVG';
 
 // Contexts
 import { useTheme } from '../contexts/ThemeContext';
@@ -221,7 +221,7 @@ export default function PromptFormScreen() {
         <View style={styles.header}>
           <TouchableOpacity onPress={handleLogoPress} style={styles.headerLeft}>
             <View style={styles.headerTitleContainer}>
-              <Logo size={28} style={styles.headerLogo} />
+              <LogoSVG size={28} style={styles.headerLogo} />
               <Text style={styles.headerTitle}>AI Music Prompter</Text>
             </View>
             {user && (
