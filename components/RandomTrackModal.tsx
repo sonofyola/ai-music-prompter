@@ -38,7 +38,7 @@ export default function RandomTrackModal({ visible, onClose, onSelectIdea }: Ran
     if (visible && trackIdeas.length === 0) {
       generateNewIdeas();
     }
-  }, [visible]);
+  }, [visible, trackIdeas.length]);
 
   const handleSelectIdea = (idea: TrackIdea) => {
     // Generate a complete random track configuration
@@ -68,19 +68,23 @@ export default function RandomTrackModal({ visible, onClose, onSelectIdea }: Ran
         <View style={styles.previewContainer}>
           <View style={styles.previewRow}>
             <Text style={styles.previewLabel}>Genres:</Text>
-            <Text style={styles.previewValue}>{previewData.genres_primary.join(', ')}</Text>
+            <Text style={styles.previewValue}>
+              {previewData.genres_primary?.length > 0 ? previewData.genres_primary.join(', ') : 'Various'}
+            </Text>
           </View>
           <View style={styles.previewRow}>
             <Text style={styles.previewLabel}>Mood:</Text>
-            <Text style={styles.previewValue}>{previewData.mood.join(', ')}</Text>
+            <Text style={styles.previewValue}>
+              {previewData.mood?.length > 0 ? previewData.mood.join(', ') : 'Mixed'}
+            </Text>
           </View>
           <View style={styles.previewRow}>
             <Text style={styles.previewLabel}>Tempo:</Text>
-            <Text style={styles.previewValue}>{previewData.tempo_bpm} BPM</Text>
+            <Text style={styles.previewValue}>{previewData.tempo_bpm || 'Variable'} BPM</Text>
           </View>
           <View style={styles.previewRow}>
             <Text style={styles.previewLabel}>Energy:</Text>
-            <Text style={styles.previewValue}>{previewData.energy}</Text>
+            <Text style={styles.previewValue}>{previewData.energy || 'Dynamic'}</Text>
           </View>
         </View>
       </TouchableOpacity>

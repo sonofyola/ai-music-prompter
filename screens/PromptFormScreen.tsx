@@ -170,9 +170,37 @@ export default function PromptFormScreen() {
   };
 
   const handleRandomTrackSelect = (trackData: any) => {
+    console.log('Random track data received:', trackData);
+    
+    // Ensure all required fields are present and properly formatted
+    const validatedTrackData: MusicPromptData = {
+      subject: trackData.subject || '',
+      genres_primary: Array.isArray(trackData.genres_primary) ? trackData.genres_primary : [],
+      genres_electronic: Array.isArray(trackData.genres_electronic) ? trackData.genres_electronic : [],
+      mood: Array.isArray(trackData.mood) ? trackData.mood : [],
+      tempo_bpm: trackData.tempo_bpm || '',
+      key_scale: trackData.key_scale || '',
+      energy: trackData.energy || '',
+      beat: Array.isArray(trackData.beat) ? trackData.beat : [],
+      bass: Array.isArray(trackData.bass) ? trackData.bass : [],
+      groove_swing: trackData.groove_swing || '',
+      vocal_gender: trackData.vocal_gender || 'none',
+      vocal_delivery: trackData.vocal_delivery || '',
+      era: trackData.era || '',
+      master_notes: trackData.master_notes || '',
+      length: trackData.length || '',
+      weirdness_level: trackData.weirdness_level || '',
+      general_freeform: trackData.general_freeform || ''
+    };
+    
+    console.log('Validated track data:', validatedTrackData);
+    
     // Load the complete random track configuration
-    setFormData(trackData);
+    setFormData(validatedTrackData);
     setShowRandomTrack(false);
+    
+    // Clear any existing generated prompt since we're loading new data
+    setGeneratedPrompt('');
   };
 
   const handleLoadPrompt = (savedFormData: MusicPromptData) => {

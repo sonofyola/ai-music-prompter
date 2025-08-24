@@ -213,11 +213,11 @@ const TEMPOS = [
   '120-130', '130-140', '140-150', '150-160', '160-170', '170-180'
 ];
 
-const ENERGY_LEVELS = ['Very Low', 'Low', 'Medium', 'High', 'Very High'];
+const ENERGY_LEVELS = ['low', 'medium', 'high', 'evolving'];
 
 const KEYS = [
-  'C Major', 'G Major', 'D Major', 'A Major', 'E Major', 'F Major',
-  'A Minor', 'E Minor', 'B Minor', 'D Minor', 'G Minor', 'C Minor'
+  'C major', 'G major', 'D major', 'A major', 'E major', 'F major',
+  'A minor', 'E minor', 'B minor', 'D minor', 'G minor', 'C minor'
 ];
 
 const BEATS = [
@@ -236,9 +236,9 @@ const VOCAL_STYLES = [
   'Whispered', 'Soulful', 'Robotic', 'Emotional', 'Anthemic', 'Intimate'
 ];
 
-const VOCAL_GENDERS = ['Male', 'Female', 'Non-binary'];
+const VOCAL_GENDERS = ['male', 'female', 'male+female', 'androgynous'];
 
-const WEIRDNESS_LEVELS = ['Normal', 'Slightly Weird', 'Weird', 'Very Weird'];
+const WEIRDNESS_LEVELS = ['conventional', 'slightly_experimental', 'moderately_weird', 'very_experimental', 'completely_avant_garde'];
 
 const LENGTHS = [
   '2:30 short', '3:00 standard', '3:30 radio edit', '4:00 extended',
@@ -256,48 +256,26 @@ export function generateRandomTrackConfiguration(subject?: string): any {
   const primaryGenres = getRandomElement(GENRES_PRIMARY);
   const hasElectronic = primaryGenres.includes('Electronic');
   
+  // Create a complete MusicPromptData object with all required fields
   const config: any = {
     subject: subject || generateRandomTrackIdea().subject,
     genres_primary: primaryGenres,
+    genres_electronic: hasElectronic && Math.random() > 0.3 ? getRandomElement(ELECTRONIC_SUBGENRES) : [],
     mood: getRandomElement(MOODS),
     tempo_bpm: getRandomElement(TEMPOS),
+    key_scale: Math.random() > 0.4 ? getRandomElement(KEYS) : '',
     energy: getRandomElement(ENERGY_LEVELS),
     beat: getRandomElement(BEATS),
     bass: getRandomElement(BASS_STYLES),
-    weirdness_level: getRandomElement(WEIRDNESS_LEVELS),
+    groove_swing: Math.random() > 0.5 ? (Math.random() > 0.5 ? 'swing' : 'straight') : '',
+    vocal_gender: Math.random() > 0.5 ? getRandomElement(VOCAL_GENDERS).toLowerCase() : 'none',
+    vocal_delivery: Math.random() > 0.5 ? getRandomElement(VOCAL_STYLES).toLowerCase() : '',
+    era: Math.random() > 0.7 ? getRandomElement(ERAS) : '',
+    master_notes: '',
+    length: Math.random() > 0.6 ? getRandomElement(LENGTHS) : '',
+    weirdness_level: getRandomElement(WEIRDNESS_LEVELS).toLowerCase().replace(' ', '_'),
+    general_freeform: ''
   };
-
-  // Add electronic subgenres if Electronic is selected
-  if (hasElectronic && Math.random() > 0.3) {
-    config.genres_electronic = getRandomElement(ELECTRONIC_SUBGENRES);
-  }
-
-  // Randomly add optional fields
-  if (Math.random() > 0.4) {
-    config.key_scale = getRandomElement(KEYS);
-  }
-
-  if (Math.random() > 0.5) {
-    config.vocal_gender = getRandomElement(VOCAL_GENDERS);
-    config.vocal_delivery = getRandomElement(VOCAL_STYLES);
-  }
-
-  if (Math.random() > 0.6) {
-    config.length = getRandomElement(LENGTHS);
-  }
-
-  if (Math.random() > 0.7) {
-    config.era = getRandomElement(ERAS);
-  }
-
-  // Add some genre-specific fields
-  if (primaryGenres.includes('Hip Hop') && Math.random() > 0.5) {
-    config.groove_swing = Math.random() > 0.5 ? 'Swing' : 'Straight';
-  }
-
-  if (primaryGenres.includes('Rock') && Math.random() > 0.6) {
-    config.guitar_style = getRandomElement(['Clean', 'Distorted', 'Overdriven', 'Acoustic']);
-  }
 
   return config;
 }
