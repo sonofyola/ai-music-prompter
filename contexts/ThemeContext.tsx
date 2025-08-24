@@ -46,7 +46,7 @@ const darkColors = {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('light');
+  const [theme, setTheme] = useState<Theme>('dark');
 
   useEffect(() => {
     loadTheme();
@@ -58,6 +58,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (savedTheme === 'light' || savedTheme === 'dark') {
         setTheme(savedTheme);
       }
+      // If no saved theme, it will stay as 'dark' (the default we set above)
     } catch (error) {
       console.error('Error loading theme:', error);
     }
