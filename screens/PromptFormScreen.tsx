@@ -378,7 +378,12 @@ export default function PromptFormScreen() {
                 style={styles.actionButton} 
                 onPress={() => {
                   console.log('Clear button touched!');
-                  handleClearForm();
+                  console.log('About to call handleClearForm');
+                  try {
+                    handleClearForm();
+                  } catch (error) {
+                    console.error('Error in handleClearForm:', error);
+                  }
                 }}
                 activeOpacity={0.7}
               >
