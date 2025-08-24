@@ -515,6 +515,35 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
+              onPress={async () => {
+                if (!db) return;
+                
+                try {
+                  const { syncUserProfilesToUsersTable } = await import('../utils/adminHelpers');
+                  const result = await syncUserProfilesToUsersTable(db);
+                  
+                  Alert.alert(
+                    result.success ? 'Success!' : 'Error',
+                    result.message,
+                    [{ text: 'OK', onPress: () => {
+                      if (result.success) {
+                        loadUsers();
+                        loadBetaTesters();
+                      }
+                    }}]
+                  );
+                } catch (error) {
+                  console.error('Error syncing users:', error);
+                  Alert.alert('Error', 'Failed to sync users. Please try again.');
+                }
+              }}
+            >
+              <Text style={styles.actionButtonText}>
+                🔄 Sync Users to Admin Table
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.actionButton}
               onPress={handleExportUsers}
               disabled={isExporting}
             >

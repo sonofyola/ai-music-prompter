@@ -101,6 +101,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
         // Create new user profile if it doesn't exist
         const initialStatus = isAdmin ? 'unlimited' : 'free';
         try {
+          // First, create the user profile
           await db.from('user_profiles').add({
             email: user.email || '',
             subscription_status: initialStatus,
@@ -109,9 +110,31 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
             created_at: new Date().toISOString(),
             stripe_customer_id: '',
           });
+
+          // Also ensure the user exists in the users table for admin panel
+          try {
+            // Check if user already exists in users table
+            const existingUser = await db.from('users').get(user.id);
+            if (!existingUser) {
+              await db.from('users').add({
+                email: user.email || '',
+                name: user.name || user.email?.split('@')[0] || 'User',
+                created_at: new Date().toISOString(),
+                last_login: new Date().toISOString(),
+                is_admin: isAdmin || false,
+              });
+              console.log('✅ Created user entry in users table for:', user.email);
+            }
+          } catch (userTableError) {
+            console.error('Error creating user in users table:', userTableError);
+            // Don't fail the whole process if this fails
+          }
+
           setDailyUsage(0);
           setSubscriptionStatus(initialStatus);
           setIsEmailCaptured(true);
+          
+          console.log('✅ Created new user profile and user entry for:', user.email);
         } catch (createError) {
           console.error('Error creating user profile:', createError);
           // Fall back to local storage
