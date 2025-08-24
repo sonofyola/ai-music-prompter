@@ -47,22 +47,54 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     
     try {
       console.log('🔍 Loading users from database...');
-      const allUsers = await db.from('user_profiles').getAll();
-      console.log('📊 Raw users data:', allUsers);
-      console.log('📊 Number of users found:', allUsers?.length || 0);
       
-      const typedUsers: User[] = (allUsers || []).map(user => ({
-        id: user.id,
-        email: user.email as string,
-        created_at: user.created_at as string,
-        subscription_status: user.subscription_status as string,
-        usage_count: user.usage_count as number,
-        stripe_customer_id: user.stripe_customer_id as string,
-        last_reset_date: user.last_reset_date as string,
-      }));
+      // Load from both tables
+      const allUserProfiles = await db.from('user_profiles').getAll();
+      const allUsers = await db.from('users').getAll();
       
-      console.log('📊 Processed users:', typedUsers);
-      setUsers(typedUsers);
+      console.log('📊 User profiles data:', allUserProfiles);
+      console.log('📊 Basic users data:', allUsers);
+      console.log('📊 Number of user profiles:', allUserProfiles?.length || 0);
+      console.log('📊 Number of basic users:', allUsers?.length || 0);
+      
+      // Merge data from both tables
+      const mergedUsers: User[] = [];
+      
+      // First, add all user profiles
+      if (allUserProfiles) {
+        allUserProfiles.forEach((profile: any) => {
+          mergedUsers.push({
+            id: profile.id,
+            email: profile.email as string,
+            created_at: profile.created_at as string,
+            subscription_status: profile.subscription_status as string,
+            usage_count: profile.usage_count as number,
+            stripe_customer_id: profile.stripe_customer_id as string,
+            last_reset_date: profile.last_reset_date as string,
+          });
+        });
+      }
+      
+      // Then, add users who don't have profiles yet
+      if (allUsers) {
+        allUsers.forEach((user: any) => {
+          const existingProfile = mergedUsers.find(u => u.email === user.email);
+          if (!existingProfile) {
+            mergedUsers.push({
+              id: user.id,
+              email: user.email as string,
+              created_at: user.created_at as string,
+              subscription_status: 'free', // Default status
+              usage_count: 0,
+              stripe_customer_id: '',
+              last_reset_date: '',
+            });
+          }
+        });
+      }
+      
+      console.log('📊 Merged users:', mergedUsers);
+      setUsers(mergedUsers);
     } catch (error) {
       console.error('Error loading users:', error);
       setUsers([]);
@@ -199,6 +231,44 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
+  const handleCreateMissingProfiles = async () => {
+    if (!db) return;
+    
+    try {
+      const allUsers = await db.from('users').getAll();
+      const allUserProfiles = await db.from('user_profiles').getAll();
+      
+      const usersWithoutProfiles = allUsers.filter((user: any) => 
+        !allUserProfiles.find((profile: any) => profile.email === user.email)
+      );
+      
+      if (usersWithoutProfiles.length === 0) {
+        Alert.alert('Info', 'All users already have profiles.');
+        return;
+      }
+      
+      for (const user of usersWithoutProfiles) {
+        await db.from('user_profiles').add({
+          email: user.email,
+          created_at: user.created_at || new Date().toISOString(),
+          usage_count: 0,
+          last_reset_date: new Date().toISOString(),
+          subscription_status: 'free',
+          stripe_customer_id: '',
+        });
+      }
+      
+      Alert.alert(
+        'Success!', 
+        `Created profiles for ${usersWithoutProfiles.length} users.`,
+        [{ text: 'OK', onPress: loadUsers }]
+      );
+    } catch (error) {
+      console.error('Error creating profiles:', error);
+      Alert.alert('Error', 'Failed to create user profiles.');
+    }
+  };
+
   const styles = createStyles(colors);
 
   if (!isAdmin) {
@@ -237,9 +307,18 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
           <Text style={styles.sectionTitle}>🐛 Debug Info</Text>
           <Text style={styles.debugText}>Database connected: {db ? '✅ Yes' : '❌ No'}</Text>
           <Text style={styles.debugText}>Is Admin: {isAdmin ? '✅ Yes' : '❌ No'}</Text>
-          <Text style={styles.debugText}>Users loaded: {users.length}</Text>
+          <Text style={styles.debugText}>Total users shown: {users.length}</Text>
           <Text style={styles.debugText}>Beta testers loaded: {betaTesters.length}</Text>
           <Text style={styles.debugText}>Current user: {user?.email || 'None'}</Text>
+          <TouchableOpacity 
+            style={styles.debugButton}
+            onPress={() => {
+              console.log('🔍 Current users state:', users);
+              console.log('🔍 Current beta testers state:', betaTesters);
+            }}
+          >
+            <Text style={styles.debugButtonText}>📋 Log Current State</Text>
+          </TouchableOpacity>
         </View>
 
         {/* Quick stats */}
@@ -342,6 +421,14 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>👤 User Management</Text>
           <View style={styles.actionButtons}>
+            <TouchableOpacity 
+              style={styles.actionButton}
+              onPress={handleCreateMissingProfiles}
+            >
+              <Text style={styles.actionButtonText}>
+                ➕ Create Missing Profiles
+              </Text>
+            </TouchableOpacity>
             <TouchableOpacity 
               style={styles.actionButton}
               onPress={handleExportUsers}
@@ -685,5 +772,18 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: colors.textSecondary,
     marginBottom: 4,
     fontFamily: 'monospace',
+  },
+  debugButton: {
+    backgroundColor: colors.textTertiary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    marginTop: 8,
+    alignSelf: 'flex-start',
+  },
+  debugButtonText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
