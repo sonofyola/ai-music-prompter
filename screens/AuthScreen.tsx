@@ -38,7 +38,7 @@ export default function AuthScreen() {
             Create Perfect AI Music{'\n'}Prompts in Seconds
           </Text>
           <Text style={styles.subtitle}>
-            Turn your ideas into optimized, detailed prompts for{'\n'}Suno, Udio, MusicGen, and more – without guesswork.
+            Turn your ideas into optimized, detailed prompts for{'\n'}Riffusion, Suno, Udio, MusicGen, and more – without guesswork.
           </Text>
           
           <TouchableOpacity 
@@ -50,6 +50,10 @@ export default function AuthScreen() {
               {isLoading ? 'Connecting...' : 'Generate My Prompt →'}
             </Text>
           </TouchableOpacity>
+
+          <Text style={styles.disclaimerText}>
+            This app is not affiliated with Riffusion, Suno, Udio, MusicGen, or other AI music platforms.
+          </Text>
         </View>
 
         {/* Problem/Solution Section */}
@@ -125,7 +129,7 @@ export default function AuthScreen() {
               </View>
               <Text style={styles.featureTitle}>Multi-Platform Ready</Text>
               <Text style={styles.featureDescription}>
-                Prompts are fine-tuned for Suno, Udio, MusicGen, Riffusion, and other major AI music engines
+                Prompts are fine-tuned for Riffusion, Suno, Udio, MusicGen, and other major AI music engines
               </Text>
             </View>
           </View>
@@ -196,6 +200,14 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
+  },
+  disclaimerText: {
+    fontSize: 10,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    marginTop: 16,
+    opacity: 0.7,
+    maxWidth: 400,
   },
   problemSection: {
     paddingHorizontal: 20,
