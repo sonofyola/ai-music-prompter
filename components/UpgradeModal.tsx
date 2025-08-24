@@ -134,23 +134,48 @@ export default function UpgradeModal({
   });
 
   return (
-    <Modal visible={visible} transparent animationType="fade">
+    <Modal 
+      visible={visible} 
+      transparent 
+      animationType="fade"
+      accessibilityViewIsModal={true}
+    >
       <View style={styles.overlay}>
-        <View style={styles.modal}>
+        <View 
+          style={styles.modal}
+          accessible={true}
+          accessibilityLabel="Upgrade to premium modal"
+        >
           <View style={styles.header}>
-            <Text style={styles.title}>Upgrade to Premium</Text>
-            <Pressable style={styles.closeButton} onPress={onClose}>
+            <Text 
+              style={styles.title}
+              accessibilityRole="header"
+              accessibilityLevel={2}
+            >
+              Upgrade to Premium
+            </Text>
+            <Pressable 
+              style={styles.closeButton} 
+              onPress={onClose}
+              accessible={true}
+              accessibilityLabel="Close upgrade modal"
+              accessibilityRole="button"
+            >
               <Text style={styles.closeButtonText}>×</Text>
             </Pressable>
           </View>
 
-          <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-            <Text style={styles.subtitle}>Get Unlimited Access</Text>
-            
-            <Text style={styles.price}>$5.99</Text>
-            <Text style={styles.priceSubtext}>Monthly subscription</Text>
-
-            <View style={styles.feature}>
+          {/* Feature list with proper semantics */}
+          <View 
+            accessible={true}
+            accessibilityLabel="Premium features list"
+            accessibilityRole="list"
+          >
+            <View 
+              style={styles.feature}
+              accessible={true}
+              accessibilityRole="listitem"
+            >
               <Text style={styles.checkmark}>✓</Text>
               <Text style={styles.featureText}>Unlimited prompt generations</Text>
             </View>
@@ -187,7 +212,7 @@ export default function UpgradeModal({
                 onPaymentError={handlePaymentError}
               />
             )}
-          </ScrollView>
+          </View>
         </View>
       </View>
     </Modal>

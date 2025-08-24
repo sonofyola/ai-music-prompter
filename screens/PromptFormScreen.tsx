@@ -541,11 +541,6 @@ export default function PromptFormScreen() {
               onPress={handleGeneratePrompt}
               disabled={isGenerating}
             >
-              <IconFallback 
-                name={isGenerating ? "hourglass-empty" : "auto-awesome"} 
-                size={24} 
-                color={colors.background} 
-              />
               <Text style={styles.generateButtonText}>
                 {isGenerating 
                   ? 'Generating...' 
