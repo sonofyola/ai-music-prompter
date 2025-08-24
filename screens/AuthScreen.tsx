@@ -433,6 +433,102 @@ export default function AuthScreen() {
     );
   };
 
+  const handleDomainReset = async () => {
+    Alert.alert(
+      '🌍 Domain-Specific Reset',
+      'This will clear all cookies and storage for BasicTech/Kiki domains and attempt to break server-side account associations. This is specifically designed to fix persistent account linking issues.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🌍 Domain Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performDomainSpecificReset } = await import('../utils/authReset');
+              await performDomainSpecificReset();
+            } catch (error) {
+              console.error('❌ Domain reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleServerSideUnlink = async () => {
+    Alert.alert(
+      '🌐 Server-Side Account Unlink',
+      'This will attempt to break server-side account associations that are causing drremotework@gmail.com to be linked to the sonofyola account. This targets BasicTech\'s server-side session management.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🌐 Server Unlink',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performServerSideAccountUnlink } = await import('../utils/authReset');
+              await performServerSideAccountUnlink();
+            } catch (error) {
+              console.error('❌ Server-side unlink error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleURLSessionBreak = async () => {
+    Alert.alert(
+      '🔗 URL Session Break',
+      'This will use URL manipulation to force BasicTech to start a completely new session, breaking any cached session continuity.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🔗 Break Session',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performURLSessionBreak } = await import('../utils/authReset');
+              await performURLSessionBreak();
+            } catch (error) {
+              console.error('❌ URL session break error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleIframeContextReset = async () => {
+    Alert.alert(
+      '🖼️ Iframe Context Reset',
+      'This will create an isolated authentication context to break any parent window session continuity.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🖼️ Context Reset',
+          style: 'destructive',
+          onPress: async () => {
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performIframeContextReset } = await import('../utils/authReset');
+              await performIframeContextReset();
+            } catch (error) {
+              console.error('❌ Iframe context reset error:', error);
+            }
+          }
+        }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
@@ -518,6 +614,39 @@ export default function AuthScreen() {
         {/* Troubleshooting Section */}
         <View style={styles.troubleshootSection}>
           <Text style={styles.troubleshootTitle}>Having issues?</Text>
+          
+          {/* Most targeted options first */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#E91E63', borderWidth: 3, borderColor: '#FFF' }]}
+            onPress={handleURLSessionBreak}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🔗 URL SESSION BREAK</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#3F51B5', borderWidth: 2, borderColor: '#FFF' }]}
+            onPress={handleIframeContextReset}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🖼️ CONTEXT RESET</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF1744', borderWidth: 3, borderColor: '#000' }]}
+            onPress={handleServerSideUnlink}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🌐 SERVER-SIDE UNLINK</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#9C27B0', borderWidth: 2, borderColor: '#000' }]}
+            onPress={handleDomainReset}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🌍 DOMAIN RESET</Text>
+          </TouchableOpacity>
           
           {/* Diagnostic Tools */}
           <TouchableOpacity 

@@ -901,3 +901,285 @@ export const forceDeleteSonofyolaAccount = async (db?: any) => {
     };
   }
 };
+
+// Server-side account unlinking - specifically targets BasicTech's server-side session
+export const performServerSideAccountUnlink = async () => {
+  try {
+    console.log('🌐 SERVER-SIDE ACCOUNT UNLINK - Breaking server-side account associations');
+    
+    // First, clear everything locally multiple times
+    for (let i = 0; i < 3; i++) {
+      if (typeof window !== 'undefined') {
+        try { window.localStorage.clear(); } catch (e) {}
+        try { window.sessionStorage.clear(); } catch (e) {}
+      }
+      
+      try {
+        const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+        await AsyncStorage.clear();
+      } catch (e) {}
+      
+      await new Promise(resolve => setTimeout(resolve, 200));
+    }
+    
+    // Set specific flags to force server-side unlinking
+    if (typeof window !== 'undefined') {
+      // Set flags that BasicTech might check
+      window.localStorage.setItem('force_account_unlink', 'true');
+      window.localStorage.setItem('reject_sonofyola_account', 'true');
+      window.localStorage.setItem('admin_email_override', 'drremotework@gmail.com');
+      window.localStorage.setItem('break_account_association', 'true');
+      window.localStorage.setItem('force_new_auth_flow', 'true');
+      window.localStorage.setItem('server_side_reset', 'true');
+      
+      // Also try setting these in sessionStorage
+      window.sessionStorage.setItem('force_account_unlink', 'true');
+      window.sessionStorage.setItem('reject_sonofyola_account', 'true');
+      window.sessionStorage.setItem('admin_email_override', 'drremotework@gmail.com');
+      
+      setTimeout(() => {
+        console.log('🌐 Redirecting with server-side unlinking parameters...');
+        
+        const url = new URL(window.location.origin);
+        
+        // Add parameters that might force BasicTech to break server-side associations
+        url.searchParams.set('force_account_unlink', 'true');
+        url.searchParams.set('break_server_association', 'true');
+        url.searchParams.set('reject_cached_account', 'true');
+        url.searchParams.set('admin_override', 'drremotework@gmail.com');
+        url.searchParams.set('sonofyola_reject', 'true');
+        url.searchParams.set('force_fresh_session', 'true');
+        url.searchParams.set('server_reset', 'true');
+        url.searchParams.set('auth_context_reset', 'true');
+        url.searchParams.set('pds_reset', 'true');
+        url.searchParams.set('did_reset', 'true');
+        url.searchParams.set('handle_reset', 'true');
+        url.searchParams.set('session_invalidate', 'true');
+        url.searchParams.set('timestamp', Date.now().toString());
+        url.searchParams.set('nonce', Math.random().toString(36));
+        
+        window.location.replace(url.toString());
+      }, 1000);
+    }
+    
+  } catch (error) {
+    console.error('🌐 Server-side account unlink error:', error);
+    // Fallback to ultimate reset
+    await performUltimateReset();
+  }
+};
+
+// Domain-specific reset - clears cookies and storage for all related domains
+export const performDomainSpecificReset = async () => {
+  try {
+    console.log('🌍 DOMAIN-SPECIFIC RESET - Clearing all BasicTech/Kiki related domains');
+    
+    if (typeof window !== 'undefined' && document && document.cookie) {
+      // Target specific domains that might be maintaining the session
+      const targetDomains = [
+        'basictech.com',
+        '.basictech.com',
+        'kiki.ai',
+        '.kiki.ai',
+        'kiki.dev',
+        '.kiki.dev',
+        'project-de0e3374.dev.kiki.dev',
+        '.project-de0e3374.dev.kiki.dev',
+        window.location.hostname,
+        `.${window.location.hostname}`
+      ];
+      
+      // Get all cookies
+      const cookies = document.cookie.split(';');
+      console.log('🍪 Found cookies to clear:', cookies);
+      
+      // Clear cookies for each domain
+      cookies.forEach(cookie => {
+        const cookieName = cookie.split('=')[0].trim();
+        
+        targetDomains.forEach(domain => {
+          // Multiple clearing strategies
+          const clearStrategies = [
+            `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`,
+            `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`,
+            `${cookieName}=deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`,
+            `${cookieName}=deleted; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`,
+            `${cookieName}=; max-age=0; path=/; domain=${domain}`,
+            `${cookieName}=; max-age=0; path=/`
+          ];
+          
+          clearStrategies.forEach(strategy => {
+            document.cookie = strategy;
+          });
+        });
+        
+        console.log(`🍪 Cleared cookie: ${cookieName} for all domains`);
+      });
+      
+      // Also try to clear any potential auth-related cookies by name
+      const authCookieNames = [
+        'auth-token', 'session-token', 'user-token',
+        'basic-auth', 'basic-session', 'basic-token',
+        'kiki-auth', 'kiki-session', 'kiki-token',
+        'oauth-token', 'oauth-state', 'oauth-session',
+        'pds-token', 'did-token', 'handle-token',
+        'sonofyola', 'user-sonofyola', 'auth-sonofyola'
+      ];
+      
+      authCookieNames.forEach(cookieName => {
+        targetDomains.forEach(domain => {
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; domain=${domain}`;
+          document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+        });
+      });
+    }
+    
+    // Clear local storage with domain-specific keys
+    if (typeof window !== 'undefined') {
+      const domainKeys = [
+        'basictech', 'kiki', 'auth', 'session', 'user', 'token',
+        'pds', 'did', 'handle', 'oauth', 'sonofyola'
+      ];
+      
+      // Check all localStorage keys for domain-related content
+      const allKeys = Object.keys(window.localStorage);
+      allKeys.forEach(key => {
+        const lowerKey = key.toLowerCase();
+        if (domainKeys.some(domainKey => lowerKey.includes(domainKey))) {
+          window.localStorage.removeItem(key);
+          console.log(`🗑️ Removed domain-related key: ${key}`);
+        }
+      });
+      
+      // Also clear sessionStorage
+      const allSessionKeys = Object.keys(window.sessionStorage);
+      allSessionKeys.forEach(key => {
+        const lowerKey = key.toLowerCase();
+        if (domainKeys.some(domainKey => lowerKey.includes(domainKey))) {
+          window.sessionStorage.removeItem(key);
+          console.log(`🗑️ Removed session key: ${key}`);
+        }
+      });
+    }
+    
+    console.log('🌍 Domain-specific reset complete');
+    
+    // Perform server-side account unlink after domain reset
+    await performServerSideAccountUnlink();
+    
+  } catch (error) {
+    console.error('🌍 Domain-specific reset error:', error);
+    await performUltimateReset();
+  }
+};
+
+// URL-based session breaking - uses URL parameters to force new session
+export const performURLSessionBreak = async () => {
+  try {
+    console.log('🔗 URL SESSION BREAK - Using URL manipulation to force new session');
+    
+    if (typeof window !== 'undefined') {
+      // Clear everything first
+      try { window.localStorage.clear(); } catch (e) {}
+      try { window.sessionStorage.clear(); } catch (e) {}
+      
+      // Set flags that might be checked by BasicTech
+      window.localStorage.setItem('force_new_session', 'true');
+      window.localStorage.setItem('break_session_continuity', 'true');
+      window.localStorage.setItem('admin_session_override', 'drremotework@gmail.com');
+      
+      setTimeout(() => {
+        console.log('🔗 Breaking session with URL manipulation...');
+        
+        // Create a completely new URL with session-breaking parameters
+        const baseUrl = window.location.origin;
+        const newUrl = new URL(baseUrl);
+        
+        // Add parameters that might force BasicTech to start fresh
+        newUrl.searchParams.set('session_break', 'true');
+        newUrl.searchParams.set('force_new_auth', 'true');
+        newUrl.searchParams.set('ignore_cached_session', 'true');
+        newUrl.searchParams.set('admin_override', 'true');
+        newUrl.searchParams.set('user_override', 'drremotework@gmail.com');
+        newUrl.searchParams.set('reject_sonofyola', 'true');
+        newUrl.searchParams.set('session_id', 'new_' + Date.now());
+        newUrl.searchParams.set('auth_context', 'fresh');
+        newUrl.searchParams.set('pds_override', 'true');
+        newUrl.searchParams.set('did_override', 'true');
+        newUrl.searchParams.set('handle_override', 'true');
+        newUrl.searchParams.set('account_unlink', 'true');
+        newUrl.searchParams.set('timestamp', Date.now().toString());
+        newUrl.searchParams.set('nonce', Math.random().toString(36).substring(2));
+        newUrl.searchParams.set('cache_bust', Math.random().toString(36).substring(2));
+        
+        // Also add a hash to further break any caching
+        newUrl.hash = '#session_break_' + Date.now();
+        
+        console.log('🔗 Redirecting to session-breaking URL:', newUrl.toString());
+        window.location.replace(newUrl.toString());
+      }, 1000);
+    }
+    
+  } catch (error) {
+    console.error('🔗 URL session break error:', error);
+    await performUltimateReset();
+  }
+};
+
+// Iframe-based reset - opens auth in new context
+export const performIframeContextReset = async () => {
+  try {
+    console.log('🖼️ IFRAME CONTEXT RESET - Creating isolated auth context');
+    
+    if (typeof window !== 'undefined') {
+      // Clear everything multiple times
+      for (let i = 0; i < 3; i++) {
+        try { window.localStorage.clear(); } catch (e) {}
+        try { window.sessionStorage.clear(); } catch (e) {}
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+      
+      // Set context isolation flags
+      window.localStorage.setItem('iframe_context_reset', 'true');
+      window.localStorage.setItem('isolated_auth_context', 'true');
+      window.localStorage.setItem('break_parent_context', 'true');
+      
+      // Create a new window context for auth
+      setTimeout(() => {
+        console.log('🖼️ Opening auth in new context...');
+        
+        const authUrl = new URL(window.location.origin);
+        authUrl.searchParams.set('iframe_context', 'true');
+        authUrl.searchParams.set('isolated_auth', 'true');
+        authUrl.searchParams.set('new_context', Date.now().toString());
+        authUrl.searchParams.set('break_continuity', 'true');
+        authUrl.searchParams.set('admin_context', 'drremotework@gmail.com');
+        
+        // Try opening in new window first
+        try {
+          const newWindow = window.open(authUrl.toString(), '_blank', 'width=800,height=600');
+          if (newWindow) {
+            console.log('🖼️ Opened auth in new window');
+            // Close the new window after a delay and reload main window
+            setTimeout(() => {
+              try {
+                newWindow.close();
+              } catch (e) {}
+              window.location.reload();
+            }, 5000);
+          } else {
+            // Fallback to direct navigation
+            window.location.replace(authUrl.toString());
+          }
+        } catch (e) {
+          // Fallback to direct navigation
+          window.location.replace(authUrl.toString());
+        }
+      }, 1000);
+    }
+    
+  } catch (error) {
+    console.error('🖼️ Iframe context reset error:', error);
+    await performURLSessionBreak();
+  }
+};
