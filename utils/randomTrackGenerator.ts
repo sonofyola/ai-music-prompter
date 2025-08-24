@@ -4,118 +4,150 @@ export interface TrackIdea {
   description: string;
 }
 
-// Curated lists for generating unique track ideas
-const EMOTIONS = [
-  'nostalgia', 'euphoria', 'melancholy', 'rage', 'serenity', 'anxiety', 'bliss', 'longing',
-  'triumph', 'despair', 'wonder', 'rebellion', 'peace', 'chaos', 'hope', 'fear',
-  'love', 'loss', 'freedom', 'confinement', 'awakening', 'confusion', 'clarity', 'mystery'
+// Real-life situations and emotions people actually experience
+const LOVE_SITUATIONS = [
+  'I love you but I\'m scared to tell you',
+  'You\'re dating my best friend but I had you first',
+  'We broke up but you still text me at 2 AM',
+  'I saw you with someone else at the coffee shop',
+  'You left your hoodie here and it still smells like you',
+  'We\'ve been friends for years but I want more',
+  'You said you needed space but you\'re all over social media',
+  'I wrote you a letter I'll never send',
+  'We keep running into each other everywhere',
+  'You\'re getting married but I still think about us'
 ];
 
-const SETTINGS = [
-  'abandoned warehouse', 'neon-lit city', 'underwater cave', 'space station', 'forest at dawn',
-  'rooftop at midnight', 'desert highway', 'cyberpunk alley', 'mountain peak', 'underground club',
-  'floating island', 'time machine', 'crystal cavern', 'ghost town', 'digital realm',
-  'ancient temple', 'futuristic laboratory', 'dreamscape', 'parallel dimension', 'memory palace'
+const FUNNY_SITUATIONS = [
+  'Why does this dog keep pooping in my yard',
+  'My neighbor plays music way too loud at 6 AM',
+  'I accidentally liked your ex\'s photo from 2019',
+  'The WiFi is down and I don\'t know what to do with my hands',
+  'I ordered food delivery to the wrong address again',
+  'My mom keeps asking when I\'m getting married',
+  'I pretended to know this song but I have no idea what it is',
+  'I\'ve been wearing the same shirt for three days',
+  'My phone died right when things got interesting',
+  'I waved back at someone who wasn\'t waving at me'
 ];
 
-const CONCEPTS = [
-  'digital detox', 'time loops', 'synthetic memories', 'quantum entanglement', 'neural networks',
-  'holographic reality', 'consciousness transfer', 'genetic algorithms', 'virtual addiction',
-  'artificial emotions', 'data streams', 'system glitches', 'code poetry', 'pixel dreams',
-  'algorithmic love', 'binary sunset', 'encrypted feelings', 'server farm meditation',
-  'cloud computing', 'blockchain revolution'
+const WORK_LIFE_SITUATIONS = [
+  'My boss thinks I\'m working but I\'m online shopping',
+  'I have 47 unread emails and I\'m pretending they don\'t exist',
+  'It\'s Monday morning and I already need a vacation',
+  'I said I\'d have this done by Friday... it\'s Friday',
+  'My coworker microwaved fish in the break room again',
+  'I\'m in a meeting that could have been an email',
+  'I accidentally replied all to the entire company',
+  'I\'ve been on hold with customer service for an hour',
+  'My computer crashed and I lost everything',
+  'I quit my job in my head but I\'m still here'
 ];
 
-const CHARACTERS = [
-  'rogue AI', 'time traveler', 'digital ghost', 'cyber detective', 'space nomad',
-  'memory thief', 'code breaker', 'dream hacker', 'quantum physicist', 'android musician',
-  'data archaeologist', 'virtual reality architect', 'consciousness explorer', 'nano engineer',
-  'hologram artist', 'genetic sculptor', 'neural interface designer', 'cosmic DJ',
-  'interdimensional messenger', 'synthetic life form'
+const FAMILY_SITUATIONS = [
+  'My mom still cuts my food and I\'m 25',
+  'Family dinner turned into a political debate again',
+  'My dad is trying to be cool on social media',
+  'My sister borrowed my clothes without asking... again',
+  'Grandma doesn\'t understand why I\'m still single',
+  'My parents are cooler than me and it\'s embarrassing',
+  'I moved back in with my parents and I\'m not okay',
+  'My little brother is taller than me now',
+  'Mom found my old diary and won\'t stop laughing',
+  'Dad jokes are getting out of control'
 ];
 
-const OBJECTS = [
-  'broken synthesizer', 'glowing crystal', 'ancient artifact', 'quantum computer',
-  'time capsule', 'holographic projector', 'neural implant', 'cosmic radio',
-  'digital compass', 'memory chip', 'sonic weapon', 'gravity generator',
-  'dimensional portal', 'consciousness recorder', 'emotion detector', 'dream catcher',
-  'reality distorter', 'frequency modulator', 'temporal anchor', 'quantum key'
+const SOCIAL_SITUATIONS = [
+  'Oh no, she didn\'t come in here looking like that',
+  'I saw you at the store but pretended I didn\'t',
+  'You read my message but didn\'t reply for 6 hours',
+  'I\'m the only one who showed up to this party',
+  'My ex is dating someone who looks exactly like me',
+  'I accidentally sent a screenshot to the person I was talking about',
+  'Everyone\'s getting engaged and I can\'t even get a text back',
+  'I\'m too old for this club but here I am',
+  'I said I was 5 minutes away but I haven\'t left yet',
+  'I\'m pretending to be busy so I don\'t have to hang out'
 ];
 
-const ACTIONS = [
-  'awakening', 'transformation', 'journey', 'discovery', 'rebellion', 'escape',
-  'connection', 'evolution', 'collision', 'fusion', 'breakdown', 'breakthrough',
-  'ascension', 'descent', 'convergence', 'divergence', 'synchronization', 'chaos',
-  'creation', 'destruction', 'resurrection', 'transcendence', 'metamorphosis', 'revelation'
+const PERSONAL_STRUGGLES = [
+  'I\'m 30 and I still don\'t know what I want to be when I grow up',
+  'I bought a gym membership and haven\'t used it once',
+  'I\'m addicted to my phone and I know it',
+  'I eat cereal for dinner and call it self-care',
+  'I have social anxiety but I\'m really funny online',
+  'I\'m broke but I keep buying things I don\'t need',
+  'I said I\'d start tomorrow but tomorrow never comes',
+  'I\'m an adult but I still sleep with a stuffed animal',
+  'I Google everything because I don\'t want to look stupid',
+  'I\'m tired but I stay up scrolling until 3 AM'
 ];
 
-const TIMES = [
-  '3 AM', 'dawn', 'midnight', 'golden hour', 'eclipse', 'solstice',
-  'the year 2087', 'before time', 'between seconds', 'eternal moment',
-  'last day on Earth', 'first contact', 'the singularity', 'quantum leap',
-  'temporal anomaly', 'time freeze', 'parallel timeline', 'future echo'
+const RANDOM_OBSERVATIONS = [
+  'Why do I always pick the slowest line at the grocery store',
+  'My car makes a weird noise but I just turn the music up louder',
+  'I have 200 streaming services but nothing to watch',
+  'I take 47 selfies to post one that looks natural',
+  'My plants keep dying but I keep buying more',
+  'I say I\'m a morning person but I hit snooze 5 times',
+  'I have strong opinions about things that don\'t matter',
+  'I\'m an expert at avoiding people I know in public',
+  'I collect hobbies like Pokemon cards',
+  'I\'m 99% sure my cat judges my life choices'
 ];
 
-// Template patterns for generating diverse track ideas
-const IDEA_TEMPLATES = [
-  // Emotion + Setting
-  (emotion: string, setting: string) => ({
-    subject: `${emotion} in ${setting}`,
-    description: `Explore the feeling of ${emotion} within the atmosphere of ${setting}`
+// All situations combined
+const ALL_SITUATIONS = [
+  ...LOVE_SITUATIONS,
+  ...FUNNY_SITUATIONS,
+  ...WORK_LIFE_SITUATIONS,
+  ...FAMILY_SITUATIONS,
+  ...SOCIAL_SITUATIONS,
+  ...PERSONAL_STRUGGLES,
+  ...RANDOM_OBSERVATIONS
+];
+
+// Emotional contexts that match these real situations
+const REAL_EMOTIONS = [
+  'awkward but relatable', 'bittersweet nostalgia', 'frustrated but funny', 'hopeful anxiety',
+  'embarrassed but laughing', 'tired but determined', 'confused but curious', 'lonely but independent',
+  'overwhelmed but grateful', 'scared but excited', 'annoyed but amused', 'heartbroken but healing',
+  'stressed but surviving', 'disappointed but optimistic', 'jealous but supportive', 'angry but understanding'
+];
+
+const REAL_SETTINGS = [
+  'your bedroom at 3 AM', 'the grocery store checkout line', 'your car in traffic',
+  'the office break room', 'your childhood bedroom', 'a crowded coffee shop',
+  'the gym you never go to', 'your couch on Sunday', 'the bathroom mirror',
+  'your kitchen at midnight', 'the parking lot after work', 'your friend\'s wedding',
+  'the DMV waiting area', 'your therapist\'s office', 'the laundromat',
+  'your high school reunion', 'the airport security line', 'your ex\'s Instagram'
+];
+
+// Template patterns for real-life situations
+const REAL_LIFE_TEMPLATES = [
+  // Direct situation
+  (situation: string) => ({
+    subject: situation,
+    description: `A song about the very real and relatable experience of: ${situation}`
   }),
   
-  // Character + Action
-  (character: string, action: string) => ({
-    subject: `${character}'s ${action}`,
-    description: `Follow a ${character} through their journey of ${action}`
+  // Situation + emotion
+  (situation: string, emotion: string) => ({
+    subject: situation,
+    description: `Capturing the ${emotion} feeling of ${situation.toLowerCase()}`
   }),
   
-  // Concept + Time
-  (concept: string, time: string) => ({
-    subject: `${concept} at ${time}`,
-    description: `Experience ${concept} during ${time}`
+  // Situation + setting
+  (situation: string, setting: string) => ({
+    subject: `${situation} in ${setting}`,
+    description: `The story of ${situation.toLowerCase()} while you're in ${setting}`
   }),
   
-  // Object + Emotion
-  (object: string, emotion: string) => ({
-    subject: `the ${object} of ${emotion}`,
-    description: `A mysterious ${object} that embodies the essence of ${emotion}`
-  }),
-  
-  // Setting + Action
-  (setting: string, action: string) => ({
-    subject: `${action} in ${setting}`,
-    description: `The story of ${action} taking place in ${setting}`
-  }),
-  
-  // Character + Object
-  (character: string, object: string) => ({
-    subject: `${character} finds the ${object}`,
-    description: `A ${character} discovers a powerful ${object} that changes everything`
-  }),
-  
-  // Concept + Character
-  (concept: string, character: string) => ({
-    subject: `${character} and ${concept}`,
-    description: `How a ${character} encounters and deals with ${concept}`
-  }),
-  
-  // Time + Emotion
-  (time: string, emotion: string) => ({
-    subject: `${emotion} at ${time}`,
-    description: `The profound feeling of ${emotion} experienced at ${time}`
-  }),
-  
-  // Action + Concept
-  (action: string, concept: string) => ({
-    subject: `${action} through ${concept}`,
-    description: `A journey of ${action} guided by the principles of ${concept}`
-  }),
-  
-  // Complex combinations
-  (setting: string, character: string, action: string) => ({
-    subject: `${character}'s ${action} in ${setting}`,
-    description: `A ${character} undergoes ${action} within the unique environment of ${setting}`
+  // Emotional take on situation
+  (situation: string, emotion: string) => ({
+    subject: `${situation} (and it's ${emotion})`,
+    description: `A ${emotion} anthem about ${situation.toLowerCase()}`
   })
 ];
 
@@ -125,33 +157,22 @@ function getRandomElement<T>(array: T[]): T {
 
 export function generateRandomTrackIdea(): TrackIdea {
   // Choose a random template
-  const template = getRandomElement(IDEA_TEMPLATES);
+  const template = getRandomElement(REAL_LIFE_TEMPLATES);
   
-  // Generate parameters based on template requirements
-  const emotion = getRandomElement(EMOTIONS);
-  const setting = getRandomElement(SETTINGS);
-  const concept = getRandomElement(CONCEPTS);
-  const character = getRandomElement(CHARACTERS);
-  const object = getRandomElement(OBJECTS);
-  const action = getRandomElement(ACTIONS);
-  const time = getRandomElement(TIMES);
+  // Get random elements
+  const situation = getRandomElement(ALL_SITUATIONS);
+  const emotion = getRandomElement(REAL_EMOTIONS);
+  const setting = getRandomElement(REAL_SETTINGS);
   
-  // Apply template with random parameters
-  if (template.length === 2) {
-    // Two parameter templates
-    const params = [emotion, setting, concept, character, object, action, time];
-    const param1 = getRandomElement(params);
-    const param2 = getRandomElement(params.filter(p => p !== param1));
-    return (template as any)(param1, param2);
-  } else if (template.length === 3) {
-    // Three parameter template
-    return (template as any)(setting, character, action);
+  // Apply template
+  if (template.length === 1) {
+    return template(situation);
+  } else if (template.length === 2) {
+    return Math.random() > 0.5 
+      ? template(situation, emotion)
+      : template(situation, setting);
   } else {
-    // Fallback to simple emotion + setting
-    return {
-      subject: `${emotion} in ${setting}`,
-      description: `Explore the feeling of ${emotion} within the atmosphere of ${setting}`
-    };
+    return template(situation, emotion);
   }
 }
 
@@ -173,7 +194,7 @@ export function generateMultipleTrackIdeas(count: number = 5): TrackIdea[] {
   return ideas;
 }
 
-// Additional arrays for complete track generation
+// Rest of the existing code for complete track generation remains the same...
 const GENRES_PRIMARY = [
   ['Electronic'], ['Hip Hop'], ['Pop'], ['Rock'], ['Jazz'], ['Classical'], 
   ['Ambient'], ['Folk'], ['R&B'], ['Country'], ['Reggae'], ['Latin'],
