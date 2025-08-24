@@ -286,7 +286,7 @@ export default function PromptFormScreen() {
   );
 
   if (showAdminScreen) {
-    return <SimpleAdminScreen />;
+    return <AdminScreen onBackToApp={() => setShowAdminScreen(false)} />;
   }
 
   return (
