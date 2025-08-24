@@ -10,6 +10,21 @@ export default function AuthScreen() {
 
   const styles = createStyles(colors);
 
+  const exampleData = [
+    {
+      input: "80s house vibe, summer rooftop party",
+      output: "Minimal deep-house, warm Rhodes, silky female vocals, smooth basslines, 120 BPM – evokes sunset rooftop"
+    },
+    {
+      input: "Dark experimental techno",
+      output: "Industrial techno with distorted kicks, granular textures, cold metallic synths, and whispered male vocals, BPM 128 – dark, immersive, underground vibe"
+    },
+    {
+      input: "Lo-fi beats for focus",
+      output: "Dreamy lo-fi-hip-hop with vinyl crackle, dusty Rhodes keys, soft male humming, chill BPM 78 – perfect for study sessions."
+    }
+  ];
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView 
@@ -19,78 +34,106 @@ export default function AuthScreen() {
       >
         {/* Hero Section */}
         <View style={styles.heroSection}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoEmoji}>🎵</Text>
-          </View>
-          <Text style={styles.appTitle}>AI Music Prompter</Text>
-          <Text style={styles.tagline}>
-            Professional AI prompts for Suno, Udio, and other music generation platforms
+          <Text style={styles.mainTitle}>
+            Create Perfect AI Music{'\n'}Prompts in Seconds
           </Text>
-        </View>
-
-        {/* Value Proposition */}
-        <View style={styles.valueSection}>
-          <View style={styles.valueItem}>
-            <View style={styles.valueIcon}>
-              <Text style={styles.valueEmoji}>⚡</Text>
-            </View>
-            <View style={styles.valueContent}>
-              <Text style={styles.valueTitle}>Instant Professional Prompts</Text>
-              <Text style={styles.valueDescription}>Generate detailed, effective prompts in seconds</Text>
-            </View>
-          </View>
-
-          <View style={styles.valueItem}>
-            <View style={styles.valueIcon}>
-              <Text style={styles.valueEmoji}>🎯</Text>
-            </View>
-            <View style={styles.valueContent}>
-              <Text style={styles.valueTitle}>Precision Control</Text>
-              <Text style={styles.valueDescription}>Fine-tune every aspect of your music generation</Text>
-            </View>
-          </View>
-
-          <View style={styles.valueItem}>
-            <View style={styles.valueIcon}>
-              <Text style={styles.valueEmoji}>💾</Text>
-            </View>
-            <View style={styles.valueContent}>
-              <Text style={styles.valueTitle}>Save & Organize</Text>
-              <Text style={styles.valueDescription}>Keep your best prompts organized and accessible</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Auth Section */}
-        <View style={styles.authSection}>
-          <View style={styles.securityBadge}>
-            <Text style={styles.securityIcon}>🔒</Text>
-            <Text style={styles.securityText}>Secure Authentication</Text>
-          </View>
-
+          <Text style={styles.subtitle}>
+            Turn your ideas into optimized, detailed prompts for{'\n'}Suno, Udio, MusicGen, and more – without guesswork.
+          </Text>
+          
           <TouchableOpacity 
-            style={[styles.signInButton, isLoading && styles.signInButtonDisabled]}
+            style={[styles.ctaButton, isLoading && styles.ctaButtonDisabled]}
             onPress={login}
             disabled={isLoading}
           >
-            <Text style={styles.signInButtonText}>
-              {isLoading ? 'Connecting...' : 'Get Started'}
-            </Text>
-            <Text style={styles.signInButtonSubtext}>
-              {isLoading ? 'Please wait' : 'Create your account'}
+            <Text style={styles.ctaButtonText}>
+              {isLoading ? 'Connecting...' : 'Generate My Prompt →'}
             </Text>
           </TouchableOpacity>
+        </View>
 
-          <Text style={styles.authNote}>
-            Secure sign-in • Your data is encrypted • Cancel anytime
+        {/* Problem/Solution Section */}
+        <View style={styles.problemSection}>
+          <Text style={styles.problemText}>
+            Making music with AI should feel limitless – but crafting the perfect{'\n'}prompt takes time, trial, and wasted tokens.
+          </Text>
+          
+          <Text style={styles.solutionText}>
+            <Text style={styles.solutionBold}>The AI Music Prompter fixes that.</Text> You set the vibe, choose{'\n'}genres, tweak the details – and it instantly delivers studio-ready{'\n'}prompts tailored for top AI music platforms.
           </Text>
         </View>
 
-        {/* Trust Indicators */}
-        <View style={styles.trustSection}>
-          <Text style={styles.trustText}>
-            Trusted by music producers and AI enthusiasts worldwide
-          </Text>
+        {/* Demo Section */}
+        <View style={styles.demoSection}>
+          <Text style={styles.demoTitle}>See it in Action</Text>
+          
+          <View style={styles.demoTable}>
+            <View style={styles.demoHeader}>
+              <Text style={styles.demoHeaderText}>Input Idea</Text>
+              <Text style={styles.demoHeaderText}>Generated Prompt</Text>
+            </View>
+            
+            {exampleData.map((example, index) => (
+              <View key={index} style={styles.demoRow}>
+                <View style={styles.demoInputCell}>
+                  <Text style={styles.demoInputText}>{example.input}</Text>
+                </View>
+                <View style={styles.demoOutputCell}>
+                  <Text style={styles.demoOutputText}>{example.output}</Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* Features Grid */}
+        <View style={styles.featuresSection}>
+          <View style={styles.featuresGrid}>
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <Text style={styles.featureIconText}>🎵</Text>
+              </View>
+              <Text style={styles.featureTitle}>Explore Every Genre</Text>
+              <Text style={styles.featureDescription}>
+                From tech-house to trap, ambient to afrobeat – all the deep dives are built in
+              </Text>
+            </View>
+
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <Text style={styles.featureIconText}>✓</Text>
+              </View>
+              <Text style={styles.featureTitle}>Optimized for Token Efficiency</Text>
+              <Text style={styles.featureDescription}>
+                Get complete, structured prompts that save time and money.
+              </Text>
+            </View>
+
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <Text style={styles.featureIconText}>🎛️</Text>
+              </View>
+              <Text style={styles.featureTitle}>Control Every Detail</Text>
+              <Text style={styles.featureDescription}>
+                Choose vocal gender, delivery style, mood, tempo, bass, and more.
+              </Text>
+            </View>
+
+            <View style={styles.featureItem}>
+              <View style={styles.featureIcon}>
+                <Text style={styles.featureIconText}>🔧</Text>
+              </View>
+              <Text style={styles.featureTitle}>Multi-Platform Ready</Text>
+              <Text style={styles.featureDescription}>
+                Prompts are fine-tuned for Suno, Udio, MusicGen, Riffusion, and other major AI music engines
+              </Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footerSection}>
+          <Text style={styles.footerTitle}>Built by Creators, for Creators</Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -111,115 +154,32 @@ const createStyles = (colors: any) => StyleSheet.create({
   },
   heroSection: {
     alignItems: 'center',
-    paddingTop: 20,
+    paddingTop: 60,
     paddingHorizontal: 20,
-    paddingBottom: 20,
+    paddingBottom: 80,
   },
-  logoContainer: {
-    width: 70,
-    height: 70,
-    borderRadius: 35,
-    backgroundColor: colors.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 2,
-    borderColor: colors.primary + '30',
-  },
-  logoEmoji: {
-    fontSize: 32,
-  },
-  appTitle: {
-    fontSize: 26,
+  mainTitle: {
+    fontSize: 48,
     fontWeight: '800',
     color: colors.text,
     textAlign: 'center',
-    marginBottom: 10,
-    letterSpacing: -0.5,
+    marginBottom: 24,
+    lineHeight: 56,
+    letterSpacing: -1,
   },
-  tagline: {
-    fontSize: 15,
+  subtitle: {
+    fontSize: 18,
     color: colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 20,
-    maxWidth: 300,
-    fontWeight: '500',
+    lineHeight: 26,
+    marginBottom: 40,
+    maxWidth: 600,
   },
-  valueSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    alignItems: 'center',
-  },
-  valueItem: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    marginBottom: 20,
-    paddingHorizontal: 16,
-    maxWidth: 400,
-    width: '100%',
-  },
-  valueIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 14,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  valueEmoji: {
-    fontSize: 18,
-  },
-  valueContent: {
-    flex: 1,
-    paddingTop: 2,
-  },
-  valueTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  valueDescription: {
-    fontSize: 13,
-    color: colors.textSecondary,
-    lineHeight: 18,
-  },
-  authSection: {
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    alignItems: 'center',
-  },
-  securityBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.success + '10',
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 18,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: colors.success + '20',
-  },
-  securityIcon: {
-    fontSize: 14,
-    marginRight: 6,
-  },
-  securityText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: colors.success,
-  },
-  signInButton: {
+  ctaButton: {
     backgroundColor: colors.primary,
     paddingVertical: 16,
-    paddingHorizontal: 36,
-    borderRadius: 14,
-    alignItems: 'center',
-    marginBottom: 14,
-    minWidth: 260,
+    paddingHorizontal: 32,
+    borderRadius: 8,
     shadowColor: colors.primary,
     shadowOffset: {
       width: 0,
@@ -229,38 +189,147 @@ const createStyles = (colors: any) => StyleSheet.create({
     shadowRadius: 8,
     elevation: 8,
   },
-  signInButtonDisabled: {
+  ctaButtonDisabled: {
     opacity: 0.7,
   },
-  signInButtonText: {
-    fontSize: 17,
-    fontWeight: '700',
+  ctaButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#fff',
-    marginBottom: 2,
   },
-  signInButtonSubtext: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontWeight: '500',
-  },
-  authNote: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 16,
-    maxWidth: 280,
-  },
-  trustSection: {
+  problemSection: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
+    paddingBottom: 60,
     alignItems: 'center',
   },
-  trustText: {
-    fontSize: 11,
-    color: colors.textTertiary,
+  problemText: {
+    fontSize: 18,
+    color: colors.textSecondary,
     textAlign: 'center',
-    fontStyle: 'italic',
-    maxWidth: 250,
+    lineHeight: 26,
+    marginBottom: 24,
+    maxWidth: 600,
+  },
+  solutionText: {
+    fontSize: 18,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 26,
+    maxWidth: 600,
+  },
+  solutionBold: {
+    fontWeight: '700',
+    color: colors.text,
+  },
+  demoSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 80,
+    alignItems: 'center',
+  },
+  demoTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.primary,
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  demoTable: {
+    width: '100%',
+    maxWidth: 900,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  demoHeader: {
+    flexDirection: 'row',
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  demoHeaderText: {
+    flex: 1,
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.text,
+    padding: 16,
+    textAlign: 'center',
+  },
+  demoRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  demoInputCell: {
+    flex: 1,
+    padding: 16,
+    borderRightWidth: 1,
+    borderRightColor: colors.border,
+    justifyContent: 'center',
+  },
+  demoOutputCell: {
+    flex: 1,
+    padding: 16,
+    justifyContent: 'center',
+  },
+  demoInputText: {
+    fontSize: 14,
+    color: colors.text,
+    fontWeight: '500',
+  },
+  demoOutputText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  featuresSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 60,
+  },
+  featuresGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 32,
+    maxWidth: 900,
+    alignSelf: 'center',
+  },
+  featureItem: {
+    width: 280,
+    alignItems: 'flex-start',
+  },
+  featureIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.primary + '15',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  featureIconText: {
+    fontSize: 20,
+  },
+  featureTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  featureDescription: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
+  },
+  footerSection: {
+    paddingHorizontal: 20,
+    paddingBottom: 40,
+    alignItems: 'center',
+  },
+  footerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
   },
 });
