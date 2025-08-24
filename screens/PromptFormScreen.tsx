@@ -59,6 +59,13 @@ export default function PromptFormScreen() {
   // Admin state
   const [showAdminScreen, setShowAdminScreen] = useState(false);
   const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com';
+  
+  // Debug logging
+  console.log('Admin check:', {
+    userEmail: user?.email,
+    isAdmin: isAdmin,
+    user: user
+  });
 
   // Track user in database
   useEffect(() => {
@@ -263,16 +270,12 @@ export default function PromptFormScreen() {
         {/* Header */}
         <View style={styles.header}>
           <View style={styles.headerLeft}>
-            {isAdmin ? (
-              <TouchableOpacity 
-                onPress={() => setShowAdminScreen(true)} 
-                style={styles.adminButtonLeft}
-              >
-                <IconFallback name="admin-panel-settings" size={28} color="#fff" />
-              </TouchableOpacity>
-            ) : (
-              <IconFallback name="auto-awesome" size={28} color={colors.primary} />
-            )}
+            <TouchableOpacity 
+              onPress={() => setShowAdminScreen(true)} 
+              style={styles.adminButtonLeft}
+            >
+              <IconFallback name="admin-panel-settings" size={28} color="#fff" />
+            </TouchableOpacity>
             <View>
               <Text style={styles.headerTitle}>AI Music Prompter</Text>
               {user && (
