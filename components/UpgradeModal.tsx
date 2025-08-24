@@ -59,11 +59,11 @@ export default function UpgradeModal({ visible, onClose, onUpgradeSuccess }: Upg
                     <Text style={styles.featureText}>Unlimited prompt generations</Text>
                   </View>
                   <View style={styles.feature}>
-                    <IconFallback name="zap" size={20} color={colors.success} />
+                    <IconFallback name="flash" size={20} color={colors.success} />
                     <Text style={styles.featureText}>No daily limits</Text>
                   </View>
                   <View style={styles.feature}>
-                    <IconFallback name="headphones" size={20} color={colors.success} />
+                    <IconFallback name="headset" size={20} color={colors.success} />
                     <Text style={styles.featureText}>Priority support</Text>
                   </View>
                   <View style={styles.feature}>
@@ -71,7 +71,7 @@ export default function UpgradeModal({ visible, onClose, onUpgradeSuccess }: Upg
                     <Text style={styles.featureText}>Advanced templates</Text>
                   </View>
                   <View style={styles.feature}>
-                    <IconFallback name="refresh-cw" size={20} color={colors.success} />
+                    <IconFallback name="refresh" size={20} color={colors.success} />
                     <Text style={styles.featureText}>Cancel anytime</Text>
                   </View>
                 </View>
