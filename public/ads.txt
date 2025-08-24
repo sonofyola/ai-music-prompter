@@ -1,0 +1,9 @@
+# ads.txt file for AI Music Prompter
+# Replace YOUR_PUBLISHER_ID with your actual AdSense publisher ID
+
+google.com, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+
+# Add other ad networks here if you use them
+# Example:
+# adsystem.com, pub-0000000000000000, DIRECT
+# reseller.com, pub-1111111111111111, RESELLER, f08c47fec0942fa0
