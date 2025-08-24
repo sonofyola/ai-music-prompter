@@ -26,6 +26,7 @@ export default function TemplatesModal({
 }: TemplatesModalProps) {
   const { colors } = useTheme();
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const filteredTemplates = selectedCategory === 'All' 
     ? PROMPT_TEMPLATES 
@@ -54,102 +55,114 @@ export default function TemplatesModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      accessibilityViewIsModal={true}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <View 
+        style={styles.container}
+        accessible={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <IconFallback name="dashboard" size={24} color={colors.primary} />
-            <Text style={styles.title}>Prompt Templates</Text>
-          </View>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconFallback name="close" size={24} color={colors.textSecondary} />
+          <Text 
+            style={styles.title}
+            accessibilityRole="header"
+            accessibilityLevel={1}
+          >
+            🎵 Prompt Templates
+          </Text>
+          <TouchableOpacity 
+            style={styles.closeButton}
+            onPress={onClose}
+            accessible={true}
+            accessibilityLabel="Close templates modal"
+            accessibilityHint="Returns to the main prompt form"
+            accessibilityRole="button"
+          >
+            <Text style={styles.closeButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.subtitle}>
-          Choose from pre-built templates to get started quickly!
-        </Text>
+        {/* Search bar */}
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search templates..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            accessible={true}
+            accessibilityLabel="Search templates"
+            accessibilityHint="Type to filter prompt templates by genre or style"
+            accessibilityRole="searchbox"
+          />
+        </View>
 
-        {/* Category Filter */}
+        {/* Templates list */}
         <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryContainer}
+          style={styles.templatesList}
+          accessible={false}
+          showsVerticalScrollIndicator={true}
         >
-          {TEMPLATE_CATEGORIES.map((category) => (
+          <Text 
+            style={styles.sectionTitle}
+            accessibilityRole="header"
+            accessibilityLevel={2}
+          >
+            Choose a template to get started:
+          </Text>
+
+          {filteredTemplates.map((template, index) => (
             <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonActive
-              ]}
-              onPress={() => setSelectedCategory(category)}
+              key={template.id}
+              style={styles.templateItem}
+              onPress={() => handleSelectTemplate(template)}
+              accessible={true}
+              accessibilityLabel={`${template.name} template`}
+              accessibilityHint={`${template.description}. Tap to use this template.`}
+              accessibilityRole="button"
             >
-              <Text style={[
-                styles.categoryButtonText,
-                selectedCategory === category && styles.categoryButtonTextActive
-              ]}>
-                {category}
+              <View style={styles.templateHeader}>
+                <Text 
+                  style={styles.templateName}
+                  accessible={false}
+                >
+                  {template.emoji} {template.name}
+                </Text>
+                <Text 
+                  style={styles.templateGenre}
+                  accessible={false}
+                >
+                  {template.genre}
+                </Text>
+              </View>
+              <Text 
+                style={styles.templateDescription}
+                accessible={false}
+              >
+                {template.description}
+              </Text>
+              <Text 
+                style={styles.templatePreview}
+                accessible={false}
+                numberOfLines={2}
+              >
+                Preview: {template.prompt.substring(0, 100)}...
               </Text>
             </TouchableOpacity>
           ))}
-        </ScrollView>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          <View style={styles.templatesContainer}>
-            {filteredTemplates.map((template) => (
-              <TouchableOpacity
-                key={template.id}
-                style={styles.templateCard}
-                onPress={() => handleSelectTemplate(template)}
-                activeOpacity={0.7}
-              >
-                <View style={styles.templateHeader}>
-                  <View style={styles.templateTitleContainer}>
-                    <IconFallback 
-                      name={template.icon} 
-                      size={24} 
-                      color={colors.primary} 
-                    />
-                    <View style={styles.templateTextContainer}>
-                      <Text style={styles.templateName}>{template.name}</Text>
-                      <Text style={styles.templateCategory}>{template.category}</Text>
-                    </View>
-                  </View>
-                  <IconFallback name="arrow-forward" size={20} color={colors.primary} />
-                </View>
-                <Text style={styles.templateDescription}>{template.description}</Text>
-                
-                {/* Preview of key settings */}
-                <View style={styles.templatePreview}>
-                  {template.formData.genres_primary && template.formData.genres_primary.length > 0 && (
-                    <View style={styles.previewTag}>
-                      <Text style={styles.previewTagText}>
-                        {template.formData.genres_primary.join(', ')}
-                      </Text>
-                    </View>
-                  )}
-                  {template.formData.tempo_bpm && (
-                    <View style={styles.previewTag}>
-                      <Text style={styles.previewTagText}>
-                        {template.formData.tempo_bpm} BPM
-                      </Text>
-                    </View>
-                  )}
-                  {template.formData.energy && (
-                    <View style={styles.previewTag}>
-                      <Text style={styles.previewTagText}>
-                        {template.formData.energy} Energy
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              </TouchableOpacity>
-            ))}
-          </View>
+          {filteredTemplates.length === 0 && (
+            <View 
+              style={styles.noResults}
+              accessible={true}
+              accessibilityLabel="No templates found"
+              accessibilityRole="text"
+            >
+              <Text style={styles.noResultsText}>
+                No templates found matching "{searchQuery}"
+              </Text>
+            </View>
+          )}
         </ScrollView>
       </View>
     </Modal>
@@ -282,5 +295,43 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontSize: 12,
     color: colors.textSecondary,
     fontWeight: '500',
+  },
+  templatesList: {
+    flex: 1,
+  },
+  templateItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: colors.textSecondary,
+    padding: 16,
+    backgroundColor: colors.surface,
+  },
+  noResults: {
+    padding: 16,
+    backgroundColor: colors.surface,
+  },
+  noResultsText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  searchContainer: {
+    padding: 16,
+  },
+  searchInput: {
+    height: 40,
+    borderColor: colors.border,
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+  },
+  closeButtonText: {
+    fontSize: 16,
+    color: colors.textSecondary,
   },
 });

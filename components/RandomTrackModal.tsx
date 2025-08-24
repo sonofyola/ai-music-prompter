@@ -66,66 +66,180 @@ export default function RandomTrackModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      accessibilityViewIsModal={true}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <View 
+        style={styles.container}
+        accessible={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <IconFallback name="casino" size={24} color={colors.primary} />
-            <Text style={styles.title}>Random Track Ideas</Text>
-          </View>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconFallback name="close" size={24} color={colors.textSecondary} />
+          <Text 
+            style={styles.title}
+            accessibilityRole="header"
+            accessibilityLevel={1}
+          >
+            🎲 Random Track Generator
+          </Text>
+          <TouchableOpacity 
+            style={styles.closeButton}
+            onPress={onClose}
+            accessible={true}
+            accessibilityLabel="Close random track modal"
+            accessibilityHint="Returns to the main prompt form"
+            accessibilityRole="button"
+          >
+            <Text style={styles.closeButtonText}>Done</Text>
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.subtitle}>
-          Tap an idea to use it, or generate new ones for inspiration!
-        </Text>
+        <ScrollView 
+          style={styles.content}
+          accessible={false}
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Description */}
+          <Text 
+            style={styles.description}
+            accessibilityRole="text"
+          >
+            Get inspired with a randomly generated music concept! Perfect for breaking creative blocks.
+          </Text>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {isGenerating ? (
-            <View style={styles.loadingContainer}>
-              <IconFallback name="casino" size={32} color={colors.primary} />
-              <Text style={styles.loadingText}>Generating creative ideas...</Text>
-            </View>
-          ) : (
-            <View style={styles.ideasContainer}>
-              {trackIdeas.map((idea, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={styles.ideaCard}
-                  onPress={() => handleSelectIdea(idea)}
-                  activeOpacity={0.7}
+          {/* Generated track display */}
+          {randomTrack && (
+            <View 
+              style={styles.trackContainer}
+              accessible={true}
+              accessibilityLabel="Generated random track concept"
+              accessibilityRole="region"
+            >
+              <Text 
+                style={styles.trackTitle}
+                accessibilityRole="header"
+                accessibilityLevel={2}
+              >
+                🎵 Your Random Track
+              </Text>
+
+              <View style={styles.trackDetails}>
+                <View 
+                  style={styles.trackField}
+                  accessible={true}
+                  accessibilityLabel={`Genre: ${randomTrack.genre}`}
+                  accessibilityRole="text"
                 >
-                  <View style={styles.ideaHeader}>
-                    <Text style={styles.ideaSubject}>{idea.subject}</Text>
-                    <IconFallback name="arrow-forward" size={20} color={colors.primary} />
+                  <Text style={styles.fieldLabel} accessible={false}>Genre:</Text>
+                  <Text style={styles.fieldValue} accessible={false}>{randomTrack.genre}</Text>
+                </View>
+
+                <View 
+                  style={styles.trackField}
+                  accessible={true}
+                  accessibilityLabel={`Mood: ${randomTrack.mood}`}
+                  accessibilityRole="text"
+                >
+                  <Text style={styles.fieldLabel} accessible={false}>Mood:</Text>
+                  <Text style={styles.fieldValue} accessible={false}>{randomTrack.mood}</Text>
+                </View>
+
+                <View 
+                  style={styles.trackField}
+                  accessible={true}
+                  accessibilityLabel={`Instruments: ${randomTrack.instruments}`}
+                  accessibilityRole="text"
+                >
+                  <Text style={styles.fieldLabel} accessible={false}>Instruments:</Text>
+                  <Text style={styles.fieldValue} accessible={false}>{randomTrack.instruments}</Text>
+                </View>
+
+                <View 
+                  style={styles.trackField}
+                  accessible={true}
+                  accessibilityLabel={`Tempo: ${randomTrack.tempo}`}
+                  accessibilityRole="text"
+                >
+                  <Text style={styles.fieldLabel} accessible={false}>Tempo:</Text>
+                  <Text style={styles.fieldValue} accessible={false}>{randomTrack.tempo}</Text>
+                </View>
+
+                {randomTrack.specialElement && (
+                  <View 
+                    style={styles.trackField}
+                    accessible={true}
+                    accessibilityLabel={`Special element: ${randomTrack.specialElement}`}
+                    accessibilityRole="text"
+                  >
+                    <Text style={styles.fieldLabel} accessible={false}>Special Element:</Text>
+                    <Text style={styles.fieldValue} accessible={false}>{randomTrack.specialElement}</Text>
                   </View>
-                  <Text style={styles.ideaDescription}>{idea.description}</Text>
-                </TouchableOpacity>
-              ))}
+                )}
+              </View>
             </View>
           )}
-        </ScrollView>
 
-        <View style={styles.footer}>
-          <TouchableOpacity 
-            style={styles.generateButton}
-            onPress={generateNewIdeas}
-            disabled={isGenerating}
+          {/* Action buttons */}
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.generateButton}
+              onPress={handleGenerateRandom}
+              disabled={isGenerating}
+              accessible={true}
+              accessibilityLabel={isGenerating ? "Generating random track" : "Generate random track"}
+              accessibilityHint="Creates a new random music concept with genre, mood, and instruments"
+              accessibilityRole="button"
+              accessibilityState={{
+                disabled: isGenerating,
+                busy: isGenerating
+              }}
+            >
+              <Text style={styles.generateButtonText}>
+                {isGenerating ? '🎲 Generating...' : '🎲 Generate Random Track'}
+              </Text>
+            </TouchableOpacity>
+
+            {randomTrack && (
+              <TouchableOpacity 
+                style={styles.useTrackButton}
+                onPress={handleUseTrack}
+                accessible={true}
+                accessibilityLabel="Use this random track"
+                accessibilityHint="Fills the main form with this random track's details"
+                accessibilityRole="button"
+              >
+                <Text style={styles.useTrackButtonText}>
+                  ✨ Use This Track
+                </Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {/* Tips section */}
+          <View 
+            style={styles.tipsContainer}
+            accessible={true}
+            accessibilityLabel="Tips for using random tracks"
+            accessibilityRole="region"
           >
-            <IconFallback 
-              name="refresh" 
-              size={20} 
-              color="#fff" 
-            />
-            <Text style={styles.generateButtonText}>
-              {isGenerating ? 'Generating...' : 'Generate New Ideas'}
+            <Text 
+              style={styles.tipsTitle}
+              accessibilityRole="header"
+              accessibilityLevel={3}
+            >
+              💡 Tips:
             </Text>
-          </TouchableOpacity>
-        </View>
+            <Text 
+              style={styles.tipsText}
+              accessibilityRole="text"
+            >
+              • Use random tracks as starting points for your creativity{'\n'}
+              • Mix and match elements from different generations{'\n'}
+              • Add your own twist to make it unique{'\n'}
+              • Perfect for overcoming writer's block
+            </Text>
+          </View>
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -228,5 +342,93 @@ const createStyles = (colors: any) => StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  description: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    padding: 16,
+    backgroundColor: colors.surface,
+  },
+  trackContainer: {
+    padding: 16,
+    gap: 12,
+  },
+  trackTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  trackDetails: {
+    flexDirection: 'column',
+    gap: 8,
+  },
+  trackField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 8,
+    borderRadius: 8,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderWidth: 1,
+  },
+  fieldLabel: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginRight: 8,
+  },
+  fieldValue: {
+    fontSize: 14,
+    color: colors.text,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 16,
+  },
+  generateButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+  },
+  generateButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  useTrackButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.primary,
+    borderRadius: 12,
+    padding: 16,
+    gap: 8,
+  },
+  useTrackButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  tipsContainer: {
+    padding: 16,
+    gap: 12,
+  },
+  tipsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.text,
+    marginBottom: 8,
+  },
+  tipsText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 20,
   },
 });

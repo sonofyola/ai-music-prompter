@@ -97,132 +97,144 @@ export default function PromptHistoryModal({
     <Modal
       visible={visible}
       animationType="slide"
-      presentationStyle="pageSheet"
+      accessibilityViewIsModal={true}
       onRequestClose={onClose}
     >
-      <View style={styles.container}>
+      <View 
+        style={styles.container}
+        accessible={false}
+      >
+        {/* Header */}
         <View style={styles.header}>
-          <View style={styles.titleContainer}>
-            <IconFallback name="history" size={24} color={colors.primary} />
-            <Text style={styles.title}>Prompt History</Text>
-          </View>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconFallback name="close" size={24} color={colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionBar}>
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={() => setShowSaveDialog(true)}
+          <Text 
+            style={styles.title}
+            accessibilityRole="header"
+            accessibilityLevel={1}
           >
-            <IconFallback name="save" size={18} color="#fff" />
-            <Text style={styles.saveButtonText}>Save Current</Text>
+            📚 Prompt History
+          </Text>
+          <TouchableOpacity 
+            style={styles.closeButton}
+            onPress={onClose}
+            accessible={true}
+            accessibilityLabel="Close history modal"
+            accessibilityHint="Returns to the main prompt form"
+            accessibilityRole="button"
+          >
+            <Text style={styles.closeButtonText}>Done</Text>
           </TouchableOpacity>
-
-          <View style={styles.filterButtons}>
-            <TouchableOpacity
-              style={[styles.filterButton, styles.filterButtonActive]}
-            >
-              <Text style={[styles.filterButtonText, styles.filterButtonTextActive]}>
-                All ({prompts.length})
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
-        <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-          {filteredPrompts.length === 0 ? (
-            <View style={styles.emptyState}>
-              <IconFallback name="history" size={48} color={colors.textTertiary} />
-              <Text style={styles.emptyStateText}>
-                No saved prompts yet
+        {/* History list */}
+        <ScrollView 
+          style={styles.historyList}
+          accessible={false}
+          showsVerticalScrollIndicator={true}
+        >
+          {history.length > 0 ? (
+            <>
+              <Text 
+                style={styles.sectionTitle}
+                accessibilityRole="header"
+                accessibilityLevel={2}
+              >
+                Your recent prompts:
               </Text>
-              <Text style={styles.emptyStateSubtext}>
-                Save your current prompt to get started
-              </Text>
-            </View>
-          ) : (
-            <View style={styles.promptsContainer}>
-              {filteredPrompts.map((prompt) => (
-                <View key={prompt.id} style={styles.promptCard}>
-                  <TouchableOpacity
-                    style={styles.promptContent}
-                    onPress={() => handleLoadPrompt(prompt)}
-                    activeOpacity={0.7}
+
+              {history.map((item, index) => (
+                <View
+                  key={item.id}
+                  style={styles.historyItem}
+                  accessible={true}
+                  accessibilityLabel={`Prompt from ${formatDate(item.createdAt)}`}
+                  accessibilityRole="region"
+                >
+                  {/* Date header */}
+                  <Text 
+                    style={styles.historyDate}
+                    accessibilityRole="text"
+                    accessible={false}
                   >
-                    <View style={styles.promptHeader}>
-                      <Text style={styles.promptName}>{prompt.name}</Text>
-                      <View style={styles.promptActions}>
-                        <TouchableOpacity
-                          style={styles.actionButton}
-                          onPress={() => handleDeletePrompt(prompt)}
-                          hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                        >
-                          <IconFallback name="delete" size={20} color={colors.textSecondary} />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    
-                    <Text style={styles.promptPreview}>
-                      {getPromptPreview(prompt.formData)}
-                    </Text>
-                    
-                    <View style={styles.promptMeta}>
-                      <Text style={styles.promptDate}>
-                        Created: {formatDate(prompt.createdAt)}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
+                    {formatDate(item.createdAt)}
+                  </Text>
+
+                  {/* Prompt content */}
+                  <Text 
+                    style={styles.historyPrompt}
+                    accessible={true}
+                    accessibilityLabel={`Generated prompt: ${item.prompt}`}
+                    accessibilityRole="text"
+                  >
+                    {item.prompt}
+                  </Text>
+
+                  {/* Action buttons */}
+                  <View style={styles.historyActions}>
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleCopyPrompt(item.prompt)}
+                      accessible={true}
+                      accessibilityLabel="Copy this prompt"
+                      accessibilityHint="Copies this prompt to your clipboard"
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.actionButtonText}>📋 Copy</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={styles.actionButton}
+                      onPress={() => handleReusePrompt(item)}
+                      accessible={true}
+                      accessibilityLabel="Reuse this prompt"
+                      accessibilityHint="Fills the form with this prompt's parameters"
+                      accessibilityRole="button"
+                    >
+                      <Text style={styles.actionButtonText}>🔄 Reuse</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity 
+                      style={[styles.actionButton, styles.deleteButton]}
+                      onPress={() => handleDeletePrompt(item.id)}
+                      accessible={true}
+                      accessibilityLabel="Delete this prompt"
+                      accessibilityHint="Permanently removes this prompt from your history"
+                      accessibilityRole="button"
+                    >
+                      <Text style={[styles.actionButtonText, styles.deleteButtonText]}>🗑️ Delete</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               ))}
+            </>
+          ) : (
+            <View 
+              style={styles.emptyState}
+              accessible={true}
+              accessibilityLabel="No prompt history"
+              accessibilityRole="text"
+            >
+              <Text style={styles.emptyStateText}>
+                No prompts generated yet. Create your first prompt to see it here!
+              </Text>
             </View>
           )}
         </ScrollView>
 
-        {/* Save Dialog */}
-        <Modal
-          visible={showSaveDialog}
-          transparent
-          animationType="fade"
-          onRequestClose={() => setShowSaveDialog(false)}
-        >
-          <View style={styles.saveDialogOverlay}>
-            <View style={styles.saveDialog}>
-              <Text style={styles.saveDialogTitle}>Save Current Prompt</Text>
-              <TextInput
-                style={styles.saveDialogInput}
-                placeholder="Enter a name for this prompt..."
-                placeholderTextColor={colors.textTertiary}
-                value={saveName}
-                onChangeText={setSaveName}
-                autoFocus
-              />
-              <View style={styles.saveDialogButtons}>
-                <TouchableOpacity
-                  style={styles.saveDialogCancelButton}
-                  onPress={() => {
-                    setShowSaveDialog(false);
-                    setSaveName('');
-                  }}
-                >
-                  <Text style={styles.saveDialogCancelText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[
-                    styles.saveDialogSaveButton,
-                    !saveName.trim() && styles.saveDialogSaveButtonDisabled
-                  ]}
-                  onPress={handleSavePrompt}
-                  disabled={!saveName.trim()}
-                >
-                  <Text style={styles.saveDialogSaveText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* Clear all button */}
+        {history.length > 0 && (
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={styles.clearAllButton}
+              onPress={handleClearAll}
+              accessible={true}
+              accessibilityLabel="Clear all history"
+              accessibilityHint="Permanently deletes all saved prompts from your history"
+              accessibilityRole="button"
+            >
+              <Text style={styles.clearAllButtonText}>Clear All History</Text>
+            </TouchableOpacity>
           </View>
-        </Modal>
+        )}
       </View>
     </Modal>
   );
@@ -433,6 +445,78 @@ const createStyles = (colors: any) => StyleSheet.create({
     backgroundColor: colors.textTertiary,
   },
   saveDialogSaveText: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  historyList: {
+    flex: 1,
+  },
+  historyItem: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  historyDate: {
+    fontSize: 14,
+    color: colors.textTertiary,
+    marginBottom: 8,
+  },
+  historyPrompt: {
+    fontSize: 16,
+    color: colors.text,
+    marginBottom: 8,
+  },
+  historyActions: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  actionButton: {
+    padding: 4,
+  },
+  deleteButton: {
+    backgroundColor: colors.textTertiary,
+  },
+  deleteButtonText: {
+    color: '#fff',
+  },
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginBottom: 16,
+  },
+  emptyState: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 40,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: colors.textSecondary,
+    marginTop: 16,
+    textAlign: 'center',
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    color: colors.textTertiary,
+    marginTop: 8,
+    textAlign: 'center',
+  },
+  footer: {
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  clearAllButton: {
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+  },
+  clearAllButtonText: {
     fontSize: 16,
     color: '#fff',
     fontWeight: '600',

@@ -21,157 +21,108 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView} 
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
+      {/* Header */}
+      <View style={styles.header}>
+        <Text 
+          style={styles.title}
+          accessibilityRole="header"
+          accessibilityLevel={1}
+        >
+          🎵 AI Music Prompter
+        </Text>
+        <Text 
+          style={styles.subtitle}
+          accessibilityRole="text"
+        >
+          Create detailed prompts for AI music generation tools like Suno, Riffusion, and MusicGen
+        </Text>
+      </View>
+
+      {/* Features preview */}
+      <View 
+        style={styles.featuresContainer}
+        accessible={true}
+        accessibilityLabel="App features preview"
+        accessibilityRole="list"
       >
-        {/* Hero Section */}
-        <View style={styles.heroSection}>
-          <View style={styles.heroBackground}>
-            <View style={styles.heroContent}>
-              {/* Main Icon with Glow Effect */}
-              <View style={styles.iconContainer}>
-                <View style={styles.iconGlow} />
-                <IconFallback name="auto-awesome" size={80} color="#FFFFFF" />
-              </View>
-              
-              {/* Main Title */}
-              <Text style={styles.heroTitle}>AI Music Prompter</Text>
-              <Text style={styles.heroSubtitle}>
-                Transform your musical ideas into perfect AI prompts
-              </Text>
-              
-              {/* Value Proposition */}
-              <View style={styles.valueProps}>
-                <View style={styles.valueProp}>
-                  <IconFallback name="flash-on" size={20} color="#FFD700" />
-                  <Text style={styles.valuePropText}>Instant Generation</Text>
-                </View>
-                <View style={styles.valueProp}>
-                  <IconFallback name="palette" size={20} color="#FFD700" />
-                  <Text style={styles.valuePropText}>Creative Templates</Text>
-                </View>
-                <View style={styles.valueProp}>
-                  <IconFallback name="security" size={20} color="#FFD700" />
-                  <Text style={styles.valuePropText}>No Credit Card Needed</Text>
-                </View>
-              </View>
-            </View>
-          </View>
+        <View 
+          style={styles.feature}
+          accessible={true}
+          accessibilityRole="listitem"
+          accessibilityLabel="Generate detailed music prompts with AI assistance"
+        >
+          <Text style={styles.featureIcon} accessible={false}>🎼</Text>
+          <Text style={styles.featureText} accessible={false}>Generate detailed music prompts</Text>
         </View>
 
-        {/* Auth Section */}
-        <View style={styles.authSection}>
-          {/* No Credit Card Badge */}
-          <View style={styles.noCreditCardBadge}>
-            <IconFallback name="security" size={20} color={colors.success} />
-            <Text style={styles.noCreditCardText}>No Credit Card Needed to Try</Text>
-          </View>
+        <View 
+          style={styles.feature}
+          accessible={true}
+          accessibilityRole="listitem"
+          accessibilityLabel="Browse professional prompt templates"
+        >
+          <Text style={styles.featureIcon} accessible={false}>📚</Text>
+          <Text style={styles.featureText} accessible={false}>Browse professional templates</Text>
+        </View>
 
-          <TouchableOpacity 
-            style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            <View style={styles.loginButtonGradient}>
-              <IconFallback name="login" size={24} color="#FFFFFF" />
-              <Text style={styles.loginButtonText}>
-                {isLoading ? 'Signing In...' : 'Start Creating Music Prompts'}
-              </Text>
-            </View>
-          </TouchableOpacity>
+        <View 
+          style={styles.feature}
+          accessible={true}
+          accessibilityRole="listitem"
+          accessibilityLabel="Save and manage your prompt history"
+        >
+          <Text style={styles.featureIcon} accessible={false}>💾</Text>
+          <Text style={styles.featureText} accessible={false}>Save & manage your history</Text>
+        </View>
 
-          <Text style={styles.authNote}>
-            🎵 Join thousands of creators • Save prompts • Access premium templates
+        <View 
+          style={styles.feature}
+          accessible={true}
+          accessibilityRole="listitem"
+          accessibilityLabel="Get random inspiration for creative blocks"
+        >
+          <Text style={styles.featureIcon} accessible={false}>🎲</Text>
+          <Text style={styles.featureText} accessible={false}>Random inspiration generator</Text>
+        </View>
+      </View>
+
+      {/* Sign in button */}
+      <View style={styles.authContainer}>
+        <TouchableOpacity 
+          style={styles.signInButton}
+          onPress={login}
+          disabled={isLoading}
+          accessible={true}
+          accessibilityLabel={isLoading ? "Signing in, please wait" : "Sign in with Kiki Auth"}
+          accessibilityHint="Opens authentication flow to create account or sign in"
+          accessibilityRole="button"
+          accessibilityState={{
+            disabled: isLoading,
+            busy: isLoading
+          }}
+        >
+          <Text style={styles.signInButtonText}>
+            {isLoading ? '🔄 Signing In...' : '🚀 Sign In with Kiki Auth'}
           </Text>
-        </View>
+        </TouchableOpacity>
 
-        {/* Features Grid */}
-        <View style={styles.featuresSection}>
-          <Text style={styles.featuresTitle}>Powerful Features for Music Creators</Text>
-          
-          <View style={styles.featuresGrid}>
-            <View style={styles.featureCard}>
-              <View style={styles.featureIconContainer}>
-                <IconFallback name="music-note" size={32} color={colors.primary} />
-              </View>
-              <Text style={styles.featureCardTitle}>Smart Prompt Generation</Text>
-              <Text style={styles.featureCardText}>
-                Generate detailed, professional prompts for Suno AI, Udio, and MusicGen
-              </Text>
-            </View>
+        <Text 
+          style={styles.authNote}
+          accessibilityRole="text"
+        >
+          Secure authentication • No passwords required • Sync across devices
+        </Text>
+      </View>
 
-            <View style={styles.featureCard}>
-              <View style={styles.featureIconContainer}>
-                <IconFallback name="shuffle" size={32} color={colors.primary} />
-              </View>
-              <Text style={styles.featureCardTitle}>Random Inspiration</Text>
-              <Text style={styles.featureCardText}>
-                Get instant creative ideas with our intelligent random track generator
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <View style={styles.featureIconContainer}>
-                <IconFallback name="dashboard" size={32} color={colors.primary} />
-              </View>
-              <Text style={styles.featureCardTitle}>Professional Templates</Text>
-              <Text style={styles.featureCardText}>
-                Choose from curated templates for different genres and styles
-              </Text>
-            </View>
-
-            <View style={styles.featureCard}>
-              <View style={styles.featureIconContainer}>
-                <IconFallback name="history" size={32} color={colors.primary} />
-              </View>
-              <Text style={styles.featureCardTitle}>Prompt History</Text>
-              <Text style={styles.featureCardText}>
-                Save, organize, and reuse your best prompts with cloud sync
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Social Proof */}
-        <View style={styles.socialProofSection}>
-          <Text style={styles.socialProofTitle}>Trusted by Music Creators Worldwide</Text>
-          <View style={styles.statsContainer}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>10K+</Text>
-              <Text style={styles.statLabel}>Prompts Generated</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>500+</Text>
-              <Text style={styles.statLabel}>Active Creators</Text>
-            </View>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>50+</Text>
-              <Text style={styles.statLabel}>Music Genres</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* CTA Section */}
-        <View style={styles.ctaSection}>
-          <Text style={styles.ctaTitle}>Ready to Create Amazing Music?</Text>
-          <Text style={styles.ctaSubtitle}>
-            Join the AI music revolution and turn your ideas into professional prompts
-          </Text>
-          
-          <TouchableOpacity 
-            style={[styles.ctaButton, isLoading && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={isLoading}
-          >
-            <Text style={styles.ctaButtonText}>
-              {isLoading ? 'Signing In...' : 'Get Started Free'}
-            </Text>
-            <IconFallback name="arrow-forward" size={20} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      {/* Footer */}
+      <View style={styles.footer}>
+        <Text 
+          style={styles.footerText}
+          accessibilityRole="text"
+        >
+          By signing in, you agree to our Terms of Service and Privacy Policy
+        </Text>
+      </View>
     </SafeAreaView>
   );
 }
@@ -452,5 +403,83 @@ const createStyles = (colors: any) => StyleSheet.create({
     fontWeight: '700',
     color: '#FFFFFF',
     marginRight: 12,
+  },
+  header: {
+    padding: 20,
+    backgroundColor: colors.background,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: colors.text,
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 20,
+  },
+  featuresContainer: {
+    padding: 20,
+    backgroundColor: colors.surface,
+  },
+  feature: {
+    padding: 10,
+    backgroundColor: colors.background,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  featureIcon: {
+    fontSize: 24,
+    color: colors.primary,
+    marginRight: 10,
+  },
+  featureText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+  },
+  authContainer: {
+    padding: 20,
+    backgroundColor: colors.surface,
+  },
+  signInButton: {
+    borderRadius: 16,
+    marginBottom: 20,
+    overflow: 'hidden',
+    ...(Platform.OS === 'web' && {
+      boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+      transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    }),
+  },
+  signInButtonText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginLeft: 12,
+  },
+  authNote: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    fontWeight: '500',
+  },
+  footer: {
+    padding: 20,
+    backgroundColor: colors.background,
+  },
+  footerText: {
+    fontSize: 16,
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 24,
+    fontWeight: '500',
   },
 });

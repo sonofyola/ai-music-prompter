@@ -23,18 +23,42 @@ export default function SubscriptionStatus() {
   };
 
   return (
-    <View style={styles.container}>
+    <View 
+      style={styles.container}
+      accessible={true}
+      accessibilityLabel="Premium subscription status"
+      accessibilityRole="region"
+    >
       <View style={styles.content}>
-        <View style={styles.statusRow}>
+        <View 
+          style={styles.statusRow}
+          accessible={true}
+          accessibilityLabel="Premium subscription is active"
+          accessibilityRole="text"
+        >
           <IconFallback name="verified" size={20} color={colors.success} />
-          <Text style={styles.statusText}>Premium Active</Text>
+          <Text style={styles.statusText} accessible={false}>Premium Active</Text>
         </View>
-        <TouchableOpacity style={styles.manageButton} onPress={handleManageSubscription}>
-          <Text style={styles.manageText}>Manage</Text>
+        
+        <TouchableOpacity 
+          style={styles.manageButton} 
+          onPress={handleManageSubscription}
+          accessible={true}
+          accessibilityLabel="Manage subscription"
+          accessibilityHint="Opens subscription management portal to update billing or cancel subscription"
+          accessibilityRole="button"
+        >
+          <Text style={styles.manageText} accessible={false}>Manage</Text>
           <IconFallback name="settings" size={16} color={colors.primary} />
         </TouchableOpacity>
       </View>
-      <Text style={styles.benefitText}>✨ Unlimited generations • Priority support</Text>
+      
+      <Text 
+        style={styles.benefitText}
+        accessibilityRole="text"
+      >
+        ✨ Unlimited generations • Priority support
+      </Text>
     </View>
   );
 }
