@@ -8,7 +8,7 @@ import IconFallback from '../components/IconFallback';
 
 export default function AuthScreen() {
   const { colors } = useTheme();
-  const { login, signout, isLoading, user, isSignedIn } = useBasic();
+  const { login, signout, isLoading, user, isSignedIn, db } = useBasic();
   const [isResetting, setIsResetting] = useState(false);
 
   const styles = createStyles(colors);
@@ -28,7 +28,8 @@ export default function AuthScreen() {
     } : null,
     isStuckWithSonofyola,
     isSignedIn,
-    isLoading
+    isLoading,
+    hasDb: !!db
   });
 
   const handleLogin = async () => {
@@ -372,9 +373,7 @@ export default function AuthScreen() {
             setIsResetting(true);
             try {
               console.log('🗑️ Starting forced sonofyola account deletion...');
-              
-              // Get the current database connection from useBasic
-              const { db } = useBasic();
+              console.log('🔍 Database available:', !!db);
               
               if (!db) {
                 Alert.alert(
@@ -382,6 +381,7 @@ export default function AuthScreen() {
                   'No database connection available. Try signing in first, then use this button.',
                   [{ text: 'OK' }]
                 );
+                setIsResetting(false);
                 return;
               }
               
@@ -433,47 +433,67 @@ export default function AuthScreen() {
     );
   };
 
-  const handleDomainReset = async () => {
+  const handleImmediateTest = () => {
+    console.log('🧪 IMMEDIATE TEST - This should appear in console right away');
+    console.log('🔍 Current user:', user);
+    console.log('🔍 Is signed in:', isSignedIn);
+    console.log('🔍 Is loading:', isLoading);
+    console.log('🔍 Is resetting:', isResetting);
+    
     Alert.alert(
-      '🌍 Domain-Specific Reset',
-      'This will clear all cookies and storage for BasicTech/Kiki domains and attempt to break server-side account associations. This is specifically designed to fix persistent account linking issues.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: '🌍 Domain Reset',
-          style: 'destructive',
-          onPress: async () => {
-            setIsResetting(true);
-            try {
-              await signout();
-              const { performDomainSpecificReset } = await import('../utils/authReset');
-              await performDomainSpecificReset();
-            } catch (error) {
-              console.error('❌ Domain reset error:', error);
-            }
-          }
-        }
-      ]
+      'Immediate Test',
+      `Button works! User: ${user?.email || 'none'}, SignedIn: ${isSignedIn}, Loading: ${isLoading}`,
+      [{ text: 'OK' }]
     );
   };
 
-  const handleServerSideUnlink = async () => {
+  const handleSimpleURLBreak = () => {
+    console.log('🔗 SIMPLE URL BREAK - Starting...');
+    
     Alert.alert(
-      '🌐 Server-Side Account Unlink',
-      'This will attempt to break server-side account associations that are causing drremotework@gmail.com to be linked to the sonofyola account. This targets BasicTech\'s server-side session management.',
+      '🔗 Simple URL Session Break',
+      'This will clear storage and redirect with session-breaking parameters.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: '🌐 Server Unlink',
+          text: '🔗 Break Session',
           style: 'destructive',
-          onPress: async () => {
+          onPress: () => {
+            console.log('🔗 Executing simple URL session break...');
             setIsResetting(true);
+            
             try {
-              await signout();
-              const { performServerSideAccountUnlink } = await import('../utils/authReset');
-              await performServerSideAccountUnlink();
+              // Clear storage immediately
+              if (typeof window !== 'undefined') {
+                console.log('🔗 Clearing storage...');
+                try { window.localStorage.clear(); } catch (e) { console.log('localStorage clear failed:', e); }
+                try { window.sessionStorage.clear(); } catch (e) { console.log('sessionStorage clear failed:', e); }
+                
+                // Set flags
+                window.localStorage.setItem('force_new_session', 'true');
+                window.localStorage.setItem('break_session_continuity', 'true');
+                window.localStorage.setItem('admin_session_override', 'drremotework@gmail.com');
+                window.localStorage.setItem('reject_sonofyola', 'true');
+                
+                console.log('🔗 Storage cleared, redirecting...');
+                
+                // Redirect with session-breaking parameters
+                setTimeout(() => {
+                  const url = new URL(window.location.origin);
+                  url.searchParams.set('session_break', 'true');
+                  url.searchParams.set('force_new_auth', 'true');
+                  url.searchParams.set('admin_override', 'drremotework@gmail.com');
+                  url.searchParams.set('reject_sonofyola', 'true');
+                  url.searchParams.set('timestamp', Date.now().toString());
+                  url.searchParams.set('nonce', Math.random().toString(36));
+                  
+                  console.log('🔗 Redirecting to:', url.toString());
+                  window.location.replace(url.toString());
+                }, 1000);
+              }
             } catch (error) {
-              console.error('❌ Server-side unlink error:', error);
+              console.error('🔗 Simple URL break error:', error);
+              setIsResetting(false);
             }
           }
         }
@@ -482,6 +502,7 @@ export default function AuthScreen() {
   };
 
   const handleURLSessionBreak = async () => {
+    console.log('🔗 URL Session Break button pressed');
     Alert.alert(
       '🔗 URL Session Break',
       'This will use URL manipulation to force BasicTech to start a completely new session, breaking any cached session continuity.',
@@ -491,6 +512,7 @@ export default function AuthScreen() {
           text: '🔗 Break Session',
           style: 'destructive',
           onPress: async () => {
+            console.log('🔗 Starting URL session break...');
             setIsResetting(true);
             try {
               await signout();
@@ -498,6 +520,8 @@ export default function AuthScreen() {
               await performURLSessionBreak();
             } catch (error) {
               console.error('❌ URL session break error:', error);
+            } finally {
+              setIsResetting(false);
             }
           }
         }
@@ -506,6 +530,7 @@ export default function AuthScreen() {
   };
 
   const handleIframeContextReset = async () => {
+    console.log('🖼️ Iframe Context Reset button pressed');
     Alert.alert(
       '🖼️ Iframe Context Reset',
       'This will create an isolated authentication context to break any parent window session continuity.',
@@ -515,6 +540,7 @@ export default function AuthScreen() {
           text: '🖼️ Context Reset',
           style: 'destructive',
           onPress: async () => {
+            console.log('🖼️ Starting iframe context reset...');
             setIsResetting(true);
             try {
               await signout();
@@ -522,6 +548,166 @@ export default function AuthScreen() {
               await performIframeContextReset();
             } catch (error) {
               console.error('❌ Iframe context reset error:', error);
+            } finally {
+              setIsResetting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleServerSideUnlink = async () => {
+    console.log('🌐 Server-Side Unlink button pressed');
+    Alert.alert(
+      '🌐 Server-Side Account Unlink',
+      'This will attempt to break server-side account associations that are causing drremotework@gmail.com to be linked to the sonofyola account. This targets BasicTech\'s server-side session management.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🌐 Server Unlink',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('🌐 Starting server-side unlink...');
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performServerSideAccountUnlink } = await import('../utils/authReset');
+              await performServerSideAccountUnlink();
+            } catch (error) {
+              console.error('❌ Server-side unlink error:', error);
+            } finally {
+              setIsResetting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleDomainReset = async () => {
+    console.log('🌍 Domain Reset button pressed');
+    Alert.alert(
+      '🌍 Domain-Specific Reset',
+      'This will clear all cookies and storage for BasicTech/Kiki domains and attempt to break server-side account associations. This is specifically designed to fix persistent account linking issues.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '🌍 Domain Reset',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('🌍 Starting domain reset...');
+            setIsResetting(true);
+            try {
+              await signout();
+              const { performDomainSpecificReset } = await import('../utils/authReset');
+              await performDomainSpecificReset();
+            } catch (error) {
+              console.error('❌ Domain reset error:', error);
+            } finally {
+              setIsResetting(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleTestButton = () => {
+    console.log('🧪 TEST BUTTON PRESSED - Buttons are working!');
+    Alert.alert('Test', 'Button press detected! The buttons are working correctly.', [{ text: 'OK' }]);
+  };
+
+  const handleStandaloneNuclear = () => {
+    console.log('💥 STANDALONE NUCLEAR - Starting...');
+    
+    Alert.alert(
+      '💥 Standalone Nuclear Reset',
+      'This will clear everything and force a reload without using any imports. This is the most basic reset possible.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: '💥 Nuclear Reset',
+          style: 'destructive',
+          onPress: async () => {
+            console.log('💥 Executing standalone nuclear reset...');
+            setIsResetting(true);
+            
+            try {
+              // Sign out first
+              console.log('💥 Signing out...');
+              await signout();
+              
+              // Clear everything multiple times
+              for (let i = 0; i < 3; i++) {
+                console.log(`💥 Clearing pass ${i + 1}/3`);
+                
+                if (typeof window !== 'undefined') {
+                  // Clear localStorage
+                  try { 
+                    const keys = Object.keys(window.localStorage);
+                    console.log('💥 LocalStorage keys:', keys);
+                    window.localStorage.clear(); 
+                  } catch (e) { console.log('localStorage clear failed:', e); }
+                  
+                  // Clear sessionStorage
+                  try { 
+                    const keys = Object.keys(window.sessionStorage);
+                    console.log('💥 SessionStorage keys:', keys);
+                    window.sessionStorage.clear(); 
+                  } catch (e) { console.log('sessionStorage clear failed:', e); }
+                  
+                  // Clear cookies
+                  if (document && document.cookie) {
+                    console.log('💥 Cookies:', document.cookie);
+                    document.cookie.split(";").forEach(function(c) { 
+                      document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+                    });
+                  }
+                }
+                
+                // Clear AsyncStorage
+                try {
+                  const AsyncStorage = require('@react-native-async-storage/async-storage').default;
+                  const keys = await AsyncStorage.getAllKeys();
+                  console.log('💥 AsyncStorage keys:', keys);
+                  await AsyncStorage.clear();
+                } catch (e) {
+                  console.log('💥 AsyncStorage clear failed:', e);
+                }
+                
+                // Wait between passes
+                if (i < 2) {
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                }
+              }
+              
+              console.log('💥 All clearing complete, forcing reload...');
+              
+              // Force reload with cache busting
+              if (typeof window !== 'undefined') {
+                setTimeout(() => {
+                  const url = new URL(window.location.origin);
+                  url.searchParams.set('nuclear_reset', '1');
+                  url.searchParams.set('sonofyola_destroyed', 'true');
+                  url.searchParams.set('force_fresh', 'true');
+                  url.searchParams.set('timestamp', Date.now().toString());
+                  url.searchParams.set('random', Math.random().toString());
+                  
+                  console.log('💥 Redirecting to:', url.toString());
+                  window.location.replace(url.toString());
+                }, 1000);
+              }
+              
+            } catch (error) {
+              console.error('💥 Standalone nuclear error:', error);
+              // Emergency fallback
+              if (typeof window !== 'undefined') {
+                setTimeout(() => {
+                  console.log('💥 Emergency fallback reload...');
+                  window.location.reload();
+                }, 2000);
+              }
             }
           }
         }
@@ -615,10 +801,30 @@ export default function AuthScreen() {
         <View style={styles.troubleshootSection}>
           <Text style={styles.troubleshootTitle}>Having issues?</Text>
           
-          {/* Most targeted options first */}
+          {/* Immediate test button */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#00FF00', borderWidth: 2, borderColor: '#000' }]}
+            onPress={handleImmediateTest}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#000' }]}>🧪 IMMEDIATE TEST</Text>
+          </TouchableOpacity>
+          
+          {/* Simple URL break test */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#FF6B35', borderWidth: 2, borderColor: '#FFF' }]}
+            onPress={handleSimpleURLBreak}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🔗 SIMPLE URL BREAK</Text>
+          </TouchableOpacity>
+
+          {/* Most targeted options */}
           <TouchableOpacity 
             style={[styles.troubleshootButton, { backgroundColor: '#E91E63', borderWidth: 3, borderColor: '#FFF' }]}
-            onPress={handleURLSessionBreak}
+            onPress={() => {
+              console.log('🔗 URL SESSION BREAK button pressed');
+              handleURLSessionBreak();
+            }}
             disabled={isResetting}
           >
             <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFF' }]}>🔗 URL SESSION BREAK</Text>
@@ -728,6 +934,15 @@ export default function AuthScreen() {
             disabled={isResetting}
           >
             <Text style={[styles.troubleshootButtonText, { color: '#000000', fontWeight: 'bold' }]}>🌟 ULTIMATE RESET</Text>
+          </TouchableOpacity>
+
+          {/* Standalone nuclear reset */}
+          <TouchableOpacity 
+            style={[styles.troubleshootButton, { backgroundColor: '#8B0000', borderWidth: 3, borderColor: '#FFD700' }]}
+            onPress={handleStandaloneNuclear}
+            disabled={isResetting}
+          >
+            <Text style={[styles.troubleshootButtonText, { fontWeight: 'bold', color: '#FFD700' }]}>💥 STANDALONE NUCLEAR</Text>
           </TouchableOpacity>
         </View>
 
