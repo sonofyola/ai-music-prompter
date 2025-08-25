@@ -4,9 +4,10 @@ import { useBasic } from '@basictech/expo';
 
 interface UsageIndicatorProps {
   onUpgradePress?: () => void;
+  refreshTrigger?: number;
 }
 
-export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) {
+export default function UsageIndicator({ onUpgradePress, refreshTrigger }: UsageIndicatorProps) {
   const { user, db } = useBasic();
   const [usageData, setUsageData] = useState({
     usageCount: 0,
@@ -33,7 +34,7 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
 
   useEffect(() => {
     fetchUsageData();
-  }, [user, db]);
+  }, [user, db, refreshTrigger]);
 
   const { usageCount, usageLimit, subscriptionStatus } = usageData;
   const isPro = subscriptionStatus === 'pro' || usageLimit === -1;

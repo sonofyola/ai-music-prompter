@@ -83,7 +83,15 @@ export default function SubscriptionScreen() {
                 usage_limit: -1
               }));
               
-              Alert.alert('Success!', 'You\'ve been upgraded to Pro! Enjoy unlimited prompts.');
+              Alert.alert('Success!', 'You\'ve been upgraded to Pro! Enjoy unlimited prompts.', [
+                { 
+                  text: 'Awesome!', 
+                  onPress: () => {
+                    // Refresh the screen to show updated status
+                    fetchUserSubscription();
+                  }
+                }
+              ]);
             } catch (error) {
               console.error('Error upgrading subscription:', error);
               Alert.alert('Error', 'Failed to upgrade subscription');

@@ -14,8 +14,13 @@ import { musicData } from '../utils/musicData';
 import { PromptTemplate } from '../utils/promptTemplates';
 import { RandomTrackData } from '../utils/randomTrackGenerator';
 
-export default function PromptFormScreen() {
+interface PromptFormScreenProps {
+  onNavigateToSubscription?: () => void;
+}
+
+export default function PromptFormScreen({ onNavigateToSubscription }: PromptFormScreenProps) {
   const { user, db } = useBasic();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [formData, setFormData] = useState({
     genre: '',
     mood: '',
@@ -73,7 +78,7 @@ export default function PromptFormScreen() {
               `You've reached your monthly limit of ${usageLimit} prompts. Upgrade to Pro for unlimited access!`,
               [
                 { text: 'OK', style: 'cancel' },
-                { text: 'Upgrade to Pro', onPress: () => {/* Navigate to subscription screen */} }
+                { text: 'Upgrade to Pro', onPress: () => onNavigateToSubscription?.() }
               ]
             );
             setIsGenerating(false);
@@ -105,6 +110,9 @@ export default function PromptFormScreen() {
             usage_count: currentUsage + 1,
             last_active: new Date().toISOString()
           });
+          
+          // Trigger refresh of usage indicator
+          setRefreshTrigger(prev => prev + 1);
         } catch (error) {
           console.error('Error saving to history:', error);
         }
@@ -156,7 +164,10 @@ export default function PromptFormScreen() {
         </View>
 
         {/* Usage Indicator */}
-        <UsageIndicator onUpgradePress={() => {/* Navigate to subscription */}} />
+        <UsageIndicator 
+          onUpgradePress={onNavigateToSubscription} 
+          refreshTrigger={refreshTrigger}
+        />
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>

@@ -38,10 +38,14 @@ function AppContent() {
     );
   }
 
+  const navigateToSubscription = () => {
+    setCurrentScreen('subscription');
+  };
+
   const renderScreen = () => {
     switch (currentScreen) {
       case 'prompt':
-        return <PromptFormScreen />;
+        return <PromptFormScreen onNavigateToSubscription={navigateToSubscription} />;
       case 'history':
         return <HistoryScreen />;
       case 'admin':
@@ -49,7 +53,7 @@ function AppContent() {
       case 'subscription':
         return <SubscriptionScreen />;
       default:
-        return <PromptFormScreen />;
+        return <PromptFormScreen onNavigateToSubscription={navigateToSubscription} />;
     }
   };
 
