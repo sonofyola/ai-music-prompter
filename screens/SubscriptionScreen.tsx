@@ -60,54 +60,36 @@ export default function SubscriptionScreen() {
   }, [user, db]);
 
   const handleUpgrade = async () => {
-    console.log('Upgrade button pressed!'); // Debug log
-    Alert.alert(
-      'Upgrade to Pro',
-      'This would normally redirect to Stripe checkout. For demo purposes, this will upgrade you immediately.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Upgrade Now',
-          onPress: async () => {
-            console.log('Upgrade Now pressed, user:', user?.email); // Debug log
-            if (!db || !user) {
-              console.log('Missing db or user:', { db: !!db, user: !!user });
-              Alert.alert('Error', 'Database or user not available');
-              return;
-            }
-            
-            try {
-              console.log('Attempting to update user subscription...');
-              const result = await db.from('users').update(user.email || user.id, {
-                subscription_status: 'pro',
-                usage_limit: -1, // Unlimited
-                subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-              });
-              console.log('Update result:', result);
-              
-              setUserSub(prev => ({
-                ...prev,
-                subscription_status: 'pro',
-                usage_limit: -1
-              }));
-              
-              Alert.alert('Success!', 'You\'ve been upgraded to Pro! Enjoy unlimited prompts.', [
-                { 
-                  text: 'Awesome!', 
-                  onPress: () => {
-                    console.log('Refreshing user subscription...');
-                    fetchUserSubscription();
-                  }
-                }
-              ]);
-            } catch (error) {
-              console.error('Error upgrading subscription:', error);
-              Alert.alert('Error', `Failed to upgrade subscription: ${error.message || error}`);
-            }
-          }
-        }
-      ]
-    );
+    console.log('Upgrade button pressed!');
+    
+    // First, let's just test if the button works at all
+    Alert.alert('Test', 'Upgrade button was pressed! User: ' + (user?.email || 'No user'));
+    
+    // If that works, then try the actual upgrade
+    if (!db || !user) {
+      Alert.alert('Error', 'Database or user not available');
+      return;
+    }
+    
+    try {
+      console.log('Attempting to update user subscription...');
+      await db.from('users').update(user.email || user.id, {
+        subscription_status: 'pro',
+        usage_limit: -1
+      });
+      
+      setUserSub(prev => ({
+        ...prev,
+        subscription_status: 'pro',
+        usage_limit: -1
+      }));
+      
+      Alert.alert('Success!', 'You\'ve been upgraded to Pro!');
+      fetchUserSubscription();
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      Alert.alert('Error', 'Failed to upgrade: ' + String(error));
+    }
   };
 
   const handleCancelSubscription = async () => {
@@ -228,6 +210,13 @@ export default function SubscriptionScreen() {
 
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+          <TouchableOpacity 
+            style={[styles.upgradeButton, { backgroundColor: '#FF9800' }]} 
+            onPress={() => Alert.alert('Test', 'Simple button test works!')}
+          >
+            <Text style={styles.upgradeButtonText}>🧪 Test Button</Text>
+          </TouchableOpacity>
+          
           {!isPro ? (
             <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
               <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>

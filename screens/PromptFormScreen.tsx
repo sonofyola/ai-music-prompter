@@ -199,7 +199,10 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             style={[styles.actionButton, { backgroundColor: '#4CAF50' }]} 
             onPress={() => {
               console.log('Test navigation button pressed');
-              onNavigateToSubscription?.();
+              Alert.alert('Test', 'Navigation function available: ' + (onNavigateToSubscription ? 'YES' : 'NO'));
+              if (onNavigateToSubscription) {
+                onNavigateToSubscription();
+              }
             }}
           >
             <Text style={styles.actionButtonText}>🧪 Test Nav</Text>
