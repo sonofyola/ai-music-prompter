@@ -58,7 +58,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
         try {
           let userData = await db.from('users').get(user.email || user.id);
           
-          // Create user record if it doesn't exist
+          // Create user record if it doesn\'t exist
           if (!userData) {
             const newUser = {
               id: user.email || user.id,
@@ -78,11 +78,11 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
           const usageLimit = Number(userData.usage_limit) || 10;
           const subscriptionStatus = String(userData.subscription_status) || 'free';
           
-          // Check if user has exceeded limit (unless they're pro with unlimited)
+          // Check if user has exceeded limit (unless they\'re pro with unlimited)
           if (subscriptionStatus !== 'pro' && usageLimit !== -1 && usageCount >= usageLimit) {
             Alert.alert(
               'Usage Limit Reached',
-              `You've reached your monthly limit of ${usageLimit} prompts. Upgrade to Pro for unlimited access!`,
+              `You\'ve reached your monthly limit of ${usageLimit} prompts. Upgrade to Pro for unlimited access!`,
               [
                 { text: 'OK', style: 'cancel' },
                 { 
