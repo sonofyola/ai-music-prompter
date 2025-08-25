@@ -60,8 +60,8 @@ export default function SubscriptionScreen() {
             <Text style={styles.buttonText}>🔴 DEBUG UPGRADE</Text>
           </Pressable>
 
-          <Pressable style={styles.testButton} onPress={handleUpgrade}>
-            <Text style={styles.buttonText}>🚀 UPGRADE TO PRO (MOVED)</Text>
+          <Pressable style={styles.testButton} onPress={handleDebugUpgrade}>
+            <Text style={styles.buttonText}>🚀 UPGRADE TO PRO (TEST)</Text>
           </Pressable>
 
           {!isPro ? (
