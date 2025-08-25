@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, TextInput } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Pressable, Alert, RefreshControl, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 
@@ -192,23 +192,27 @@ export default function AdminScreen() {
         </View>
         
         <View style={styles.userActions}>
-          <TouchableOpacity 
+          <Pressable 
             style={styles.actionButton}
             onPress={() => {
+              console.log('Set Limit pressed for user:', item.id);
               setSelectedUser(item);
               setNewUsageLimit(String(item.usage_limit || 10));
             }}
           >
             <Text style={styles.actionButtonText}>Set Limit</Text>
-          </TouchableOpacity>
+          </Pressable>
           
           {item.subscription_status !== 'pro' && item.usage_limit !== -1 && (
-            <TouchableOpacity 
+            <Pressable 
               style={[styles.actionButton, styles.upgradeButton]}
-              onPress={() => upgradeUserToPro(item.id)}
+              onPress={() => {
+                console.log('Upgrade Pro pressed for user:', item.id);
+                upgradeUserToPro(item.id);
+              }}
             >
               <Text style={styles.actionButtonText}>Upgrade Pro</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
         </View>
       </View>
@@ -305,7 +309,7 @@ export default function AdminScreen() {
             />
             
             <View style={styles.modalActions}>
-              <TouchableOpacity 
+              <Pressable 
                 style={styles.cancelButton}
                 onPress={() => {
                   setSelectedUser(null);
@@ -313,9 +317,9 @@ export default function AdminScreen() {
                 }}
               >
                 <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
+              </Pressable>
               
-              <TouchableOpacity 
+              <Pressable 
                 style={styles.saveButton}
                 onPress={() => {
                   const limit = parseInt(newUsageLimit);
@@ -325,7 +329,7 @@ export default function AdminScreen() {
                 }}
               >
                 <Text style={styles.saveButtonText}>Save</Text>
-              </TouchableOpacity>
+              </Pressable>
             </View>
           </View>
         </View>
