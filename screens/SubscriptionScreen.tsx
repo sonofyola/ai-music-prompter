@@ -1,317 +1,401 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Alert,
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
-import { useUsage } from '../contexts/UsageContext';
-import SubscriptionStatus from '../components/SubscriptionStatus';
-import UpgradeModal from '../components/UpgradeModal';
+import { useBasic } from '@basictech/expo';
 
-interface SubscriptionScreenProps {
-  navigation?: any;
+interface UserSubscription {
+  subscription_status?: string;
+  usage_count?: number;
+  usage_limit?: number;
+  stripe_customer_id?: string;
+  subscription_end_date?: string;
 }
 
-export default function SubscriptionScreen({ navigation }: SubscriptionScreenProps) {
-  const { colors } = useTheme();
-  const { 
-    subscriptionStatus, 
-    dailyUsage,
-  } = useUsage();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+export default function SubscriptionScreen() {
+  const { user, db, signout } = useBasic();
+  const [userSub, setUserSub] = useState<UserSubscription>({});
+  const [loading, setLoading] = useState(true);
 
-  const handleRefreshStatus = async () => {
-    Alert.alert('Status Updated', 'Your subscription status has been refreshed.');
+  const fetchUserSubscription = async () => {
+    if (!user || !db) return;
+    
+    try {
+      const userData = await db.from('users').get(user.email || user.id);
+      if (userData) {
+        setUserSub(userData);
+      } else {
+        // Create user record if it doesn't exist
+        const newUser = {
+          id: user.email || user.id,
+          email: user.email || user.id,
+          usage_count: 0,
+          usage_limit: 10,
+          subscription_status: 'free'
+        };
+        await db.from('users').add(newUser);
+        setUserSub(newUser);
+      }
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const daysUntilExpiry = null;
+  useEffect(() => {
+    fetchUserSubscription();
+  }, [user, db]);
 
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: colors.background,
-    },
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 20,
-      paddingVertical: 16,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.border,
-      backgroundColor: colors.surface,
-    },
-    backButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    backText: {
-      fontSize: 16,
-      color: colors.text,
-      marginLeft: 8,
-    },
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: '700',
-      color: colors.text,
-    },
-    content: {
-      flex: 1,
-      padding: 20,
-    },
-    statusContainer: {
-      marginBottom: 24,
-    },
-    section: {
-      backgroundColor: colors.surface,
-      borderRadius: 16,
-      padding: 20,
-      marginBottom: 20,
-      borderWidth: 1,
-      borderColor: colors.border,
-    },
-    sectionTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text,
-      marginBottom: 16,
-    },
-    featureList: {
-      gap: 12,
-    },
-    feature: {
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    featureIcon: {
-      marginRight: 12,
-      width: 20,
-    },
-    featureText: {
-      fontSize: 16,
-      color: colors.text,
-      flex: 1,
-    },
-    upgradeButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.primary,
-      borderRadius: 12,
-      padding: 16,
-      gap: 8,
-      marginTop: 16,
-    },
-    upgradeButtonText: {
-      color: '#fff',
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    managementSection: {
-      gap: 12,
-    },
-    actionButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.border,
-      borderRadius: 12,
-      padding: 16,
-      gap: 8,
-    },
-    actionButtonText: {
-      color: colors.text,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    cancelButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: colors.surface,
-      borderWidth: 1,
-      borderColor: colors.error,
-      borderRadius: 12,
-      padding: 16,
-      gap: 8,
-    },
-    cancelButtonText: {
-      color: colors.error,
-      fontSize: 16,
-      fontWeight: '600',
-    },
-    expiryInfo: {
-      backgroundColor: colors.warning + '15',
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    expiryText: {
-      color: colors.warning,
-      fontSize: 14,
-      marginLeft: 8,
-      flex: 1,
-      fontWeight: '500',
-    },
-    billingInfo: {
-      backgroundColor: colors.background,
-      borderRadius: 12,
-      padding: 16,
-      marginTop: 16,
-    },
-    billingTitle: {
-      fontSize: 16,
-      fontWeight: '600',
-      color: colors.text,
-      marginBottom: 8,
-    },
-    billingText: {
-      fontSize: 14,
-      color: colors.textSecondary,
-      lineHeight: 20,
-    },
-  });
+  const handleUpgrade = async () => {
+    Alert.alert(
+      'Upgrade to Pro',
+      'This would normally redirect to Stripe checkout. For demo purposes, this will upgrade you immediately.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Upgrade Now',
+          onPress: async () => {
+            if (!db || !user) return;
+            
+            try {
+              await db.from('users').update(user.email || user.id, {
+                subscription_status: 'pro',
+                usage_limit: -1, // Unlimited
+                subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
+              });
+              
+              setUserSub(prev => ({
+                ...prev,
+                subscription_status: 'pro',
+                usage_limit: -1
+              }));
+              
+              Alert.alert('Success!', 'You\'ve been upgraded to Pro! Enjoy unlimited prompts.');
+            } catch (error) {
+              console.error('Error upgrading subscription:', error);
+              Alert.alert('Error', 'Failed to upgrade subscription');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleCancelSubscription = async () => {
+    Alert.alert(
+      'Cancel Subscription',
+      'Are you sure you want to cancel your Pro subscription? You\'ll lose unlimited access.',
+      [
+        { text: 'Keep Pro', style: 'cancel' },
+        {
+          text: 'Cancel Subscription',
+          style: 'destructive',
+          onPress: async () => {
+            if (!db || !user) return;
+            
+            try {
+              await db.from('users').update(user.email || user.id, {
+                subscription_status: 'free',
+                usage_limit: 10
+              });
+              
+              setUserSub(prev => ({
+                ...prev,
+                subscription_status: 'free',
+                usage_limit: 10
+              }));
+              
+              Alert.alert('Subscription Cancelled', 'You\'ve been downgraded to the free plan.');
+            } catch (error) {
+              console.error('Error cancelling subscription:', error);
+              Alert.alert('Error', 'Failed to cancel subscription');
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const isPro = userSub.subscription_status === 'pro' || userSub.usage_limit === -1;
+  const usageCount = userSub.usage_count || 0;
+  const usageLimit = userSub.usage_limit || 10;
+  const remainingUsage = usageLimit === -1 ? 'Unlimited' : Math.max(0, usageLimit - usageCount);
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.loadingText}>Loading subscription info...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation?.goBack()}
-        >
-          <MaterialIcons name="arrow-back" size={24} color={colors.text} />
-          <Text style={styles.backText}>Back</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Subscription</Text>
-        <View style={{ width: 24 }} />
-      </View>
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.statusContainer}>
-          <SubscriptionStatus />
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.header}>
+          <Text style={styles.title}>💎 Subscription</Text>
+          <Text style={styles.subtitle}>Manage your AI Music Prompter plan</Text>
         </View>
 
-        {subscriptionStatus === 'free' ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🚀 Upgrade to Premium</Text>
-            
-            <View style={styles.featureList}>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>✓</Text>
-                <Text style={styles.featureText}>Unlimited prompt generations</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>✓</Text>
-                <Text style={styles.featureText}>No daily limits</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>✓</Text>
-                <Text style={styles.featureText}>Priority support</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>✓</Text>
-                <Text style={styles.featureText}>Advanced prompt features</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>✓</Text>
-                <Text style={styles.featureText}>Cancel anytime</Text>
-              </View>
+        {/* Current Plan */}
+        <View style={styles.planContainer}>
+          <View style={styles.planHeader}>
+            <Text style={styles.planTitle}>Current Plan</Text>
+            <View style={[styles.planBadge, isPro ? styles.proBadge : styles.freeBadge]}>
+              <Text style={styles.planBadgeText}>{isPro ? 'PRO' : 'FREE'}</Text>
             </View>
-
-            <TouchableOpacity 
-              style={styles.upgradeButton}
-              onPress={() => setShowUpgradeModal(true)}
-            >
-              <MaterialIcons name="upgrade" size={20} color="#fff" />
-              <Text style={styles.upgradeButtonText}>Upgrade for $5.99/month</Text>
-            </TouchableOpacity>
           </View>
-        ) : (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🎉 Premium Active</Text>
-            
-            {daysUntilExpiry !== null && daysUntilExpiry <= 7 && daysUntilExpiry > 0 && (
-              <View style={styles.expiryInfo}>
-                <MaterialIcons name="warning" size={20} color={colors.warning} />
-                <Text style={styles.expiryText}>
-                  Your subscription expires in {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''}
-                </Text>
-              </View>
-            )}
+          
+          <View style={styles.usageContainer}>
+            <Text style={styles.usageTitle}>Usage This Month</Text>
+            <Text style={styles.usageText}>
+              {usageCount} / {usageLimit === -1 ? '∞' : usageLimit} prompts used
+            </Text>
+            <Text style={styles.remainingText}>
+              {remainingUsage} prompts remaining
+            </Text>
+          </View>
+        </View>
 
-            <View style={styles.featureList}>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>🎵</Text>
-                <Text style={styles.featureText}>Unlimited AI music prompts</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>⚡</Text>
-                <Text style={styles.featureText}>No daily generation limits</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>🎯</Text>
-                <Text style={styles.featureText}>Advanced prompt customization</Text>
-              </View>
-              <View style={styles.feature}>
-                <Text style={styles.featureIcon}>💬</Text>
-                <Text style={styles.featureText}>Priority customer support</Text>
-              </View>
-            </View>
-
-            <View style={styles.billingInfo}>
-              <Text style={styles.billingTitle}>Billing Information</Text>
-              <Text style={styles.billingText}>
-                One-time payment: $5.99 for unlimited access{'\n'}
-                Status: Active
+        {/* Plan Features */}
+        <View style={styles.featuresContainer}>
+          <Text style={styles.featuresTitle}>Plan Features</Text>
+          
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>
+                {isPro ? 'Unlimited' : '10'} prompts per month
               </Text>
             </View>
-          </View>
-        )}
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ Manage Subscription</Text>
-          
-          <View style={styles.managementSection}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleRefreshStatus}
-            >
-              <MaterialIcons name="refresh" size={20} color={colors.text} />
-              <Text style={styles.actionButtonText}>Refresh Status</Text>
-            </TouchableOpacity>
+            
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>Access to all genres & templates</Text>
+            </View>
+            
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>Prompt history & favorites</Text>
+            </View>
+            
+            {isPro && (
+              <>
+                <View style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>⭐</Text>
+                  <Text style={styles.featureText}>Priority support</Text>
+                </View>
+                
+                <View style={styles.featureItem}>
+                  <Text style={styles.featureIcon}>⭐</Text>
+                  <Text style={styles.featureText}>Early access to new features</Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>💡 Need Help?</Text>
-          <Text style={styles.billingText}>
-            Having issues with your subscription? Contact our support team for assistance.
-            {'\n\n'}
-            • Email: support@aimusicpromptr.com{'\n'}
-            • Response time: Within 24 hours{'\n'}
-            • Available: Monday - Friday
+        {/* Action Buttons */}
+        <View style={styles.actionsContainer}>
+          {!isPro ? (
+            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
+              <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelSubscription}>
+              <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
+            </TouchableOpacity>
+          )}
+          
+          <TouchableOpacity style={styles.signOutButton} onPress={signout}>
+            <Text style={styles.signOutButtonText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* User Info */}
+        <View style={styles.userInfo}>
+          <Text style={styles.userInfoTitle}>Account Information</Text>
+          <Text style={styles.userInfoText}>Email: {user?.email || 'Not available'}</Text>
+          <Text style={styles.userInfoText}>
+            Member since: {new Date().toLocaleDateString()}
           </Text>
         </View>
       </ScrollView>
-
-      <UpgradeModal 
-        visible={showUpgradeModal} 
-        onClose={() => setShowUpgradeModal(false)}
-        onUpgradeSuccess={() => {
-          setShowUpgradeModal(false);
-          Alert.alert('Success!', 'Welcome to Premium! 🎉');
-        }}
-      />
     </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#1a1a1a',
+  },
+  scrollContainer: {
+    padding: 20,
+  },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 18,
+    color: '#ffffff',
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#cccccc',
+    textAlign: 'center',
+  },
+  planContainer: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  planTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  planBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  proBadge: {
+    backgroundColor: '#4CAF50',
+  },
+  freeBadge: {
+    backgroundColor: '#FF9800',
+  },
+  planBadgeText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  usageContainer: {
+    alignItems: 'center',
+  },
+  usageTitle: {
+    fontSize: 16,
+    color: '#cccccc',
+    marginBottom: 8,
+  },
+  usageText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 5,
+  },
+  remainingText: {
+    fontSize: 14,
+    color: '#4CAF50',
+  },
+  featuresContainer: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  featuresTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 15,
+  },
+  featuresList: {
+    gap: 12,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  featureIcon: {
+    fontSize: 16,
+    marginRight: 12,
+    width: 20,
+  },
+  featureText: {
+    fontSize: 16,
+    color: '#ffffff',
+    flex: 1,
+  },
+  actionsContainer: {
+    gap: 15,
+    marginBottom: 30,
+  },
+  upgradeButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  upgradeButtonText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  cancelButton: {
+    backgroundColor: '#f44336',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  signOutButton: {
+    backgroundColor: '#666666',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  signOutButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  userInfo: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  userInfoTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 10,
+  },
+  userInfoText: {
+    fontSize: 14,
+    color: '#cccccc',
+    marginBottom: 5,
+  },
+});

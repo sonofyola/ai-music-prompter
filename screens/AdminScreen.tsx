@@ -1,153 +1,148 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Alert, ScrollView, TextInput } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
-import { useTheme } from '../contexts/ThemeContext';
-import * as Clipboard from 'expo-clipboard';
-import { upgradeBetaTester, getBetaTesters } from '../utils/adminHelpers';
 
 interface User {
   id: string;
   email: string;
-  created_at: string;
+  name?: string;
   subscription_status?: string;
   usage_count?: number;
-  stripe_customer_id?: string;
-  last_reset_date?: string;
+  usage_limit?: number;
+  created_at?: string;
+  last_active?: string;
 }
 
-interface AdminScreenProps {
-  onBackToApp: () => void;
+interface PromptHistoryItem {
+  id: string;
+  user_id: string;
+  generated_prompt: string;
+  created_at: string;
 }
 
-export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
-  const { colors } = useTheme();
-  const { user, signout, db } = useBasic();
+export default function AdminScreen() {
+  const { user, db } = useBasic();
   const [users, setUsers] = useState<User[]>([]);
-  const [betaTesters, setBetaTesters] = useState<any[]>([]);
-  const [upgradeEmail, setUpgradeEmail] = useState('');
-  const [isExporting, setIsExporting] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [totalPrompts, setTotalPrompts] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [newUsageLimit, setNewUsageLimit] = useState('');
 
-  // Mock stats for now
-  const stats = {
-    totalUsers: users.length,
-    premiumUsers: users.filter(u => u.subscription_status === 'unlimited' || u.subscription_status === 'premium').length,
-    dailyPrompts: 42,
-    totalPrompts: 1337
-  };
+  const isAdmin = user?.email === 'admin@example.com' || user?.role === 'admin';
 
-  // Check if current user is admin
-  const isAdmin = user?.email === 'ibeme8@gmail.com' || user?.email === 'drremotework@gmail.com' || user?.email === 'sonofyola@gmail.com';
-
-  const loadUsers = useCallback(async () => {
+  const fetchAdminData = async () => {
     if (!db || !isAdmin) return;
     
     try {
-      console.log('🔍 Loading users from database...');
+      // Fetch all users (this would need to be implemented in your backend)
+      // For now, we'll get unique users from prompt history
+      const historyData = await db.from('prompt_history').getAll();
+      const usersData = await db.from('users').getAll();
       
-      // Load from both tables
-      const allUserProfiles = await db.from('user_profiles').getAll();
-      const allUsers = await db.from('users').getAll();
-      
-      console.log('📊 User profiles data:', allUserProfiles);
-      console.log('📊 Basic users data:', allUsers);
-      console.log('📊 Number of user profiles:', allUserProfiles?.length || 0);
-      console.log('📊 Number of basic users:', allUsers?.length || 0);
-      
-      // Merge data from both tables
-      const mergedUsers: User[] = [];
-      
-      // First, add all user profiles
-      if (allUserProfiles) {
-        allUserProfiles.forEach((profile: any) => {
-          mergedUsers.push({
-            id: profile.id,
-            email: profile.email as string,
-            created_at: profile.created_at as string,
-            subscription_status: profile.subscription_status as string,
-            usage_count: profile.usage_count as number,
-            stripe_customer_id: profile.stripe_customer_id as string,
-            last_reset_date: profile.last_reset_date as string,
-          });
-        });
-      }
-      
-      // Then, add users who don't have profiles yet
-      if (allUsers) {
-        allUsers.forEach((user: any) => {
-          const existingProfile = mergedUsers.find(u => u.email === user.email);
-          if (!existingProfile) {
-            mergedUsers.push({
-              id: user.id,
-              email: user.email as string,
-              created_at: user.created_at as string,
-              subscription_status: 'free', // Default status
-              usage_count: 0,
-              stripe_customer_id: '',
-              last_reset_date: '',
+      if (historyData) {
+        setTotalPrompts(historyData.length);
+        
+        // Get unique users from history
+        const userMap = new Map();
+        historyData.forEach((item: PromptHistoryItem) => {
+          if (!userMap.has(item.user_id)) {
+            userMap.set(item.user_id, {
+              id: item.user_id,
+              email: item.user_id,
+              usage_count: 1,
+              last_active: item.created_at
             });
+          } else {
+            const existingUser = userMap.get(item.user_id);
+            existingUser.usage_count += 1;
+            if (new Date(item.created_at) > new Date(existingUser.last_active)) {
+              existingUser.last_active = item.created_at;
+            }
           }
         });
+        
+        // Merge with users data if available
+        if (usersData) {
+          usersData.forEach((userData: User) => {
+            if (userMap.has(userData.id)) {
+              const existingUser = userMap.get(userData.id);
+              userMap.set(userData.id, { ...existingUser, ...userData });
+            } else {
+              userMap.set(userData.id, { ...userData, usage_count: 0 });
+            }
+          });
+        }
+        
+        setUsers(Array.from(userMap.values()));
       }
-      
-      console.log('📊 Merged users:', mergedUsers);
-      setUsers(mergedUsers);
     } catch (error) {
-      console.error('Error loading users:', error);
-      setUsers([]);
+      console.error('Error fetching admin data:', error);
+      Alert.alert('Error', 'Failed to load admin data');
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
     }
-  }, [db, isAdmin]);
-
-  const loadBetaTesters = useCallback(async () => {
-    if (!db) return;
-    try {
-      console.log('🔍 Loading beta testers...');
-      const testers = await getBetaTesters(db);
-      console.log('👥 Beta testers found:', testers);
-      console.log('👥 Number of beta testers:', testers?.length || 0);
-      setBetaTesters(testers);
-    } catch (error) {
-      console.error('Error loading beta testers:', error);
-    }
-  }, [db]);
+  };
 
   useEffect(() => {
     if (isAdmin) {
-      loadUsers();
-      loadBetaTesters();
+      fetchAdminData();
     }
-  }, [isAdmin, loadUsers, loadBetaTesters]);
+  }, [db, isAdmin]);
 
-  const handleQuickUpgrade = async (email: string) => {
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchAdminData();
+  };
+
+  const updateUserLimit = async (userId: string, newLimit: number) => {
+    if (!db) return;
+    
+    try {
+      await db.from('users').update(userId, {
+        usage_limit: newLimit
+      });
+      
+      setUsers(prev => prev.map(u => 
+        u.id === userId ? { ...u, usage_limit: newLimit } : u
+      ));
+      
+      Alert.alert('Success', `Usage limit updated to ${newLimit}`);
+      setSelectedUser(null);
+      setNewUsageLimit('');
+    } catch (error) {
+      console.error('Error updating user limit:', error);
+      Alert.alert('Error', 'Failed to update usage limit');
+    }
+  };
+
+  const upgradeUserToPro = async (userId: string) => {
     if (!db) return;
     
     Alert.alert(
-      'Upgrade Beta Tester',
-      `Upgrade ${email} to unlimited access?`,
+      'Upgrade User',
+      'Upgrade this user to Pro (unlimited usage)?',
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Upgrade',
           onPress: async () => {
             try {
-              await upgradeBetaTester(email, db);
-              Alert.alert(
-                'Success!',
-                `${email} has been upgraded to unlimited access!`,
-                [{ text: 'OK', onPress: () => {
-                  loadUsers();
-                  loadBetaTesters();
-                }}]
-              );
+              await db.from('users').update(userId, {
+                subscription_status: 'pro',
+                usage_limit: -1 // -1 means unlimited
+              });
+              
+              setUsers(prev => prev.map(u => 
+                u.id === userId ? { ...u, subscription_status: 'pro', usage_limit: -1 } : u
+              ));
+              
+              Alert.alert('Success', 'User upgraded to Pro');
             } catch (error) {
               console.error('Error upgrading user:', error);
-              Alert.alert(
-                'Error',
-                `Failed to upgrade ${email}. Error: ${error}`,
-                [{ text: 'OK' }]
-              );
+              Alert.alert('Error', 'Failed to upgrade user');
             }
           }
         }
@@ -155,160 +150,85 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
     );
   };
 
-  const handleCreateMissingProfiles = async () => {
-    if (!db) return;
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getSubscriptionBadge = (status?: string, usageLimit?: number) => {
+    if (status === 'pro' || usageLimit === -1) {
+      return { text: 'PRO', color: '#4CAF50' };
+    }
+    return { text: 'FREE', color: '#FF9800' };
+  };
+
+  const renderUserItem = ({ item }: { item: User }) => {
+    const badge = getSubscriptionBadge(item.subscription_status, item.usage_limit);
     
-    try {
-      const allUsers = await db.from('users').getAll();
-      const allUserProfiles = await db.from('user_profiles').getAll();
-      
-      const usersWithoutProfiles = allUsers.filter((user: any) => 
-        !allUserProfiles.find((profile: any) => profile.email === user.email)
-      );
-      
-      if (usersWithoutProfiles.length === 0) {
-        Alert.alert('Info', 'All users already have profiles.');
-        return;
-      }
-      
-      for (const user of usersWithoutProfiles) {
-        await db.from('user_profiles').add({
-          email: user.email,
-          created_at: user.created_at || new Date().toISOString(),
-          usage_count: 0,
-          last_reset_date: new Date().toISOString(),
-          subscription_status: 'free',
-          stripe_customer_id: '',
-        });
-      }
-      
-      Alert.alert(
-        'Success!', 
-        `Created profiles for ${usersWithoutProfiles.length} users.`,
-        [{ text: 'OK', onPress: () => {
-          loadUsers();
-          loadBetaTesters();
-        }}]
-      );
-    } catch (error) {
-      console.error('Error creating profiles:', error);
-      Alert.alert('Error', 'Failed to create user profiles.');
-    }
-  };
-
-  const handleExportUsers = async () => {
-    if (!users.length) {
-      Alert.alert('No Data', 'No users to export.');
-      return;
-    }
-
-    setIsExporting(true);
-    try {
-      const csvContent = 'Email,Created,Subscription Status,Usage Count\n' + 
-        users.map(user => 
-          `${user.email},${user.created_at},${user.subscription_status || 'free'},${user.usage_count || 0}`
-        ).join('\n');
-      
-      await Clipboard.setStringAsync(csvContent);
-      Alert.alert('Success', 'User data copied to clipboard as CSV format.');
-    } catch (error) {
-      console.error('Error exporting users:', error);
-      Alert.alert('Error', 'Failed to export user data.');
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const handleRefreshData = async () => {
-    setIsRefreshing(true);
-    try {
-      await Promise.all([loadUsers(), loadBetaTesters()]);
-    } finally {
-      setIsRefreshing(false);
-    }
-  };
-
-  const handleToggleMaintenance = () => {
-    setMaintenanceMode(!maintenanceMode);
-    Alert.alert(
-      'Maintenance Mode',
-      `Maintenance mode ${!maintenanceMode ? 'enabled' : 'disabled'}.`,
-      [{ text: 'OK' }]
+    return (
+      <View style={styles.userItem}>
+        <View style={styles.userHeader}>
+          <View style={styles.userInfo}>
+            <Text style={styles.userEmail}>{item.email}</Text>
+            <View style={[styles.badge, { backgroundColor: badge.color }]}>
+              <Text style={styles.badgeText}>{badge.text}</Text>
+            </View>
+          </View>
+          <Text style={styles.usageText}>
+            {item.usage_count || 0} prompts
+          </Text>
+        </View>
+        
+        <View style={styles.userDetails}>
+          <Text style={styles.detailText}>
+            Limit: {item.usage_limit === -1 ? 'Unlimited' : item.usage_limit || 10}
+          </Text>
+          <Text style={styles.detailText}>
+            Last Active: {formatDate(item.last_active)}
+          </Text>
+        </View>
+        
+        <View style={styles.userActions}>
+          <TouchableOpacity 
+            style={styles.actionButton}
+            onPress={() => {
+              setSelectedUser(item);
+              setNewUsageLimit(String(item.usage_limit || 10));
+            }}
+          >
+            <Text style={styles.actionButtonText}>Set Limit</Text>
+          </TouchableOpacity>
+          
+          {item.subscription_status !== 'pro' && item.usage_limit !== -1 && (
+            <TouchableOpacity 
+              style={[styles.actionButton, styles.upgradeButton]}
+              onPress={() => upgradeUserToPro(item.id)}
+            >
+              <Text style={styles.actionButtonText}>Upgrade Pro</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
     );
   };
-
-  const handleSignOut = async () => {
-    Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Sign Out', 
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await signout();
-              onBackToApp();
-            } catch (error) {
-              console.error('Sign out error:', error);
-              Alert.alert('Error', 'Failed to sign out. Please try again.');
-            }
-          }
-        }
-      ]
-    );
-  };
-
-  const handleManualUpgrade = async () => {
-    if (!upgradeEmail.trim()) {
-      Alert.alert('Error', 'Please enter an email address');
-      return;
-    }
-
-    if (!db) {
-      Alert.alert('Error', 'Database not available');
-      return;
-    }
-
-    try {
-      console.log('🔄 Manual upgrade for:', upgradeEmail);
-      
-      await upgradeBetaTester(upgradeEmail.trim(), db);
-      
-      // Refresh the data
-      await loadUsers();
-      await loadBetaTesters();
-      
-      Alert.alert(
-        'Success!', 
-        `${upgradeEmail} has been upgraded to unlimited access!`,
-        [{ text: 'OK' }]
-      );
-      
-      setUpgradeEmail(''); // Clear the input
-      console.log('✅ Manual upgrade completed successfully');
-    } catch (error) {
-      console.error('❌ Manual upgrade failed:', error);
-      Alert.alert(
-        'Upgrade Failed', 
-        `Failed to upgrade ${upgradeEmail}. Error: ${error}`,
-        [{ text: 'OK' }]
-      );
-    }
-  };
-
-  const styles = createStyles(colors);
 
   if (!isAdmin) {
     return (
       <SafeAreaView style={styles.container}>
-        <View style={styles.notAdminContainer}>
-          <Text style={styles.notAdminText}>Access Denied</Text>
-          <Text style={styles.notAdminSubtext}>You don&apos;t have admin privileges.</Text>
-          <TouchableOpacity style={styles.backButton} onPress={onBackToApp}>
-            <Text style={styles.backButtonText}>← Back to App</Text>
-          </TouchableOpacity>
+        <View style={styles.centerContainer}>
+          <Text style={styles.errorText}>Access Denied</Text>
+          <Text style={styles.errorSubtext}>You don't have admin privileges</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.centerContainer}>
+          <Text style={styles.loadingText}>Loading admin data...</Text>
         </View>
       </SafeAreaView>
     );
@@ -316,718 +236,289 @@ export default function AdminScreen({ onBackToApp }: AdminScreenProps) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView 
-        style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <View style={styles.headerTop}>
-            <TouchableOpacity style={styles.backButton} onPress={onBackToApp}>
-              <Text style={styles.backButtonText}>← Back to App</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.title}>🛠️ Admin Dashboard</Text>
-          <Text style={styles.subtitle}>Manage users, monitor usage, and system settings</Text>
+      <View style={styles.header}>
+        <Text style={styles.title}>⚙️ Admin Panel</Text>
+        <Text style={styles.subtitle}>User Management & Analytics</Text>
+      </View>
+
+      {/* Stats */}
+      <View style={styles.statsContainer}>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{users.length}</Text>
+          <Text style={styles.statLabel}>Total Users</Text>
         </View>
-
-        {/* Debug info */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🐛 Debug Info</Text>
-          <Text style={styles.debugText}>Database connected: {db ? '✅ Yes' : '❌ No'}</Text>
-          <Text style={styles.debugText}>Is Admin: {isAdmin ? '✅ Yes' : '❌ No'}</Text>
-          <Text style={styles.debugText}>Total users shown: {users.length}</Text>
-          <Text style={styles.debugText}>Beta testers loaded: {betaTesters.length}</Text>
-          <Text style={styles.debugText}>Current user: {user?.email || 'None'}</Text>
-          <Text style={styles.debugText}>Current user ID: {user?.id || 'None'}</Text>
-          <Text style={styles.debugText}>Current user name: {user?.name || 'None'}</Text>
-          
-          <TouchableOpacity 
-            style={styles.debugButton}
-            onPress={async () => {
-              console.log('🔍 Current users state:', users);
-              console.log('🔍 Current beta testers state:', betaTesters);
-              console.log('🔍 Current user object:', user);
-              
-              // Let's also check the raw database data
-              if (db) {
-                try {
-                  const rawUsers = await db.from('users').getAll();
-                  const rawProfiles = await db.from('user_profiles').getAll();
-                  console.log('🔍 Raw users table:', rawUsers);
-                  console.log('🔍 Raw user_profiles table:', rawProfiles);
-                  
-                  // Show in alert for easier viewing
-                  Alert.alert(
-                    'Debug Info',
-                    `Users table: ${rawUsers?.length || 0} entries\nProfiles table: ${rawProfiles?.length || 0} entries\n\nCheck console for detailed data`,
-                    [{ text: 'OK' }]
-                  );
-                } catch (error) {
-                  console.error('Error fetching raw data:', error);
-                  Alert.alert('Error', 'Failed to fetch debug data: ' + error);
-                }
-              }
-            }}
-          >
-            <Text style={styles.debugButtonText}>📋 Log Detailed State</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.debugButton, { marginTop: 8 }]}
-            onPress={async () => {
-              if (!db || !user) {
-                Alert.alert('Error', 'Database or user not available');
-                return;
-              }
-              
-              try {
-                console.log('🧪 Testing user creation for current user:', user.email);
-                
-                // Check if current user exists in both tables
-                const allUsers = await db.from('users').getAll();
-                const allProfiles = await db.from('user_profiles').getAll();
-                
-                const userInUsersTable = allUsers?.find((u: any) => u.email === user.email);
-                const userInProfilesTable = allProfiles?.find((p: any) => p.email === user.email);
-                
-                console.log('User in users table:', userInUsersTable);
-                console.log('User in profiles table:', userInProfilesTable);
-                
-                let message = `Current user (${user.email}):\n`;
-                message += `• In users table: ${userInUsersTable ? '✅ Yes' : '❌ No'}\n`;
-                message += `• In profiles table: ${userInProfilesTable ? '✅ Yes' : '❌ No'}\n`;
-                message += `• User ID: ${user.id}\n`;
-                message += `• User name: ${user.name || 'None'}`;
-                
-                Alert.alert('Current User Status', message, [{ text: 'OK' }]);
-              } catch (error) {
-                console.error('Error checking current user:', error);
-                Alert.alert('Error', 'Failed to check user status: ' + error);
-              }
-            }}
-          >
-            <Text style={styles.debugButtonText}>👤 Check Current User</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.debugButton, { marginTop: 8 }]}
-            onPress={async () => {
-              if (!db || !user) {
-                Alert.alert('Error', 'Database or user not available');
-                return;
-              }
-              
-              Alert.alert(
-                'Force Create User',
-                `Create entries for ${user.email} in both tables?`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  {
-                    text: 'Create',
-                    onPress: async () => {
-                      try {
-                        // Create in users table
-                        const newUser = await db.from('users').add({
-                          email: user.email || '',
-                          name: user.name || user.email?.split('@')[0] || 'User',
-                          created_at: new Date().toISOString(),
-                          last_login: new Date().toISOString(),
-                          is_admin: isAdmin || false,
-                        });
-                        console.log('✅ Force created user:', newUser);
-                        
-                        // Create in user_profiles table
-                        const newProfile = await db.from('user_profiles').add({
-                          email: user.email || '',
-                          subscription_status: isAdmin ? 'unlimited' : 'free',
-                          usage_count: 0,
-                          last_reset_date: new Date().toISOString(),
-                          created_at: new Date().toISOString(),
-                          stripe_customer_id: '',
-                        });
-                        console.log('✅ Force created profile:', newProfile);
-                        
-                        Alert.alert('Success', 'User entries created successfully!', [
-                          { text: 'OK', onPress: () => {
-                            loadUsers();
-                            loadBetaTesters();
-                          }}
-                        ]);
-                      } catch (error) {
-                        console.error('Error force creating user:', error);
-                        Alert.alert('Error', 'Failed to create user: ' + error);
-                      }
-                    }
-                  }
-                ]
-              );
-            }}
-          >
-            <Text style={styles.debugButtonText}>🔧 Force Create Current User</Text>
-          </TouchableOpacity>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>{totalPrompts}</Text>
+          <Text style={styles.statLabel}>Total Prompts</Text>
         </View>
-
-        {/* Quick stats */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>📊 Quick Stats</Text>
-          <View style={styles.statsGrid}>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{stats.totalUsers}</Text>
-              <Text style={styles.statLabel}>Total Users</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{stats.premiumUsers}</Text>
-              <Text style={styles.statLabel}>Premium Users</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{stats.dailyPrompts}</Text>
-              <Text style={styles.statLabel}>Daily Prompts</Text>
-            </View>
-            <View style={styles.statCard}>
-              <Text style={styles.statNumber}>{stats.totalPrompts}</Text>
-              <Text style={styles.statLabel}>Total Prompts</Text>
-            </View>
-          </View>
+        <View style={styles.statItem}>
+          <Text style={styles.statNumber}>
+            {users.filter(u => u.subscription_status === 'pro' || u.usage_limit === -1).length}
+          </Text>
+          <Text style={styles.statLabel}>Pro Users</Text>
         </View>
+      </View>
 
-        {/* All Users List */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>👤 All Users ({users.length})</Text>
-          
-          {users.length > 0 ? (
-            <View style={styles.usersContainer}>
-              {/* Table header */}
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderText, styles.emailColumn]}>Email</Text>
-                <Text style={[styles.tableHeaderText, styles.statusColumn]}>Status</Text>
-                <Text style={[styles.tableHeaderText, styles.usageColumn]}>Usage</Text>
-                <Text style={[styles.tableHeaderText, styles.dateColumn]}>Created</Text>
-                <Text style={[styles.tableHeaderText, styles.actionsColumn]}>Actions</Text>
-              </View>
+      {/* Users List */}
+      <FlatList
+        data={users}
+        keyExtractor={(item) => item.id}
+        renderItem={renderUserItem}
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#ffffff"
+          />
+        }
+      />
 
-              {/* Table rows */}
-              {users
-                .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-                .map((user) => (
-                <View key={user.id} style={styles.tableRow}>
-                  <Text style={[styles.tableCellText, styles.emailColumn]} numberOfLines={1}>
-                    {user.email}
-                  </Text>
-                  <View style={[styles.tableCell, styles.statusColumn]}>
-                    <Text style={[
-                      styles.statusBadge,
-                      user.subscription_status === 'unlimited' && styles.statusUnlimited,
-                      user.subscription_status === 'premium' && styles.statusPremium,
-                      user.subscription_status === 'free' && styles.statusFree
-                    ]}>
-                      {user.subscription_status || 'free'}
-                    </Text>
-                  </View>
-                  <Text style={[styles.tableCellText, styles.usageColumn]}>
-                    {user.usage_count || 0}
-                  </Text>
-                  <Text style={[styles.tableCellText, styles.dateColumn]} numberOfLines={1}>
-                    {user.created_at ? new Date(user.created_at).toLocaleDateString() : 'N/A'}
-                  </Text>
-                  <View style={[styles.tableCell, styles.actionsColumn]}>
-                    {user.subscription_status !== 'unlimited' && (
-                      <TouchableOpacity 
-                        style={styles.quickUpgradeButton}
-                        onPress={() => handleQuickUpgrade(user.email)}
-                      >
-                        <Text style={styles.quickUpgradeButtonText}>⬆️</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noDataText}>No users found</Text>
-          )}
-        </View>
-
-        {/* Beta Tester Management */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>👥 Beta Tester Management</Text>
-          
-          {/* Upgrade controls */}
-          <View style={styles.upgradeControls}>
+      {/* Usage Limit Modal */}
+      {selectedUser && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Set Usage Limit</Text>
+            <Text style={styles.modalSubtitle}>
+              User: {selectedUser.email}
+            </Text>
+            
             <TextInput
-              style={styles.emailInput}
-              placeholder="Enter user email to upgrade..."
-              value={upgradeEmail}
-              onChangeText={setUpgradeEmail}
-              keyboardType="email-address"
-              autoCapitalize="none"
+              style={styles.input}
+              value={newUsageLimit}
+              onChangeText={setNewUsageLimit}
+              placeholder="Enter usage limit (-1 for unlimited)"
+              placeholderTextColor="#888888"
+              keyboardType="numeric"
             />
-            <TouchableOpacity 
-              style={styles.upgradeButton}
-              onPress={handleManualUpgrade}
-            >
-              <Text style={styles.upgradeButtonText}>⬆️ Upgrade to Unlimited</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Beta testers list */}
-          {betaTesters.length > 0 && (
-            <View style={styles.betaTestersContainer}>
-              <Text style={styles.listTitle}>Current Beta Testers:</Text>
-              
-              {/* Table header */}
-              <View style={styles.tableHeader}>
-                <Text style={[styles.tableHeaderText, styles.emailColumn]}>Email</Text>
-                <Text style={[styles.tableHeaderText, styles.statusColumn]}>Status</Text>
-                <Text style={[styles.tableHeaderText, styles.usageColumn]}>Usage</Text>
-                <Text style={[styles.tableHeaderText, styles.actionsColumn]}>Actions</Text>
-              </View>
-
-              {/* Table rows */}
-              {betaTesters.map((user) => (
-                <View key={user.id} style={styles.tableRow}>
-                  <Text style={[styles.tableCellText, styles.emailColumn]} numberOfLines={1}>
-                    {user.email}
-                  </Text>
-                  <View style={[styles.tableCell, styles.statusColumn]}>
-                    <Text style={[
-                      styles.statusBadge,
-                      user.subscription_status === 'unlimited' && styles.statusUnlimited,
-                      user.subscription_status === 'premium' && styles.statusPremium,
-                      user.subscription_status === 'free' && styles.statusFree
-                    ]}>
-                      {user.subscription_status || 'free'}
-                    </Text>
-                  </View>
-                  <Text style={[styles.tableCellText, styles.usageColumn]}>
-                    {user.usage_count || 0}
-                  </Text>
-                  <View style={[styles.tableCell, styles.actionsColumn]}>
-                    {user.subscription_status !== 'unlimited' && (
-                      <TouchableOpacity 
-                        style={styles.quickUpgradeButton}
-                        onPress={() => handleQuickUpgrade(user.email)}
-                      >
-                        <Text style={styles.quickUpgradeButtonText}>⬆️</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                </View>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* User Management Actions */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>🔧 User Management Actions</Text>
-          <View style={styles.actionButtons}>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleCreateMissingProfiles}
-            >
-              <Text style={styles.actionButtonText}>
-                ➕ Create Missing Profiles
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={async () => {
-                if (!db) return;
-                
-                try {
-                  const { syncUserProfilesToUsersTable } = await import('../utils/adminHelpers');
-                  const result = await syncUserProfilesToUsersTable(db);
-                  
-                  Alert.alert(
-                    result.success ? 'Success!' : 'Error',
-                    result.message,
-                    [{ text: 'OK', onPress: () => {
-                      if (result.success) {
-                        loadUsers();
-                        loadBetaTesters();
-                      }
-                    }}]
-                  );
-                } catch (error) {
-                  console.error('Error syncing users:', error);
-                  Alert.alert('Error', 'Failed to sync users. Please try again.');
-                }
-              }}
-            >
-              <Text style={styles.actionButtonText}>
-                🔄 Sync Users to Admin Table
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleExportUsers}
-              disabled={isExporting}
-            >
-              <Text style={styles.actionButtonText}>
-                {isExporting ? '📤 Exporting...' : '📤 Export User Emails'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity 
-              style={styles.actionButton}
-              onPress={handleRefreshData}
-              disabled={isRefreshing}
-            >
-              <Text style={styles.actionButtonText}>
-                {isRefreshing ? '🔄 Refreshing...' : '🔄 Refresh Data'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* System Settings */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>⚙️ System Settings</Text>
-          <View style={styles.settingsContainer}>
-            <View style={styles.settingItem}>
-              <Text style={styles.settingLabel}>Maintenance Mode</Text>
+            
+            <View style={styles.modalActions}>
               <TouchableOpacity 
-                style={[styles.toggle, maintenanceMode && styles.toggleActive]}
-                onPress={handleToggleMaintenance}
+                style={styles.cancelButton}
+                onPress={() => {
+                  setSelectedUser(null);
+                  setNewUsageLimit('');
+                }}
               >
-                <View style={[styles.toggleThumb, maintenanceMode && styles.toggleThumbActive]} />
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={styles.saveButton}
+                onPress={() => {
+                  const limit = parseInt(newUsageLimit);
+                  if (!isNaN(limit)) {
+                    updateUserLimit(selectedUser.id, limit);
+                  }
+                }}
+              >
+                <Text style={styles.saveButtonText}>Save</Text>
               </TouchableOpacity>
             </View>
-            <Text style={styles.settingDescription}>
-              When enabled, only admins can access the app
-            </Text>
           </View>
         </View>
-
-        {/* Sign out */}
-        <View style={styles.footer}>
-          <TouchableOpacity style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.signOutButtonText}>🚪 Sign Out</Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: '#1a1a1a',
   },
-  scrollView: {
-    flex: 1,
+  header: {
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
   },
-  contentContainer: {
-    padding: 16,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 5,
   },
-  notAdminContainer: {
+  subtitle: {
+    fontSize: 16,
+    color: '#cccccc',
+  },
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
-  notAdminText: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.error,
-    marginBottom: 8,
+  loadingText: {
+    fontSize: 18,
+    color: '#ffffff',
   },
-  notAdminSubtext: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    marginBottom: 24,
-  },
-  header: {
-    marginBottom: 24,
-  },
-  headerTop: {
-    marginBottom: 16,
-  },
-  backButton: {
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
-  },
-  backButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: colors.textSecondary,
-  },
-  section: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  sectionTitle: {
+  errorText: {
     fontSize: 20,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 16,
+    color: '#f44336',
+    fontWeight: 'bold',
+    marginBottom: 10,
   },
-  debugText: {
-    fontSize: 14,
-    color: colors.textSecondary,
-    marginBottom: 4,
-    fontFamily: 'monospace',
+  errorSubtext: {
+    fontSize: 16,
+    color: '#cccccc',
   },
-  debugButton: {
-    backgroundColor: colors.textTertiary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-    marginTop: 8,
-    alignSelf: 'flex-start',
-  },
-  debugButtonText: {
-    color: '#fff',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  statsGrid: {
+  statsContainer: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
+    padding: 20,
+    justifyContent: 'space-around',
   },
-  statCard: {
-    flex: 1,
-    minWidth: 80,
-    backgroundColor: colors.background,
-    padding: 16,
-    borderRadius: 8,
+  statItem: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
   },
   statNumber: {
     fontSize: 24,
-    fontWeight: '700',
-    color: colors.primary,
-    marginBottom: 4,
+    fontWeight: 'bold',
+    color: '#4CAF50',
   },
   statLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  usersContainer: {
-    marginBottom: 16,
-  },
-  noDataText: {
-    fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    fontStyle: 'italic',
-    paddingVertical: 20,
-  },
-  upgradeControls: {
-    marginBottom: 20,
-  },
-  emailInput: {
-    backgroundColor: colors.background,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: colors.text,
-    marginBottom: 12,
-  },
-  upgradeButton: {
-    backgroundColor: colors.success,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  upgradeButtonDisabled: {
-    backgroundColor: colors.textTertiary,
-  },
-  upgradeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  betaTestersContainer: {
-    marginTop: 16,
-  },
-  listTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
-    marginBottom: 12,
-  },
-  tableHeader: {
-    flexDirection: 'row',
-    backgroundColor: colors.background,
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderRadius: 6,
-    marginBottom: 8,
-  },
-  tableHeaderText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-  },
-  tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-  },
-  tableCell: {
-    justifyContent: 'center',
-  },
-  tableCellText: {
     fontSize: 14,
-    color: colors.text,
+    color: '#cccccc',
+    marginTop: 5,
   },
-  emailColumn: {
-    flex: 2.5,
+  listContainer: {
+    padding: 20,
+    paddingTop: 0,
   },
-  statusColumn: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  usageColumn: {
-    flex: 0.8,
-    textAlign: 'center',
-  },
-  dateColumn: {
-    flex: 1,
-    textAlign: 'center',
-  },
-  actionsColumn: {
-    flex: 0.8,
-    alignItems: 'center',
-  },
-  statusBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+  userItem: {
+    backgroundColor: '#2a2a2a',
     borderRadius: 12,
-    fontSize: 12,
-    fontWeight: '600',
-    textAlign: 'center',
-    minWidth: 60,
+    padding: 15,
+    marginBottom: 15,
+    borderWidth: 1,
+    borderColor: '#444444',
   },
-  statusUnlimited: {
-    backgroundColor: colors.success + '20',
-    color: colors.success,
-  },
-  statusPremium: {
-    backgroundColor: colors.primary + '20',
-    color: colors.primary,
-  },
-  statusFree: {
-    backgroundColor: colors.textTertiary + '20',
-    color: colors.textTertiary,
-  },
-  quickUpgradeButton: {
-    backgroundColor: colors.success,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    borderRadius: 6,
-  },
-  quickUpgradeButtonText: {
-    color: '#fff',
-    fontSize: 14,
-  },
-  actionButtons: {
-    flexDirection: 'row',
-    gap: 12,
-    flexWrap: 'wrap',
-  },
-  actionButton: {
-    flex: 1,
-    backgroundColor: colors.primary,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    minWidth: 120,
-  },
-  actionButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  settingsContainer: {
-    gap: 12,
-  },
-  settingItem: {
+  userHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    marginBottom: 10,
   },
-  settingLabel: {
+  userInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  userEmail: {
     fontSize: 16,
-    fontWeight: '600',
-    color: colors.text,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginRight: 10,
   },
-  toggle: {
-    width: 50,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: colors.border,
-    justifyContent: 'center',
-    paddingHorizontal: 2,
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
-  toggleActive: {
-    backgroundColor: colors.success,
+  badgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    alignSelf: 'flex-start',
-  },
-  toggleThumbActive: {
-    alignSelf: 'flex-end',
-  },
-  settingDescription: {
+  usageText: {
     fontSize: 14,
-    color: colors.textSecondary,
-    marginTop: 4,
+    color: '#cccccc',
   },
-  footer: {
-    marginTop: 24,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
+  userDetails: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
   },
-  signOutButton: {
-    backgroundColor: colors.error,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
+  detailText: {
+    fontSize: 12,
+    color: '#888888',
+  },
+  userActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  actionButton: {
+    backgroundColor: '#2196F3',
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    borderRadius: 6,
+    flex: 1,
     alignItems: 'center',
   },
-  signOutButtonText: {
-    color: '#fff',
+  upgradeButton: {
+    backgroundColor: '#4CAF50',
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    width: '80%',
+    maxWidth: 300,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    color: '#cccccc',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  input: {
+    backgroundColor: '#1a1a1a',
+    borderWidth: 1,
+    borderColor: '#444444',
+    borderRadius: 8,
+    padding: 12,
+    color: '#ffffff',
     fontSize: 16,
-    fontWeight: '600',
+    marginBottom: 20,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+  cancelButton: {
+    backgroundColor: '#666666',
+    paddingVertical: 12,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+  },
+  cancelButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  saveButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    borderRadius: 8,
+    flex: 1,
+    alignItems: 'center',
+  },
+  saveButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

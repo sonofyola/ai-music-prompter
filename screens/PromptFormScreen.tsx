@@ -8,6 +8,7 @@ import MultiSelectField from '../components/MultiSelectField';
 import GeneratedPrompt from '../components/GeneratedPrompt';
 import TemplatesModal from '../components/TemplatesModal';
 import RandomTrackModal from '../components/RandomTrackModal';
+import UsageIndicator from '../components/UsageIndicator';
 import { formatPrompt } from '../utils/promptFormatter';
 import { musicData } from '../utils/musicData';
 import { PromptTemplate } from '../utils/promptTemplates';
@@ -40,10 +41,36 @@ export default function PromptFormScreen() {
   const generatePrompt = async () => {
     setIsGenerating(true);
     try {
+      // Check usage limits first
+      if (user && db) {
+        try {
+          const userData = await db.from('users').get(user.email || user.id);
+          const usageCount = userData?.usage_count || 0;
+          const usageLimit = userData?.usage_limit || 10;
+          const subscriptionStatus = userData?.subscription_status || 'free';
+          
+          // Check if user has exceeded limit (unless they're pro with unlimited)
+          if (subscriptionStatus !== 'pro' && usageLimit !== -1 && usageCount >= usageLimit) {
+            Alert.alert(
+              'Usage Limit Reached',
+              `You've reached your monthly limit of ${usageLimit} prompts. Upgrade to Pro for unlimited access!`,
+              [
+                { text: 'OK', style: 'cancel' },
+                { text: 'Upgrade to Pro', onPress: () => {/* Navigate to subscription screen */} }
+              ]
+            );
+            setIsGenerating(false);
+            return;
+          }
+        } catch (error) {
+          console.error('Error checking usage limits:', error);
+        }
+      }
+
       const prompt = formatPrompt(formData);
       setGeneratedPrompt(prompt);
       
-      // Save to history if user is signed in
+      // Save to history and increment usage count if user is signed in
       if (user && db) {
         try {
           await db.from('prompt_history').add({
@@ -52,6 +79,13 @@ export default function PromptFormScreen() {
             form_data: JSON.stringify(formData),
             generated_prompt: prompt,
             created_at: new Date().toISOString()
+          });
+          
+          // Increment usage count
+          const userData = await db.from('users').get(user.email || user.id);
+          const currentUsage = Number(userData?.usage_count) || 0;
+          await db.from('users').update(user.email || user.id, {
+            usage_count: currentUsage + 1
           });
         } catch (error) {
           console.error('Error saving to history:', error);
@@ -102,6 +136,9 @@ export default function PromptFormScreen() {
           <Text style={styles.title}>🎵 AI Music Prompter</Text>
           <Text style={styles.subtitle}>Create professional music prompts for AI tools</Text>
         </View>
+
+        {/* Usage Indicator */}
+        <UsageIndicator onUpgradePress={() => {/* Navigate to subscription */}} />
 
         {/* Action Buttons */}
         <View style={styles.actionButtons}>
