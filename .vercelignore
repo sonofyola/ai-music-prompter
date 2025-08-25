@@ -104,3 +104,7 @@ Thumbs.db
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# Netlify files (we're using Vercel)
+public/_redirects
+_redirects
