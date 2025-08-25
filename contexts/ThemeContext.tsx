@@ -3,12 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export type Theme = 'light' | 'dark';
 
-interface ThemeContextType {
-  theme: Theme;
-  toggleTheme: () => void;
-  colors: typeof lightColors;
-}
-
 const lightColors = {
   background: '#f8fafc',
   surface: '#ffffff',
@@ -43,6 +37,12 @@ const darkColors = {
   cardShadow: 'rgba(0, 0, 0, 0.3)',
 };
 
+interface ThemeContextType {
+  theme: Theme;
+  toggleTheme: () => void;
+  colors: typeof lightColors;
+}
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
@@ -58,7 +58,6 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       if (savedTheme === 'light' || savedTheme === 'dark') {
         setTheme(savedTheme);
       }
-      // If no saved theme, it will stay as 'dark' (the default we set above)
     } catch (error) {
       console.error('Error loading theme:', error);
     }
