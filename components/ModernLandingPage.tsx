@@ -57,50 +57,196 @@ export default function ModernLandingPage({ onGetStarted }: ModernLandingPagePro
 
         {/* See it in Action Section */}
         <View style={styles.actionSection}>
-          <Text style={styles.actionTitle}>See it in Action</Text>
+          <Text style={styles.actionTitle}>Complete Control Over Every Detail</Text>
           
-          <View style={styles.examplesTable}>
-            {/* Table Header */}
-            <View style={styles.tableRow}>
-              <View style={[styles.tableCell, styles.headerCell, styles.leftCell]}>
-                <Text style={styles.headerText}>Input Idea</Text>
+          {/* Parameters Grid */}
+          <View style={styles.parametersSection}>
+            <Text style={styles.parametersTitle}>🎛️ Available Parameters</Text>
+            <View style={styles.parametersGrid}>
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎵</Text>
+                <Text style={styles.parameterName}>Genre</Text>
+                <Text style={styles.parameterCount}>60+ options</Text>
+                <Text style={styles.parameterExample}>House, Jazz, Hip Hop, Ambient...</Text>
               </View>
-              <View style={[styles.tableCell, styles.headerCell, styles.rightCell]}>
-                <Text style={styles.headerText}>Generated Prompt</Text>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>😊</Text>
+                <Text style={styles.parameterName}>Mood</Text>
+                <Text style={styles.parameterCount}>17 moods</Text>
+                <Text style={styles.parameterExample}>Happy, Dark, Energetic, Dreamy...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>⚡</Text>
+                <Text style={styles.parameterName}>Tempo</Text>
+                <Text style={styles.parameterCount}>5 ranges</Text>
+                <Text style={styles.parameterExample}>60-70 BPM to 140+ BPM</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>⏱️</Text>
+                <Text style={styles.parameterName}>Length</Text>
+                <Text style={styles.parameterCount}>6 options</Text>
+                <Text style={styles.parameterExample}>30s loops to 6+ minutes</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎤</Text>
+                <Text style={styles.parameterName}>Vocals</Text>
+                <Text style={styles.parameterCount}>13 styles</Text>
+                <Text style={styles.parameterExample}>Male, Female, Choir, Rap...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎸</Text>
+                <Text style={styles.parameterName}>Instruments</Text>
+                <Text style={styles.parameterCount}>18+ choices</Text>
+                <Text style={styles.parameterExample}>Piano, Guitar, Synth, Drums...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🔊</Text>
+                <Text style={styles.parameterName}>Bass Style</Text>
+                <Text style={styles.parameterCount}>17 types</Text>
+                <Text style={styles.parameterExample}>Deep, Punchy, 808, Wobble...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎨</Text>
+                <Text style={styles.parameterName}>Tone</Text>
+                <Text style={styles.parameterCount}>15 qualities</Text>
+                <Text style={styles.parameterExample}>Warm, Bright, Vintage, Clean...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🏗️</Text>
+                <Text style={styles.parameterName}>Structure</Text>
+                <Text style={styles.parameterCount}>7 formats</Text>
+                <Text style={styles.parameterExample}>Verse-Chorus, AABA, Free Form...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎭</Text>
+                <Text style={styles.parameterName}>Theme</Text>
+                <Text style={styles.parameterCount}>17 concepts</Text>
+                <Text style={styles.parameterExample}>Love, Adventure, Dreams, City Life...</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🔥</Text>
+                <Text style={styles.parameterName}>Energy</Text>
+                <Text style={styles.parameterCount}>5 levels</Text>
+                <Text style={styles.parameterExample}>Very Low to Very High</Text>
+              </View>
+              
+              <View style={styles.parameterCard}>
+                <Text style={styles.parameterIcon}>🎚️</Text>
+                <Text style={styles.parameterName}>Production</Text>
+                <Text style={styles.parameterCount}>12 styles</Text>
+                <Text style={styles.parameterExample}>Studio, Lo-Fi, Live, Polished...</Text>
               </View>
             </View>
-            
-            {/* Table Rows */}
-            <View style={styles.tableRow}>
-              <View style={[styles.tableCell, styles.leftCell]}>
-                <Text style={styles.cellText}>80s house vibe, summer rooftop party</Text>
+          </View>
+
+          {/* Features Section */}
+          <View style={styles.featuresListSection}>
+            <Text style={styles.featuresListTitle}>✨ Powerful Features</Text>
+            <View style={styles.featuresList}>
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Smart Prompt Generation</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Advanced algorithms create detailed, contextual prompts that maximize AI music quality
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.tableCell, styles.rightCell]}>
-                <Text style={styles.cellText}>
-                  Minimal deep-house, warm Rhodes, silky female vocals, smooth basslines, 120 BPM – evokes sunset rooftop
-                </Text>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Multi-Platform Optimization</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Prompts optimized for Suno, Udio, MusicGen, and other leading AI music platforms
+                  </Text>
+                </View>
               </View>
-            </View>
-            
-            <View style={styles.tableRow}>
-              <View style={[styles.tableCell, styles.leftCell]}>
-                <Text style={styles.cellText}>Dark experimental techno</Text>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Prompt History & Templates</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Save your best prompts, create templates, and build your personal prompt library
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.tableCell, styles.rightCell]}>
-                <Text style={styles.cellText}>
-                  Industrial techno with distorted kicks, granular textures, cold metallic synths, and whispered male vocals, BPM 128 – dark, immersive, underground vibe
-                </Text>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Random Inspiration Generator</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Stuck for ideas? Generate random combinations to spark creativity and discover new sounds
+                  </Text>
+                </View>
               </View>
-            </View>
-            
-            <View style={styles.tableRow}>
-              <View style={[styles.tableCell, styles.leftCell]}>
-                <Text style={styles.cellText}>Lo-fi beats for focus</Text>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Professional Prompt Structure</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Every prompt follows proven formatting that AI models understand and respond to effectively
+                  </Text>
+                </View>
               </View>
-              <View style={[styles.tableCell, styles.rightCell]}>
-                <Text style={styles.cellText}>
-                  Dreamy lo-fi-hip-hop with vinyl crackle, dusty Rhodes keys, soft male humming, chill BPM 78 – perfect for study sessions.
-                </Text>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Token Efficiency</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Concise yet comprehensive prompts that save you money while delivering better results
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Genre Expertise</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Deep knowledge of 60+ genres from mainstream pop to experimental electronic subgenres
+                  </Text>
+                </View>
+              </View>
+              
+              <View style={styles.featureItem}>
+                <View style={styles.featureCheckmark}>
+                  <Text style={styles.checkmarkText}>✓</Text>
+                </View>
+                <View style={styles.featureContent}>
+                  <Text style={styles.featureItemTitle}>Custom Prompt Addition</Text>
+                  <Text style={styles.featureItemDescription}>
+                    Add your own creative touches and specific requirements to any generated prompt
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
@@ -355,5 +501,109 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     maxWidth: 600,
     fontStyle: 'italic',
+  },
+  parametersSection: {
+    marginBottom: 60,
+    width: '100%',
+    maxWidth: 1200,
+  },
+  parametersTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  parametersGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 16,
+  },
+  parameterCard: {
+    width: 180,
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+    alignItems: 'center',
+  },
+  parameterIcon: {
+    fontSize: 24,
+    marginBottom: 8,
+  },
+  parameterName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 4,
+    textAlign: 'center',
+  },
+  parameterCount: {
+    fontSize: 12,
+    color: '#3b82f6',
+    fontWeight: '500',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
+  parameterExample: {
+    fontSize: 11,
+    color: '#888888',
+    textAlign: 'center',
+    lineHeight: 14,
+  },
+  featuresListSection: {
+    marginBottom: 40,
+    width: '100%',
+    maxWidth: 800,
+  },
+  featuresListTitle: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  featuresList: {
+    gap: 20,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#1a1a1a',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  featureCheckmark: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: '#22c55e',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 16,
+    marginTop: 2,
+  },
+  checkmarkText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  featureContent: {
+    flex: 1,
+  },
+  featureItemTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#ffffff',
+    marginBottom: 6,
+  },
+  featureItemDescription: {
+    fontSize: 14,
+    color: '#a0a0a0',
+    lineHeight: 20,
   },
 });
