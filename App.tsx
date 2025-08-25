@@ -3,6 +3,20 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet } from 'react-native';
+
+// Import your contexts
+import { ThemeProvider } from './contexts/ThemeContext';
+import { UsageProvider } from './contexts/UsageContext';
+import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
+import { MaintenanceProvider } from './contexts/MaintenanceContext';
+import { NotificationProvider } from './contexts/NotificationContext';
+
+// Import your screens
+import PromptFormScreen from './screens/PromptFormScreen';
+import AuthScreen from './screens/AuthScreen';
+import MaintenanceScreen from './components/MaintenanceScreen';
+
+// Import your theme
 import { colors } from './utils/theme';
 
 function AppContent() {
@@ -12,23 +26,19 @@ function AppContent() {
 
   if (isLoading) {
     return (
-      <View style={styles.container}>
+      <View style={styles.loadingContainer}>
         <Text style={styles.title}>🎵 AI Music Prompter</Text>
-        <Text style={styles.text}>Loading...</Text>
+        <Text style={styles.loadingText}>Loading...</Text>
       </View>
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🎵 AI Music Prompter</Text>
-      {isSignedIn && user ? (
-        <Text style={styles.text}>Welcome, {user.email}!</Text>
-      ) : (
-        <Text style={styles.text}>Please sign in</Text>
-      )}
-    </View>
-  );
+  // Show the main app if signed in, otherwise show auth screen
+  if (isSignedIn && user) {
+    return <PromptFormScreen />;
+  } else {
+    return <AuthScreen />;
+  }
 }
 
 export default function App() {
@@ -37,14 +47,24 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <AppContent />
+        <ThemeProvider>
+          <NotificationProvider>
+            <MaintenanceProvider>
+              <UsageProvider>
+                <PromptHistoryProvider>
+                  <AppContent />
+                </PromptHistoryProvider>
+              </UsageProvider>
+            </MaintenanceProvider>
+          </NotificationProvider>
+        </ThemeProvider>
       </SafeAreaProvider>
     </BasicProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -57,7 +77,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: colors.text,
   },
-  text: {
+  loadingText: {
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 8,
