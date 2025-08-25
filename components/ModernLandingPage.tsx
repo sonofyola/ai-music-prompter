@@ -149,6 +149,11 @@ export default function ModernLandingPage({ onGetStarted }: ModernLandingPagePro
         {/* Footer */}
         <View style={styles.footer}>
           <Text style={styles.footerTitle}>Built by Creators, for Creators</Text>
+          
+          {/* Disclaimer */}
+          <Text style={styles.disclaimer}>
+            This app is not affiliated with Suno AI, Udio, MusicGen, AIVA, Riffusion, or any other AI music platforms mentioned.
+          </Text>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -322,11 +327,21 @@ const styles = StyleSheet.create({
   footer: {
     alignItems: 'center',
     paddingBottom: 60,
+    paddingHorizontal: 20,
   },
   footerTitle: {
     fontSize: 32,
     fontWeight: '700',
     color: '#ffffff',
     textAlign: 'center',
+    marginBottom: 20,
+  },
+  disclaimer: {
+    fontSize: 11,
+    color: '#666666',
+    textAlign: 'center',
+    lineHeight: 16,
+    maxWidth: 600,
+    fontStyle: 'italic',
   },
 });
