@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "ai-music-prompter-fresh",
+  "buildCommand": "expo export -p web",
+  "outputDirectory": "dist",
+  "framework": null,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
