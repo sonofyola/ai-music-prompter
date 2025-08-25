@@ -30,6 +30,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
     tempo: '',
     instruments: [],
     vocals: '',
+    bass: '',
     structure: '',
     theme: '',
     style: '',
@@ -140,6 +141,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
       tempo: '',
       instruments: [],
       vocals: '',
+      bass: '',
       structure: '',
       theme: '',
       style: '',
@@ -232,6 +234,14 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             onValueChange={(value) => updateField('vocals', value)}
             items={musicData.vocals}
             placeholder="Select vocal style..."
+          />
+
+          <PickerField
+            label="Bass Style"
+            value={formData.bass}
+            onValueChange={(value) => updateField('bass', value)}
+            items={musicData.bassStyles}
+            placeholder="Select bass style..."
           />
 
           <PickerField

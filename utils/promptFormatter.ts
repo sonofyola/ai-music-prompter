@@ -4,6 +4,7 @@ interface FormData {
   tempo: string;
   instruments: string[];
   vocals: string;
+  bass: string;
   structure: string;
   theme: string;
   style: string;
@@ -38,6 +39,11 @@ export function formatPrompt(formData: FormData): string {
   // Add vocals
   if (formData.vocals) {
     parts.push(`Vocals: ${formData.vocals}`);
+  }
+
+  // Add bass
+  if (formData.bass) {
+    parts.push(`Bass: ${formData.bass}`);
   }
 
   // Add structure

@@ -38,6 +38,11 @@ export const musicData = {
     'Duet', 'Background Vocals', 'Auto-tuned', 'Operatic', 'Whispered', 'Acapella'
   ],
   
+  bassStyles: [
+    'Deep', 'Heavy', 'Sub', 'Punchy', 'Warm', 'Tight', 'Boomy', 'Distorted', 'Clean', 'Funky', 
+    'Synth Bass', 'Acoustic Bass', 'Electric Bass', 'Upright Bass', '808', 'Reese', 'Wobble'
+  ],
+  
   structures: [
     'Verse-Chorus-Verse-Chorus-Bridge-Chorus', 'AABA', 'Verse-Chorus', 'Intro-Verse-Chorus-Outro',
     'Free Form', 'Call and Response', 'Theme and Variations'
@@ -45,7 +50,7 @@ export const musicData = {
   
   styles: [
     'Acoustic', 'Electric', 'Orchestral', 'Minimalist', 'Experimental', 'Traditional', 'Modern',
-    'Vintage', 'Ambient', 'Cinematic', 'Dance', 'Ballad', 'Bass'
+    'Vintage', 'Ambient', 'Cinematic', 'Dance', 'Ballad'
   ],
   
   energyLevels: [
