@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
+import StripePaymentForm from '../components/StripePaymentForm';
 
 export default function SubscriptionScreen() {
   const { user, db } = useBasic();
@@ -11,12 +12,9 @@ export default function SubscriptionScreen() {
     usageLimit: 10
   });
   const [loading, setLoading] = useState(true);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
-  useEffect(() => {
-    fetchUserSubscription();
-  }, [user]);
-
-  const fetchUserSubscription = async () => {
+  const fetchUserSubscription = useCallback(async () => {
     if (!user || !db) {
       setLoading(false);
       return;
@@ -26,9 +24,9 @@ export default function SubscriptionScreen() {
       const userData = await db.from('users').get(user.email || user.id);
       if (userData) {
         setUserSubscription({
-          status: userData.subscription_status || 'free',
-          usageCount: userData.usage_count || 0,
-          usageLimit: userData.usage_limit || 10
+          status: String(userData.subscription_status || 'free'),
+          usageCount: Number(userData.usage_count || 0),
+          usageLimit: Number(userData.usage_limit || 10)
         });
       }
     } catch (error) {
@@ -36,16 +34,42 @@ export default function SubscriptionScreen() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, db]);
+
+  useEffect(() => {
+    fetchUserSubscription();
+  }, [fetchUserSubscription]);
 
   const handleUpgrade = () => {
-    Alert.alert(
-      'Upgrade to Pro',
-      'Pro features coming soon! Contact support for early access.',
-      [
-        { text: 'OK', style: 'default' }
-      ]
-    );
+    setShowPaymentForm(true);
+  };
+
+  const handlePaymentSuccess = async (subscriptionId: string) => {
+    try {
+      // Update user to Pro status in database
+      if (user && db) {
+        await db.from('users').update(user.email || user.id, {
+          subscription_status: 'pro',
+          usage_limit: -1, // Unlimited
+          stripe_subscription_id: subscriptionId,
+          subscription_start_date: new Date().toISOString(),
+          last_active: new Date().toISOString()
+        });
+        
+        // Refresh user data
+        await fetchUserSubscription();
+      }
+      
+      setShowPaymentForm(false);
+    } catch (error) {
+      console.error('Error updating subscription:', error);
+      Alert.alert('Error', 'Failed to activate subscription. Please contact support.');
+    }
+  };
+
+  const handlePaymentError = (error: string) => {
+    Alert.alert('Payment Error', error);
+    setShowPaymentForm(false);
   };
 
   const isPro = userSubscription.status === 'pro' || userSubscription.usageLimit === -1;
@@ -56,6 +80,31 @@ export default function SubscriptionScreen() {
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Loading subscription details...</Text>
         </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (showPaymentForm && user?.email) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => setShowPaymentForm(false)}
+            >
+              <Text style={styles.backButtonText}>← Back</Text>
+            </TouchableOpacity>
+            <Text style={styles.title}>💎 Upgrade to Pro</Text>
+            <Text style={styles.subtitle}>Get unlimited access for just $5.99/month</Text>
+          </View>
+
+          <StripePaymentForm
+            email={user.email}
+            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentError={handlePaymentError}
+          />
+        </ScrollView>
       </SafeAreaView>
     );
   }
@@ -115,7 +164,7 @@ export default function SubscriptionScreen() {
         {/* Pro Plan Features */}
         <View style={[styles.planCard, styles.proPlanCard]}>
           <Text style={styles.planName}>Pro Plan</Text>
-          <Text style={styles.planPrice}>Coming Soon</Text>
+          <Text style={styles.planPrice}>$5.99/month</Text>
           
           <View style={styles.featuresList}>
             <View style={styles.featureItem}>
@@ -142,13 +191,13 @@ export default function SubscriptionScreen() {
 
           {!isPro && (
             <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
-              <Text style={styles.upgradeButtonText}>Upgrade to Pro</Text>
+              <Text style={styles.upgradeButtonText}>Upgrade to Pro - $5.99/month</Text>
             </TouchableOpacity>
           )}
 
           {isPro && (
             <View style={styles.proStatus}>
-              <Text style={styles.proStatusText}>✨ You're a Pro user!</Text>
+              <Text style={styles.proStatusText}>✨ You&apos;re a Pro user!</Text>
             </View>
           )}
         </View>
@@ -188,6 +237,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderBottomWidth: 1,
     borderBottomColor: '#333333',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    top: 20,
+    padding: 10,
+  },
+  backButtonText: {
+    color: '#4CAF50',
+    fontSize: 16,
+    fontWeight: '600',
   },
   title: {
     fontSize: 28,
