@@ -436,6 +436,35 @@ export default function AdminScreen() {
         >
           <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🧪 DIRECT TEST</Text>
         </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={{ backgroundColor: '#FF9800', padding: 15, borderRadius: 8 }}
+          onPress={() => {
+            console.log('🔄 Upgrade to Pro button pressed');
+            if (users.length > 0) {
+              const testUser = users[0];
+              console.log('🔄 Selected user for upgrade:', testUser.id);
+              Alert.alert(
+                'Upgrade User',
+                `Upgrade ${testUser.name || testUser.email || testUser.id} to Pro?`,
+                [
+                  { text: 'Cancel', style: 'cancel' },
+                  { 
+                    text: 'Upgrade', 
+                    onPress: () => {
+                      console.log('✅ Upgrade confirmed, calling upgradeUserToPro...');
+                      upgradeUserToPro(testUser.id);
+                    }
+                  }
+                ]
+              );
+            } else {
+              Alert.alert('No Users', 'No users available to upgrade');
+            }
+          }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade to Pro</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Users List */}
