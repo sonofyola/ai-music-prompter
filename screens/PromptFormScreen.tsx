@@ -21,6 +21,9 @@ interface PromptFormScreenProps {
 export default function PromptFormScreen({ onNavigateToSubscription }: PromptFormScreenProps) {
   const { user, db } = useBasic();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  
+  console.log('PromptFormScreen - onNavigateToSubscription:', !!onNavigateToSubscription); // Debug log
+
   const [formData, setFormData] = useState({
     genre: '',
     mood: '',
@@ -78,7 +81,13 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
               `You've reached your monthly limit of ${usageLimit} prompts. Upgrade to Pro for unlimited access!`,
               [
                 { text: 'OK', style: 'cancel' },
-                { text: 'Upgrade to Pro', onPress: () => onNavigateToSubscription?.() }
+                { 
+                  text: 'Upgrade to Pro', 
+                  onPress: () => {
+                    console.log('Alert upgrade button pressed, navigating...');
+                    onNavigateToSubscription?.();
+                  }
+                }
               ]
             );
             setIsGenerating(false);
@@ -165,7 +174,10 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
 
         {/* Usage Indicator */}
         <UsageIndicator 
-          onUpgradePress={onNavigateToSubscription} 
+          onUpgradePress={() => {
+            console.log('UsageIndicator onUpgradePress called');
+            onNavigateToSubscription?.();
+          }}
           refreshTrigger={refreshTrigger}
         />
 
@@ -182,6 +194,15 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             onPress={() => setRandomTrackVisible(true)}
           >
             <Text style={styles.actionButtonText}>🎲 Random</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.actionButton, { backgroundColor: '#4CAF50' }]} 
+            onPress={() => {
+              console.log('Test navigation button pressed');
+              onNavigateToSubscription?.();
+            }}
+          >
+            <Text style={styles.actionButtonText}>🧪 Test Nav</Text>
           </TouchableOpacity>
         </View>
 
