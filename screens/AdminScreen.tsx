@@ -100,27 +100,10 @@ export default function AdminScreen() {
 
   const exportEmails = async () => {
     try {
-      const allEmails = users.map(user => user.email).join('\n');
-      const proEmails = users
-        .filter(user => user.subscription_status === 'pro' || user.usage_limit === -1)
-        .map(user => user.email)
-        .join('\n');
-      const freeEmails = users
-        .filter(user => user.subscription_status !== 'pro' && user.usage_limit !== -1)
-        .map(user => user.email)
-        .join('\n');
-
-      const exportData = `AI Music Prompter - Email Export
-Generated: ${new Date().toLocaleString()}
-
-ALL USERS (${users.length} total):
-${allEmails}
-
-PRO USERS (${users.filter(u => u.subscription_status === 'pro' || u.usage_limit === -1).length} total):
-${proEmails}
-
-FREE USERS (${users.filter(u => u.subscription_status !== 'pro' && u.usage_limit !== -1).length} total):
-${freeEmails}`;
+      // Get unique emails only (no duplicates)
+      const emailSet = new Set(users.map(user => user.email));
+      const uniqueEmails = Array.from(emailSet);
+      const exportData = uniqueEmails.join('\n');
 
       // Try to share first, fallback to clipboard
       try {
