@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useBasic } from '@basictech/expo';
 
 interface UserSubscription {
   subscription_status?: string;
