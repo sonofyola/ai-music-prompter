@@ -16,6 +16,7 @@ import AuthScreen from './screens/AuthScreen';
 // Utils
 import { checkPendingPayments, markPaymentCompleted } from './utils/paymentVerification';
 
+// Trigger build - Metro cache fix applied
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
 
