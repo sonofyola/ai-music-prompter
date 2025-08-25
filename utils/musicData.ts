@@ -53,9 +53,19 @@ export const musicData = {
     'Synth Bass', 'Acoustic Bass', 'Electric Bass', 'Upright Bass', '808', 'Reese', 'Wobble'
   ],
   
+  tones: [
+    'Warm', 'Bright', 'Dark', 'Cold', 'Rich', 'Thin', 'Full', 'Hollow', 'Crisp', 'Smooth',
+    'Rough', 'Clean', 'Dirty', 'Vintage', 'Modern'
+  ],
+  
   structures: [
     'Verse-Chorus-Verse-Chorus-Bridge-Chorus', 'AABA', 'Verse-Chorus', 'Intro-Verse-Chorus-Outro',
     'Free Form', 'Call and Response', 'Theme and Variations'
+  ],
+  
+  themes: [
+    'Love', 'Heartbreak', 'Adventure', 'Nature', 'City Life', 'Dreams', 'Freedom', 'Nostalgia',
+    'Hope', 'Struggle', 'Victory', 'Peace', 'Rebellion', 'Journey', 'Home', 'Time', 'Memory'
   ],
   
   styles: [
@@ -72,3 +82,20 @@ export const musicData = {
     'Dry', 'Layered', 'Stripped Down', 'Polished', 'Raw'
   ]
 };
+
+export const musicParameters = [
+  { key: 'genre', label: 'Genre', options: musicData.genres },
+  { key: 'mood', label: 'Mood', options: musicData.moods },
+  { key: 'tempo', label: 'Tempo', options: musicData.tempos },
+  { key: 'trackLength', label: 'Track Length', options: musicData.trackLengths },
+  { key: 'weirdness', label: 'Weirdness', options: musicData.weirdnessLevels },
+  { key: 'instruments', label: 'Instruments', options: musicData.instruments, multiSelect: true },
+  { key: 'vocals', label: 'Vocals', options: musicData.vocals },
+  { key: 'bass', label: 'Bass Style', options: musicData.bassStyles },
+  { key: 'tone', label: 'Tone', options: musicData.tones },
+  { key: 'structure', label: 'Structure', options: musicData.structures },
+  { key: 'theme', label: 'Theme', options: musicData.themes },
+  { key: 'style', label: 'Style', options: musicData.styles },
+  { key: 'energy', label: 'Energy', options: musicData.energyLevels },
+  { key: 'production', label: 'Production', options: musicData.productionStyles }
+];

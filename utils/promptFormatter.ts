@@ -7,6 +7,7 @@ interface FormData {
   instruments: string[];
   vocals: string;
   bass: string;
+  tone: string;
   structure: string;
   theme: string;
   style: string;
@@ -222,6 +223,28 @@ function generateWeirdnessDescription(weirdness: string): string {
   return weirdnessDescriptions[weirdness] || 'appropriate level of creative experimentation for the artistic context';
 }
 
+function generateToneDescription(tone: string): string {
+  const toneDescriptions: Record<string, string> = {
+    'Warm': 'warm, inviting tonal qualities with rich harmonic content and comfortable frequency response',
+    'Bright': 'bright, clear tonal characteristics with enhanced high-frequency presence and crisp definition',
+    'Dark': 'dark, moody tonal palette with emphasis on lower frequencies and subdued high-end',
+    'Cold': 'cold, precise tonal qualities with clean, analytical frequency response and minimal warmth',
+    'Rich': 'rich, full-bodied tonal characteristics with complex harmonic content and depth',
+    'Thin': 'thin, focused tonal qualities with minimal low-end and concentrated mid-range presence',
+    'Full': 'full, expansive tonal range with balanced frequency spectrum and substantial presence',
+    'Hollow': 'hollow, resonant tonal qualities with scooped mid-range and atmospheric character',
+    'Crisp': 'crisp, well-defined tonal characteristics with sharp transients and clear articulation',
+    'Smooth': 'smooth, polished tonal qualities with gentle frequency response and flowing character',
+    'Rough': 'rough, textured tonal characteristics with harmonic distortion and gritty character',
+    'Clean': 'clean, pristine tonal qualities with minimal processing and natural frequency response',
+    'Dirty': 'dirty, saturated tonal characteristics with harmonic distortion and aggressive character',
+    'Vintage': 'vintage-inspired tonal qualities with analog warmth and period-appropriate character',
+    'Modern': 'modern, contemporary tonal characteristics with digital precision and current production standards'
+  };
+  
+  return toneDescriptions[tone] || 'distinctive tonal characteristics that serve the musical arrangement';
+}
+
 export function formatPrompt(formData: FormData): string {
   const promptParts: string[] = [];
   
@@ -246,6 +269,12 @@ export function formatPrompt(formData: FormData): string {
   
   if (formData.energy && formData.energy !== formData.mood) {
     promptParts.push(`and ${formData.energy.toLowerCase()} energy`);
+  }
+  
+  // Add tone
+  if (formData.tone) {
+    const toneDesc = generateToneDescription(formData.tone);
+    promptParts.push(`with ${toneDesc}`);
   }
   
   // Add tempo and length
