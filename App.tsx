@@ -9,6 +9,7 @@ import HistoryScreen from './screens/HistoryScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
 import BlogScreen from './screens/BlogScreen';
 import ModernLandingPage from './components/ModernLandingPage';
+import CookieConsent from './components/CookieConsent';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
@@ -170,6 +171,7 @@ export default function App() {
       <SafeAreaProvider>
         <ThemeProvider>
           <AppContent />
+          <CookieConsent />
         </ThemeProvider>
       </SafeAreaProvider>
     </BasicProvider>

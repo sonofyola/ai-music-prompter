@@ -1,9 +1,17 @@
-# ads.txt file for AI Music Prompter
+# ads.txt file for AI Music Prompter (aimusicpromptr.com)
+# This file is required for Google AdSense compliance
 # Replace YOUR_PUBLISHER_ID with your actual AdSense publisher ID
 
 google.com, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
 
-# Add other ad networks here if you use them
+# Additional ad networks (add as needed)
+# googlesyndication.com, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+# doubleclick.net, pub-YOUR_PUBLISHER_ID, DIRECT, f08c47fec0942fa0
+
+# Resellers (add if you use ad mediation)
 # Example:
-# adsystem.com, pub-0000000000000000, DIRECT
-# reseller.com, pub-1111111111111111, RESELLER, f08c47fec0942fa0
+# adnxs.com, 12345, RESELLER, f5ab79cb980f11d1
+# rubiconproject.com, 67890, RESELLER, 0bfd66d529a55807
+
+# Last updated: Replace with current date
+# Contact: admin@aimusicpromptr.com
