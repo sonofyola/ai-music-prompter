@@ -108,3 +108,6 @@ Thumbs.db
 # Netlify files (we're using Vercel)
 public/_redirects
 _redirects
+
+# Duplicate Vercel configs
+vercel-simple.json
