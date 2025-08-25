@@ -4,8 +4,10 @@ import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet, AppState } from 'react-native';
 
-// Context Providers
-import { ThemeProvider, PromptHistoryProvider, UsageProvider } from './contexts';
+// Context Providers - using direct imports
+import { ThemeProvider } from './contexts/ThemeContext';
+import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
+import { UsageProvider } from './contexts/UsageContext';
 
 // Screens
 import PromptFormScreen from './screens/PromptFormScreen';
