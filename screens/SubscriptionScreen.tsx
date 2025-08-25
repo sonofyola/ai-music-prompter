@@ -6,8 +6,11 @@ import { useBasic } from '@basictech/expo';
 export default function SubscriptionScreen() {
   const { user, signout } = useBasic();
   const [isPro, setIsPro] = useState(false);
+  const [debugCounter, setDebugCounter] = useState(0);
 
   console.log('SubscriptionScreen rendering...');
+  console.log('Current isPro state:', isPro);
+  console.log('Debug counter:', debugCounter);
 
   const handleTestButton = () => {
     console.log('TEST BUTTON PRESSED!');
@@ -16,7 +19,7 @@ export default function SubscriptionScreen() {
 
   const handleUpgrade = () => {
     console.log('UPGRADE BUTTON PRESSED!');
-    console.log('Current isPro state:', isPro);
+    console.log('Current isPro state before:', isPro);
     
     Alert.alert('Upgrade to Pro', 'Would you like to upgrade to Pro access?', [
       { text: 'Cancel', style: 'cancel' },
@@ -24,15 +27,13 @@ export default function SubscriptionScreen() {
         text: 'Upgrade', 
         onPress: () => {
           console.log('User confirmed upgrade');
-          console.log('Setting isPro to true...');
-          setIsPro(true);
-          console.log('isPro should now be true');
+          console.log('About to set isPro to true...');
           
-          // Add a small delay to ensure state updates
-          setTimeout(() => {
-            console.log('After timeout, isPro is:', isPro);
-            Alert.alert('Success!', 'You are now Pro! 🎉');
-          }, 100);
+          setIsPro(true);
+          setDebugCounter(prev => prev + 1);
+          
+          console.log('State update called');
+          Alert.alert('Success!', 'You are now Pro! 🎉');
         }
       }
     ]);
