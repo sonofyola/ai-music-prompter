@@ -103,20 +103,60 @@ export default function AdminScreen() {
     if (!db) return;
     
     try {
-      await db.from('users').update(userId, {
-        usage_limit: newLimit
-      });
+      console.log('🔄 Updating usage limit for user:', userId, 'to:', newLimit);
       
+      // First, try to get the existing user
+      let existingUser;
+      try {
+        existingUser = await db.from('users').get(userId);
+        console.log('📋 Existing user found:', existingUser);
+      } catch (error) {
+        console.log('❌ User not found in users table, will create new record');
+        existingUser = null;
+      }
+      
+      const updateData = {
+        usage_limit: newLimit,
+        last_active: new Date().toISOString()
+      };
+      
+      if (existingUser) {
+        // Update existing user
+        await db.from('users').update(userId, updateData);
+        console.log('✅ User limit updated successfully');
+      } else {
+        // Create new user record
+        const newUserData = {
+          id: userId,
+          email: userId,
+          name: '',
+          usage_count: 0,
+          subscription_status: 'free',
+          created_at: new Date().toISOString(),
+          ...updateData
+        };
+        await db.from('users').add(newUserData);
+        console.log('✅ New user created with limit');
+      }
+      
+      // Update local state
       setUsers(prev => prev.map(u => 
         u.id === userId ? { ...u, usage_limit: newLimit } : u
       ));
       
-      Alert.alert('Success', `Usage limit updated to ${newLimit}`);
+      Alert.alert('Success', `Usage limit updated to ${newLimit === -1 ? 'Unlimited' : newLimit}`);
       setSelectedUser(null);
       setNewUsageLimit('');
+      
+      // Refresh data
+      fetchAdminData();
+      
     } catch (error) {
-      console.error('Error updating user limit:', error);
-      Alert.alert('Error', 'Failed to update usage limit');
+      console.error('❌ Error updating user limit:', error);
+      Alert.alert(
+        'Error', 
+        `Failed to update usage limit: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   };
 
@@ -125,26 +165,73 @@ export default function AdminScreen() {
     
     Alert.alert(
       'Upgrade User',
-      'Upgrade this user to Pro (unlimited usage)?',
+      `Upgrade ${userId} to Pro (unlimited usage)?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
           text: 'Upgrade',
           onPress: async () => {
             try {
-              await db.from('users').update(userId, {
-                subscription_status: 'pro',
-                usage_limit: -1 // -1 means unlimited
-              });
+              console.log('🔄 Starting upgrade process for user:', userId);
               
+              // First, try to get the existing user
+              let existingUser;
+              try {
+                existingUser = await db.from('users').get(userId);
+                console.log('📋 Existing user found:', existingUser);
+              } catch (error) {
+                console.log('❌ User not found in users table, will create new record');
+                existingUser = null;
+              }
+              
+              const upgradeData = {
+                id: userId,
+                email: userId, // Assuming userId is email
+                subscription_status: 'pro',
+                usage_limit: -1, // -1 means unlimited
+                upgraded_at: new Date().toISOString(),
+                upgraded_by: user?.email || 'admin',
+                last_active: new Date().toISOString()
+              };
+              
+              if (existingUser) {
+                // Update existing user
+                console.log('🔄 Updating existing user...');
+                await db.from('users').update(userId, upgradeData);
+                console.log('✅ User updated successfully');
+              } else {
+                // Create new user record
+                console.log('🔄 Creating new user record...');
+                const newUserData = {
+                  ...upgradeData,
+                  name: '',
+                  usage_count: 0,
+                  created_at: new Date().toISOString()
+                };
+                await db.from('users').add(newUserData);
+                console.log('✅ New user created successfully');
+              }
+              
+              // Update local state
               setUsers(prev => prev.map(u => 
-                u.id === userId ? { ...u, subscription_status: 'pro', usage_limit: -1 } : u
+                u.id === userId ? { 
+                  ...u, 
+                  subscription_status: 'pro', 
+                  usage_limit: -1 
+                } : u
               ));
               
-              Alert.alert('Success', 'User upgraded to Pro');
+              Alert.alert('Success', `User ${userId} upgraded to Pro!`);
+              
+              // Refresh data to show updated status
+              fetchAdminData();
+              
             } catch (error) {
-              console.error('Error upgrading user:', error);
-              Alert.alert('Error', 'Failed to upgrade user');
+              console.error('❌ Error upgrading user:', error);
+              Alert.alert(
+                'Error', 
+                `Failed to upgrade user: ${error instanceof Error ? error.message : 'Unknown error'}`
+              );
             }
           }
         }
@@ -268,10 +355,26 @@ export default function AdminScreen() {
       {/* Test Button */}
       <View style={{ padding: 20, alignItems: 'center' }}>
         <TouchableOpacity 
-          style={{ backgroundColor: '#FF0000', padding: 15, borderRadius: 8 }}
+          style={{ backgroundColor: '#FF0000', padding: 15, borderRadius: 8, marginBottom: 10 }}
           onPress={() => console.log('TouchableOpacity pressed')}
         >
           <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🔴 TEST TOUCHABLE</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity 
+          style={{ backgroundColor: '#4CAF50', padding: 15, borderRadius: 8 }}
+          onPress={async () => {
+            console.log('🧪 Testing upgrade function...');
+            if (users.length > 0) {
+              const testUser = users[0];
+              console.log('🧪 Test upgrading user:', testUser.id);
+              await upgradeUserToPro(testUser.id);
+            } else {
+              Alert.alert('No Users', 'No users available to test upgrade');
+            }
+          }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🧪 TEST UPGRADE</Text>
         </TouchableOpacity>
       </View>
 
