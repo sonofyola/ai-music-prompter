@@ -200,17 +200,20 @@ export default function SubscriptionScreen() {
           </Text>
           
           {!isPro ? (
-            <TouchableOpacity 
+            <Pressable 
               style={styles.upgradeButton} 
-              onPress={handleUpgrade}
-              activeOpacity={0.7}
+              onPress={() => {
+                console.log('UPGRADE BUTTON PRESSED!');
+                alert('Upgrade button works!');
+                handleUpgrade();
+              }}
             >
               <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelSubscription}>
+            <Pressable style={styles.cancelButton} onPress={handleCancelSubscription}>
               <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           
           <Pressable 
