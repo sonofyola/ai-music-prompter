@@ -62,23 +62,30 @@ export default function SubscriptionScreen() {
   }, [user, db]);
 
   const handleUpgrade = async () => {
-    console.log('Upgrade button pressed!');
+    console.log('handleUpgrade function called');
+    alert('handleUpgrade function was called!');
     
-    // First, let's just test if the button works at all
-    Alert.alert('Test', 'Upgrade button was pressed! User: ' + (user?.email || 'No user'));
-    
-    // If that works, then try the actual upgrade
-    if (!db || !user) {
-      Alert.alert('Error', 'Database or user not available');
+    if (!user) {
+      alert('No user found');
       return;
     }
     
+    if (!db) {
+      alert('No database connection');
+      return;
+    }
+    
+    alert('User and DB are available, attempting upgrade...');
+    
     try {
-      console.log('Attempting to update user subscription...');
-      await db.from('users').update(user.email || user.id, {
+      console.log('About to call db.from(users).update...');
+      const result = await db.from('users').update(user.email || user.id, {
         subscription_status: 'pro',
         usage_limit: -1
       });
+      
+      console.log('Update result:', result);
+      alert('Database update successful!');
       
       setUserSub(prev => ({
         ...prev,
@@ -86,11 +93,12 @@ export default function SubscriptionScreen() {
         usage_limit: -1
       }));
       
-      Alert.alert('Success!', 'You\'ve been upgraded to Pro!');
+      alert('State updated, calling fetchUserSubscription...');
       fetchUserSubscription();
+      
     } catch (error) {
-      console.error('Error upgrading subscription:', error);
-      Alert.alert('Error', 'Failed to upgrade: ' + String(error));
+      console.error('Error in handleUpgrade:', error);
+      alert('Error: ' + String(error));
     }
   };
 
