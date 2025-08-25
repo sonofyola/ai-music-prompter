@@ -192,6 +192,10 @@ export default function SubscriptionScreen() {
             <Text style={styles.upgradeButtonText}>🧪 Test Button</Text>
           </Pressable>
           
+          <Text style={{ color: 'white', marginBottom: 10 }}>
+            Debug: isPro = {String(isPro)}, userSub.subscription_status = {userSub.subscription_status}
+          </Text>
+          
           {!isPro ? (
             <Pressable 
               style={styles.upgradeButton} 
