@@ -7,6 +7,8 @@ import PromptFormScreen from './screens/PromptFormScreen';
 import AdminScreen from './screens/AdminScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
+import SEOLandingPage from './components/SEOLandingPage';
+import { ThemeProvider } from './contexts/ThemeContext';
 
 console.log('App render - BasicProvider project_id:', schema.project_id);
 
@@ -15,6 +17,7 @@ type Screen = 'prompt' | 'history' | 'admin' | 'subscription';
 function AppContent() {
   const { isLoading, isSignedIn, user, login, signout } = useBasic();
   const [currentScreen, setCurrentScreen] = React.useState<Screen>('prompt');
+  const [showLandingPage, setShowLandingPage] = React.useState(true);
   
   console.log('AppContent render:', { isLoading, isSignedIn, user });
 
@@ -26,6 +29,18 @@ function AppContent() {
     );
   }
 
+  // Show landing page if not signed in and landing page hasn't been dismissed
+  if (!isSignedIn && showLandingPage) {
+    return (
+      <SEOLandingPage 
+        onGetStarted={() => {
+          setShowLandingPage(false);
+          // Don't automatically trigger login, let user see the sign-in screen
+        }}
+      />
+    );
+  }
+
   if (!isSignedIn) {
     return (
       <View style={styles.container}>
@@ -33,6 +48,12 @@ function AppContent() {
         <Text style={styles.subtitle}>Sign in to create professional music prompts</Text>
         <TouchableOpacity style={styles.button} onPress={login}>
           <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.button, styles.backButton]} 
+          onPress={() => setShowLandingPage(true)}
+        >
+          <Text style={styles.buttonText}>← Back to Home</Text>
         </TouchableOpacity>
       </View>
     );
@@ -45,6 +66,7 @@ function AppContent() {
   const handleLogout = async () => {
     try {
       await signout();
+      setShowLandingPage(true); // Show landing page after logout
     } catch (error) {
       console.error('Error signing out:', error);
     }
@@ -130,7 +152,9 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <AppContent />
+        <ThemeProvider>
+          <AppContent />
+        </ThemeProvider>
       </SafeAreaProvider>
     </BasicProvider>
   );
@@ -215,6 +239,10 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     borderRadius: 8,
     marginTop: 20,
+  },
+  backButton: {
+    backgroundColor: '#666666',
+    marginTop: 10,
   },
   buttonText: {
     color: '#ffffff',
