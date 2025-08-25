@@ -1,257 +1,177 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView 
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
-import { generateMultipleTrackIdeas, TrackIdea, generateRandomTrackConfiguration } from '../utils/randomTrackGenerator';
-import IconFallback from './IconFallback';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal } from 'react-native';
+import { generateRandomTrack, RandomTrackData } from '../utils/randomTrackGenerator';
 
 interface RandomTrackModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelectIdea: (trackData: any) => void;
+  onUseTrack: (trackData: RandomTrackData) => void;
 }
 
-export default function RandomTrackModal({ visible, onClose, onSelectIdea }: RandomTrackModalProps) {
-  const { colors } = useTheme();
-  const [trackIdeas, setTrackIdeas] = useState<TrackIdea[]>([]);
-  const [isGenerating, setIsGenerating] = useState(false);
-  const styles = createStyles(colors);
+export default function RandomTrackModal({ visible, onClose, onUseTrack }: RandomTrackModalProps) {
+  const [randomTrack, setRandomTrack] = useState<RandomTrackData | null>(null);
 
-  const generateNewIdeas = async () => {
-    setIsGenerating(true);
-    // Add a small delay for better UX
-    setTimeout(() => {
-      const newIdeas = generateMultipleTrackIdeas(6);
-      setTrackIdeas(newIdeas);
-      setIsGenerating(false);
-    }, 300);
+  const handleGenerateRandom = () => {
+    const track = generateRandomTrack();
+    setRandomTrack(track);
   };
 
-  useEffect(() => {
-    if (visible && trackIdeas.length === 0) {
-      generateNewIdeas();
+  const handleUseTrack = () => {
+    if (randomTrack) {
+      onUseTrack(randomTrack);
+      onClose();
     }
-  }, [visible, trackIdeas.length]);
-
-  const handleSelectIdea = (idea: TrackIdea) => {
-    // Generate a complete random track configuration
-    const randomTrackData = generateRandomTrackConfiguration(idea.subject);
-    onSelectIdea(randomTrackData);
   };
 
-  const renderIdea = (idea: TrackIdea, index: number) => {
-    // Generate preview of what the full track would look like
-    const previewData = generateRandomTrackConfiguration(idea.subject);
-    
-    return (
-      <TouchableOpacity
-        key={index}
-        style={styles.ideaCard}
-        onPress={() => handleSelectIdea(idea)}
-      >
-        <View style={styles.ideaHeader}>
-          <View style={styles.ideaIcon}>
-            <IconFallback name="lightbulb" size={20} color={colors.primary} />
-          </View>
-          <Text style={styles.ideaSubject}>{idea.subject}</Text>
-        </View>
-        <Text style={styles.ideaDescription}>{idea.description}</Text>
-        
-        {/* Preview of generated settings */}
-        <View style={styles.previewContainer}>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Genres:</Text>
-            <Text style={styles.previewValue}>
-              {previewData.genres_primary?.length > 0 ? previewData.genres_primary.join(', ') : 'Various'}
-            </Text>
-          </View>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Mood:</Text>
-            <Text style={styles.previewValue}>
-              {previewData.mood?.length > 0 ? previewData.mood.join(', ') : 'Mixed'}
-            </Text>
-          </View>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Tempo:</Text>
-            <Text style={styles.previewValue}>{previewData.tempo_bpm || 'Variable'} BPM</Text>
-          </View>
-          <View style={styles.previewRow}>
-            <Text style={styles.previewLabel}>Energy:</Text>
-            <Text style={styles.previewValue}>{previewData.energy || 'Dynamic'}</Text>
-          </View>
-        </View>
-      </TouchableOpacity>
-    );
+  const handleModalOpen = () => {
+    if (visible && !randomTrack) {
+      handleGenerateRandom();
+    }
   };
+
+  React.useEffect(() => {
+    handleModalOpen();
+  }, [visible]);
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Random Track Ideas</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconFallback name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </View>
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>🎲 Random Track Generator</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>✕</Text>
+            </TouchableOpacity>
+          </View>
+          
+          {randomTrack && (
+            <View style={styles.trackDetails}>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Genre:</Text>
+                <Text style={styles.value}>{randomTrack.genre}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Mood:</Text>
+                <Text style={styles.value}>{randomTrack.mood}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Tempo:</Text>
+                <Text style={styles.value}>{randomTrack.tempo}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Instruments:</Text>
+                <Text style={styles.value}>{randomTrack.instruments.join(', ')}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Vocals:</Text>
+                <Text style={styles.value}>{randomTrack.vocals}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Theme:</Text>
+                <Text style={styles.value}>{randomTrack.theme}</Text>
+              </View>
+              <View style={styles.detailRow}>
+                <Text style={styles.label}>Energy:</Text>
+                <Text style={styles.value}>{randomTrack.energy}</Text>
+              </View>
+            </View>
+          )}
 
-        {/* Subtitle */}
-        <View style={styles.subtitleContainer}>
-          <Text style={styles.subtitle}>
-            Get inspired with AI-generated creative concepts for your next track
-          </Text>
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity style={styles.generateButton} onPress={handleGenerateRandom}>
+              <Text style={styles.buttonText}>🎲 Generate New</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.useButton} onPress={handleUseTrack}>
+              <Text style={styles.buttonText}>Use This Track</Text>
+            </TouchableOpacity>
+          </View>
         </View>
-
-        {/* Generate New Ideas Button */}
-        <View style={styles.actionContainer}>
-          <TouchableOpacity
-            style={[styles.generateButton, isGenerating && styles.generateButtonDisabled]}
-            onPress={generateNewIdeas}
-            disabled={isGenerating}
-          >
-            <IconFallback 
-              name={isGenerating ? "refresh" : "casino"} 
-              size={20} 
-              color="#fff" 
-            />
-            <Text style={styles.generateButtonText}>
-              {isGenerating ? 'Generating...' : 'Generate New Ideas'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Ideas List */}
-        <ScrollView 
-          style={styles.ideasList}
-          contentContainerStyle={styles.ideasContent}
-          showsVerticalScrollIndicator={false}
-        >
-          {trackIdeas.map((idea, index) => renderIdea(idea, index))}
-        </ScrollView>
-      </SafeAreaView>
+      </View>
     </Modal>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
-  container: {
+const styles = StyleSheet.create({
+  modalOverlay: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  header: {
+  modalContent: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    width: '90%',
+    maxHeight: '80%',
+    padding: 20,
+  },
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   closeButton: {
-    padding: 8,
+    padding: 5,
   },
-  subtitleContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
+  closeButtonText: {
+    fontSize: 20,
+    color: '#ffffff',
   },
-  subtitle: {
+  trackDetails: {
+    marginBottom: 20,
+  },
+  detailRow: {
+    flexDirection: 'row',
+    marginBottom: 10,
+    alignItems: 'flex-start',
+  },
+  label: {
     fontSize: 14,
-    color: colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
+    fontWeight: 'bold',
+    color: '#4CAF50',
+    width: 80,
+    marginRight: 10,
   },
-  actionContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 16,
+  value: {
+    fontSize: 14,
+    color: '#ffffff',
+    flex: 1,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
   },
   generateButton: {
-    backgroundColor: colors.primary,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: '#FF9800',
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
-    gap: 8,
-  },
-  generateButtonDisabled: {
-    opacity: 0.7,
-  },
-  generateButtonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  ideasList: {
     flex: 1,
-  },
-  ideasContent: {
-    padding: 20,
-    gap: 12,
-  },
-  ideaCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  ideaHeader: {
-    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
-  ideaIcon: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: colors.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  ideaSubject: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
+  useButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
     flex: 1,
+    alignItems: 'center',
   },
-  ideaDescription: {
+  buttonText: {
+    color: '#ffffff',
     fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-  },
-  previewContainer: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-  },
-  previewRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  previewLabel: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontWeight: '500',
-  },
-  previewValue: {
-    fontSize: 12,
-    color: colors.text,
-    fontWeight: '500',
+    fontWeight: 'bold',
   },
 });

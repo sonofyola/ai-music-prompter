@@ -1,6 +1,20 @@
 export const musicData = {
   genres: [
-    'Pop', 'Rock', 'Hip Hop', 'Electronic', 'Jazz', 'Classical', 'Country', 'R&B', 'Folk', 'Blues',
+    // Electronic/EDM Genres
+    'House', 'Deep House', 'Tech House', 'Progressive House', 'Electro House', 'Future House',
+    'Minimal House', 'Acid House', 'Chicago House', 'French House', 'Tribal House',
+    'Techno', 'Minimal Techno', 'Deep Tech', 'Hard Techno', 'Industrial Techno', 'Detroit Techno',
+    'Berlin Techno', 'Acid Techno', 'Progressive Techno',
+    'Trance', 'Progressive Trance', 'Uplifting Trance', 'Psytrance', 'Tech Trance', 'Vocal Trance',
+    'Ambient Trance', 'Hard Trance',
+    'Drum & Bass', 'Liquid DnB', 'Neurofunk', 'Jump Up', 'Jungle', 'Breakbeat', 'UK Garage',
+    'Dubstep', 'Future Bass', 'Trap', 'Hardstyle', 'Hardcore', 'Gabber',
+    'Ambient', 'Downtempo', 'Chillout', 'Lounge', 'Trip Hop', 'IDM', 'Glitch',
+    'Synthwave', 'Retrowave', 'Vaporwave', 'Darkwave', 'Cyberpunk',
+    'Bass Music', 'UK Bass', 'Future Garage', 'Footwork', 'Juke',
+    
+    // Traditional Genres
+    'Pop', 'Rock', 'Hip Hop', 'Jazz', 'Classical', 'Country', 'R&B', 'Folk', 'Blues',
     'Reggae', 'Punk', 'Metal', 'Indie', 'Alternative', 'Funk', 'Soul', 'Gospel', 'Latin', 'World'
   ],
   

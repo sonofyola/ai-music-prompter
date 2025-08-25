@@ -1,16 +1,25 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 
 interface GeneratedPromptProps {
   prompt: string;
-  onCopy: () => void;
+  onCopy?: () => void;
 }
 
 export default function GeneratedPrompt({ prompt, onCopy }: GeneratedPromptProps) {
   const handleCopy = async () => {
-    await Clipboard.setStringAsync(prompt);
-    onCopy();
+    try {
+      await Clipboard.setStringAsync(prompt);
+      if (onCopy) {
+        onCopy();
+      } else {
+        Alert.alert('Copied!', 'Prompt copied to clipboard');
+      }
+    } catch (error) {
+      console.error('Error copying to clipboard:', error);
+      Alert.alert('Error', 'Failed to copy to clipboard');
+    }
   };
 
   return (
@@ -29,23 +38,21 @@ export default function GeneratedPrompt({ prompt, onCopy }: GeneratedPromptProps
 const styles = StyleSheet.create({
   container: {
     margin: 20,
-    padding: 20,
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#4CAF50',
+    marginTop: 30,
   },
   title: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    color: '#4CAF50',
+    color: '#ffffff',
     marginBottom: 15,
     textAlign: 'center',
   },
   promptContainer: {
-    backgroundColor: '#1a1a1a',
-    borderRadius: 8,
-    padding: 15,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
     marginBottom: 15,
   },
   promptText: {
@@ -55,7 +62,7 @@ const styles = StyleSheet.create({
   },
   copyButton: {
     backgroundColor: '#4CAF50',
-    paddingVertical: 12,
+    paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
   },

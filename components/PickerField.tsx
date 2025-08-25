@@ -26,10 +26,11 @@ export default function PickerField({
           onValueChange={onValueChange}
           style={styles.picker}
           dropdownIconColor="#ffffff"
+          itemStyle={styles.pickerItem}
         >
           <Picker.Item label={placeholder} value="" color="#666666" />
           {items.map((item, index) => (
-            <Picker.Item key={index} label={item} value={item} color="#ffffff" />
+            <Picker.Item key={index} label={item} value={item} color="#000000" />
           ))}
         </Picker>
       </View>
@@ -56,5 +57,9 @@ const styles = StyleSheet.create({
   picker: {
     color: '#ffffff',
     backgroundColor: 'transparent',
+  },
+  pickerItem: {
+    color: '#000000',
+    backgroundColor: '#ffffff',
   },
 });

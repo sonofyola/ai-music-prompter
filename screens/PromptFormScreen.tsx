@@ -6,8 +6,12 @@ import FormField from '../components/FormField';
 import PickerField from '../components/PickerField';
 import MultiSelectField from '../components/MultiSelectField';
 import GeneratedPrompt from '../components/GeneratedPrompt';
+import TemplatesModal from '../components/TemplatesModal';
+import RandomTrackModal from '../components/RandomTrackModal';
 import { formatPrompt } from '../utils/promptFormatter';
 import { musicData } from '../utils/musicData';
+import { PromptTemplate } from '../utils/promptTemplates';
+import { RandomTrackData } from '../utils/randomTrackGenerator';
 
 export default function PromptFormScreen() {
   const { user, db } = useBasic();
@@ -26,6 +30,8 @@ export default function PromptFormScreen() {
   });
   const [generatedPrompt, setGeneratedPrompt] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
+  const [templatesVisible, setTemplatesVisible] = useState(false);
+  const [randomTrackVisible, setRandomTrackVisible] = useState(false);
 
   const updateField = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -76,12 +82,41 @@ export default function PromptFormScreen() {
     setGeneratedPrompt('');
   };
 
+  const handleSelectTemplate = (template: PromptTemplate) => {
+    setFormData(template.formData);
+    setGeneratedPrompt('');
+  };
+
+  const handleUseRandomTrack = (trackData: RandomTrackData) => {
+    setFormData(prev => ({
+      ...prev,
+      ...trackData
+    }));
+    setGeneratedPrompt('');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <Text style={styles.title}>🎵 AI Music Prompter</Text>
           <Text style={styles.subtitle}>Create professional music prompts for AI tools</Text>
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionButtons}>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => setTemplatesVisible(true)}
+          >
+            <Text style={styles.actionButtonText}>📋 Templates</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.actionButton} 
+            onPress={() => setRandomTrackVisible(true)}
+          >
+            <Text style={styles.actionButtonText}>🎲 Random</Text>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.form}>
@@ -207,6 +242,18 @@ export default function PromptFormScreen() {
           </Text>
         </View>
       </ScrollView>
+
+      <TemplatesModal
+        visible={templatesVisible}
+        onClose={() => setTemplatesVisible(false)}
+        onSelectTemplate={handleSelectTemplate}
+      />
+
+      <RandomTrackModal
+        visible={randomTrackVisible}
+        onClose={() => setRandomTrackVisible(false)}
+        onUseTrack={handleUseRandomTrack}
+      />
     </SafeAreaView>
   );
 }
@@ -234,6 +281,26 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#cccccc',
     textAlign: 'center',
+  },
+  actionButtons: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 10,
+    gap: 15,
+  },
+  actionButton: {
+    backgroundColor: '#333333',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#555555',
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '600',
   },
   form: {
     padding: 20,

@@ -1,236 +1,130 @@
-import React, { useState } from 'react';
-import { 
-  Modal, 
-  View, 
-  Text, 
-  TouchableOpacity, 
-  StyleSheet, 
-  ScrollView, 
-  FlatList 
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../utils/theme';
-import { PROMPT_TEMPLATES, TEMPLATE_CATEGORIES } from '../utils/promptTemplates';
-import IconFallback from './IconFallback';
+import React from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList, ScrollView } from 'react-native';
+import { promptTemplates, PromptTemplate } from '../utils/promptTemplates';
 
 interface TemplatesModalProps {
   visible: boolean;
   onClose: () => void;
-  onSelectTemplate: (template: any) => void;
+  onSelectTemplate: (template: PromptTemplate) => void;
 }
 
 export default function TemplatesModal({ visible, onClose, onSelectTemplate }: TemplatesModalProps) {
-  const { colors } = useTheme();
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const styles = createStyles(colors);
-
-  const filteredTemplates = selectedCategory === 'All' 
-    ? PROMPT_TEMPLATES 
-    : PROMPT_TEMPLATES.filter(template => template.category === selectedCategory);
-
-  const handleSelectTemplate = (template: any) => {
-    onSelectTemplate(template.formData);
+  const handleSelectTemplate = (template: PromptTemplate) => {
+    onSelectTemplate(template);
     onClose();
   };
 
-  const renderTemplate = ({ item }: { item: any }) => (
-    <TouchableOpacity 
-      style={styles.templateCard}
+  const renderTemplate = ({ item }: { item: PromptTemplate }) => (
+    <TouchableOpacity
+      style={styles.templateItem}
       onPress={() => handleSelectTemplate(item)}
     >
-      <View style={styles.templateHeader}>
-        <View style={styles.templateIcon}>
-          <IconFallback name={item.icon || 'music-note'} size={24} color={colors.primary} />
-        </View>
-        <View style={styles.templateInfo}>
-          <Text style={styles.templateName}>{item.name}</Text>
-          <Text style={styles.templateCategory}>{item.category}</Text>
-        </View>
-      </View>
+      <Text style={styles.templateName}>{item.name}</Text>
       <Text style={styles.templateDescription}>{item.description}</Text>
-      
-      {/* Preview some key settings */}
-      <View style={styles.templatePreview}>
-        {item.formData.genres_primary && (
-          <Text style={styles.previewTag}>
-            {item.formData.genres_primary.join(', ')}
-          </Text>
-        )}
-        {item.formData.tempo_bpm && (
-          <Text style={styles.previewTag}>
-            {item.formData.tempo_bpm} BPM
-          </Text>
-        )}
-        {item.formData.energy && (
-          <Text style={styles.previewTag}>
-            {item.formData.energy} Energy
-          </Text>
-        )}
+      <View style={styles.templateDetails}>
+        <Text style={styles.templateGenre}>{item.formData.genre}</Text>
+        <Text style={styles.templateMood}>{item.formData.mood}</Text>
       </View>
     </TouchableOpacity>
   );
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.container}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>Templates</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <IconFallback name="close" size={24} color={colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Category Filter */}
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.categoryScroll}
-          contentContainerStyle={styles.categoryContainer}
-        >
-          {TEMPLATE_CATEGORIES.map((category) => (
-            <TouchableOpacity
-              key={category}
-              style={[
-                styles.categoryButton,
-                selectedCategory === category && styles.categoryButtonActive
-              ]}
-              onPress={() => setSelectedCategory(category)}
-            >
-              <Text style={[
-                styles.categoryText,
-                selectedCategory === category && styles.categoryTextActive
-              ]}>
-                {category}
-              </Text>
+    <Modal
+      visible={visible}
+      transparent={true}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>Choose Template</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={onClose}>
+              <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        {/* Templates List */}
-        <FlatList
-          data={filteredTemplates}
-          renderItem={renderTemplate}
-          keyExtractor={(item) => item.id}
-          style={styles.templatesList}
-          contentContainerStyle={styles.templatesContent}
-          showsVerticalScrollIndicator={false}
-        />
-      </SafeAreaView>
+          </View>
+          
+          <FlatList
+            data={promptTemplates}
+            keyExtractor={(item) => item.id}
+            renderItem={renderTemplate}
+            showsVerticalScrollIndicator={false}
+          />
+        </View>
+      </View>
     </Modal>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
-  container: {
+const styles = StyleSheet.create({
+  modalOverlay: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  header: {
+  modalContent: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    width: '90%',
+    maxHeight: '80%',
+    padding: 20,
+  },
+  modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
+    marginBottom: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '700',
-    color: colors.text,
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
   closeButton: {
-    padding: 8,
+    padding: 5,
   },
-  categoryScroll: {
-    maxHeight: 60,
+  closeButtonText: {
+    fontSize: 20,
+    color: '#ffffff',
   },
-  categoryContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    gap: 12,
-  },
-  categoryButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: colors.surface,
+  templateItem: {
+    backgroundColor: '#1a1a1a',
+    borderRadius: 8,
+    padding: 15,
+    marginBottom: 10,
     borderWidth: 1,
-    borderColor: colors.border,
-  },
-  categoryButtonActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.text,
-  },
-  categoryTextActive: {
-    color: '#fff',
-  },
-  templatesList: {
-    flex: 1,
-  },
-  templatesContent: {
-    padding: 20,
-    gap: 16,
-  },
-  templateCard: {
-    backgroundColor: colors.surface,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  templateHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  templateIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.primary + '15',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  templateInfo: {
-    flex: 1,
+    borderColor: '#444444',
   },
   templateName: {
     fontSize: 16,
-    fontWeight: '700',
-    color: colors.text,
-    marginBottom: 2,
-  },
-  templateCategory: {
-    fontSize: 12,
-    color: colors.primary,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 5,
   },
   templateDescription: {
     fontSize: 14,
-    color: colors.textSecondary,
-    lineHeight: 20,
-    marginBottom: 12,
+    color: '#cccccc',
+    marginBottom: 10,
   },
-  templatePreview: {
+  templateDetails: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+    gap: 10,
   },
-  previewTag: {
+  templateGenre: {
     fontSize: 12,
-    color: colors.textTertiary,
-    backgroundColor: colors.background,
+    color: '#4CAF50',
+    backgroundColor: '#1a3a1a',
     paddingHorizontal: 8,
     paddingVertical: 4,
-    borderRadius: 12,
-    overflow: 'hidden',
+    borderRadius: 4,
+  },
+  templateMood: {
+    fontSize: 12,
+    color: '#2196F3',
+    backgroundColor: '#1a2a3a',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
 });
