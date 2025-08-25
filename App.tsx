@@ -7,11 +7,12 @@ import PromptFormScreen from './screens/PromptFormScreen';
 import AdminScreen from './screens/AdminScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
+import BlogScreen from './screens/BlogScreen';
 import ModernLandingPage from './components/ModernLandingPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
-type Screen = 'prompt' | 'history' | 'admin' | 'subscription';
+type Screen = 'prompt' | 'history' | 'admin' | 'subscription' | 'blog';
 
 function AppContent() {
   const { isLoading, isSignedIn, user, login, signout } = useBasic();
@@ -51,6 +52,12 @@ function AppContent() {
         >
           <Text style={styles.buttonText}>← Back to Home</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.button, styles.blogButton]} 
+          onPress={() => setCurrentScreen('blog')}
+        >
+          <Text style={styles.buttonText}>📚 Read Blog</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -78,6 +85,8 @@ function AppContent() {
         return <AdminScreen />;
       case 'subscription':
         return <SubscriptionScreen />;
+      case 'blog':
+        return <BlogScreen />;
       default:
         return <PromptFormScreen onNavigateToSubscription={navigateToSubscription} />;
     }
@@ -105,6 +114,15 @@ function AppContent() {
           >
             <Text style={[styles.navButtonText, currentScreen === 'history' && styles.activeNavButtonText]}>
               📝 History
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.navButton, currentScreen === 'blog' && styles.activeNavButton]}
+            onPress={() => setCurrentScreen('blog')}
+          >
+            <Text style={[styles.navButtonText, currentScreen === 'blog' && styles.activeNavButtonText]}>
+              📚 Blog
             </Text>
           </TouchableOpacity>
           
@@ -182,8 +200,8 @@ const styles = StyleSheet.create({
   navButton: {
     flex: 1,
     paddingVertical: 12,
-    paddingHorizontal: 8,
-    marginHorizontal: 2,
+    paddingHorizontal: 6,
+    marginHorizontal: 1,
     borderRadius: 8,
     alignItems: 'center',
   },
@@ -192,7 +210,7 @@ const styles = StyleSheet.create({
   },
   navButtonText: {
     color: '#cccccc',
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
     textAlign: 'center',
   },
@@ -240,6 +258,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     backgroundColor: '#666666',
+    marginTop: 10,
+  },
+  blogButton: {
+    backgroundColor: '#4CAF50',
     marginTop: 10,
   },
   buttonText: {
