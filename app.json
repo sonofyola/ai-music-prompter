@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "AI Music Promptr",
-    "slug": "aimusicpromptr",
+    "slug": "user-app-f9ba5f44",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/favicon.png",
@@ -17,7 +17,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.aimusicpromptr.app",
+      "bundleIdentifier": "dev.kiki.userapp.f9ba5f44",
       "infoPlist": {
         "UIBackgroundModes": [
           "background-fetch",
@@ -31,7 +31,7 @@
       }
     },
     "android": {
-      "package": "com.aimusicpromptr.app",
+      "package": "dev.kiki.userapp.pjlkfpee",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/favicon.png",
         "backgroundColor": "#1a1a1a"
