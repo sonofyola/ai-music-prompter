@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 
@@ -15,6 +15,8 @@ export default function SubscriptionScreen() {
   const { user, db, signout } = useBasic();
   const [userSub, setUserSub] = useState<UserSubscription>({});
   const [loading, setLoading] = useState(true);
+
+  console.log('SubscriptionScreen rendering...', { user: !!user, db: !!db });
 
   const fetchUserSubscription = async () => {
     if (!user || !db) return;
@@ -144,7 +146,7 @@ export default function SubscriptionScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>💎 Subscription</Text>
           <Text style={styles.subtitle}>Manage your AI Music Prompter plan</Text>
@@ -170,66 +172,45 @@ export default function SubscriptionScreen() {
           </View>
         </View>
 
-        {/* Plan Features */}
-        <View style={styles.featuresContainer}>
-          <Text style={styles.featuresTitle}>Plan Features</Text>
-          
-          <View style={styles.featuresList}>
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>✅</Text>
-              <Text style={styles.featureText}>
-                {isPro ? 'Unlimited' : '10'} prompts per month
-              </Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>✅</Text>
-              <Text style={styles.featureText}>Access to all genres & templates</Text>
-            </View>
-            
-            <View style={styles.featureItem}>
-              <Text style={styles.featureIcon}>✅</Text>
-              <Text style={styles.featureText}>Prompt history & favorites</Text>
-            </View>
-            
-            {isPro && (
-              <>
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>⭐</Text>
-                  <Text style={styles.featureText}>Priority support</Text>
-                </View>
-                
-                <View style={styles.featureItem}>
-                  <Text style={styles.featureIcon}>⭐</Text>
-                  <Text style={styles.featureText}>Early access to new features</Text>
-                </View>
-              </>
-            )}
-          </View>
-        </View>
-
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
-          <TouchableOpacity 
+          <Pressable 
             style={[styles.upgradeButton, { backgroundColor: '#FF9800' }]} 
-            onPress={() => Alert.alert('Test', 'Simple button test works!')}
+            onPress={() => {
+              console.log('TEST BUTTON PRESSED!');
+              alert('Test button works!');
+            }}
           >
             <Text style={styles.upgradeButtonText}>🧪 Test Button</Text>
-          </TouchableOpacity>
+          </Pressable>
           
           {!isPro ? (
-            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
+            <Pressable 
+              style={styles.upgradeButton} 
+              onPress={() => {
+                console.log('UPGRADE BUTTON PRESSED!');
+                alert('Upgrade button pressed!');
+                handleUpgrade();
+              }}
+            >
               <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>
-            </TouchableOpacity>
+            </Pressable>
           ) : (
-            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelSubscription}>
+            <Pressable style={styles.cancelButton} onPress={handleCancelSubscription}>
               <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
-            </TouchableOpacity>
+            </Pressable>
           )}
           
-          <TouchableOpacity style={styles.signOutButton} onPress={signout}>
+          <Pressable 
+            style={styles.signOutButton} 
+            onPress={() => {
+              console.log('SIGNOUT BUTTON PRESSED!');
+              alert('Sign out button pressed!');
+              signout();
+            }}
+          >
             <Text style={styles.signOutButtonText}>Sign Out</Text>
-          </TouchableOpacity>
+          </Pressable>
         </View>
 
         {/* User Info */}
@@ -240,7 +221,7 @@ export default function SubscriptionScreen() {
             Member since: {new Date().toLocaleDateString()}
           </Text>
         </View>
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
