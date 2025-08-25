@@ -16,14 +16,23 @@ export default function SubscriptionScreen() {
 
   const handleUpgrade = () => {
     console.log('UPGRADE BUTTON PRESSED!');
+    console.log('Current isPro state:', isPro);
+    
     Alert.alert('Upgrade to Pro', 'Would you like to upgrade to Pro access?', [
       { text: 'Cancel', style: 'cancel' },
       { 
         text: 'Upgrade', 
         onPress: () => {
           console.log('User confirmed upgrade');
+          console.log('Setting isPro to true...');
           setIsPro(true);
-          Alert.alert('Success!', 'You are now Pro! 🎉');
+          console.log('isPro should now be true');
+          
+          // Add a small delay to ensure state updates
+          setTimeout(() => {
+            console.log('After timeout, isPro is:', isPro);
+            Alert.alert('Success!', 'You are now Pro! 🎉');
+          }, 100);
         }
       }
     ]);
