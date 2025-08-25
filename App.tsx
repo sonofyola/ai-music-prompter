@@ -13,7 +13,7 @@ console.log('App render - BasicProvider project_id:', schema.project_id);
 type Screen = 'prompt' | 'history' | 'admin' | 'subscription';
 
 function AppContent() {
-  const { isLoading, isSignedIn, user, login } = useBasic();
+  const { isLoading, isSignedIn, user, login, signout } = useBasic();
   const [currentScreen, setCurrentScreen] = React.useState<Screen>('prompt');
   
   console.log('AppContent render:', { isLoading, isSignedIn, user });
@@ -40,6 +40,14 @@ function AppContent() {
 
   const navigateToSubscription = () => {
     setCurrentScreen('subscription');
+  };
+
+  const handleLogout = async () => {
+    try {
+      await signout();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const renderScreen = () => {
@@ -100,6 +108,14 @@ function AppContent() {
             </Text>
           </TouchableOpacity>
         )}
+
+        {/* Logout Button */}
+        <TouchableOpacity 
+          style={styles.logoutButton}
+          onPress={handleLogout}
+        >
+          <Text style={styles.logoutButtonText}>🚪</Text>
+        </TouchableOpacity>
       </View>
 
       {/* Screen Content */}
@@ -139,6 +155,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     borderBottomWidth: 1,
     borderBottomColor: '#444444',
+    alignItems: 'center',
   },
   navButton: {
     flex: 1,
@@ -159,6 +176,17 @@ const styles = StyleSheet.create({
   },
   activeNavButtonText: {
     color: '#ffffff',
+  },
+  logoutButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginLeft: 5,
+    borderRadius: 6,
+    backgroundColor: '#f44336',
+  },
+  logoutButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
   },
   screenContainer: {
     flex: 1,
