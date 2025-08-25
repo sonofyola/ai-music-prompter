@@ -62,6 +62,9 @@ export default function SubscriptionScreen() {
   }, [user, db]);
 
   const handleUpgrade = async () => {
+    Alert.alert('Button Pressed!', 'The upgrade button is working!');
+    return; // Exit early for now
+    
     console.log('handleUpgrade function called');
     alert('handleUpgrade function was called!');
     
