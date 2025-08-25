@@ -29,6 +29,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
     mood: '',
     tempo: '',
     trackLength: '',
+    weirdness: '',
     instruments: [],
     vocals: '',
     bass: '',
@@ -141,6 +142,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
       mood: '',
       tempo: '',
       trackLength: '',
+      weirdness: '',
       instruments: [],
       vocals: '',
       bass: '',
@@ -228,6 +230,14 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             onValueChange={(value) => updateField('trackLength', value)}
             items={musicData.trackLengths}
             placeholder="Select track length..."
+          />
+
+          <PickerField
+            label="Weirdness Level"
+            value={formData.weirdness}
+            onValueChange={(value) => updateField('weirdness', value)}
+            items={musicData.weirdnessLevels}
+            placeholder="Select weirdness level..."
           />
 
           <MultiSelectField

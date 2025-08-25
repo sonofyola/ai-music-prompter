@@ -33,6 +33,11 @@ export const musicData = {
     'Long (4-6 minutes)', 'Extended (6+ minutes)', 'Loop (seamless)'
   ],
   
+  weirdnessLevels: [
+    'Very Normal', 'Slightly Unusual', 'Moderately Weird', 'Very Weird', 'Extremely Experimental',
+    'Avant-garde', 'Completely Abstract'
+  ],
+  
   instruments: [
     'Piano', 'Guitar', 'Bass', 'Drums', 'Violin', 'Saxophone', 'Trumpet', 'Flute', 'Synthesizer',
     'Organ', 'Harmonica', 'Cello', 'Clarinet', 'Trombone', 'Harp', 'Banjo', 'Mandolin', 'Accordion'

@@ -3,6 +3,7 @@ interface FormData {
   mood: string;
   tempo: string;
   trackLength: string;
+  weirdness: string;
   instruments: string[];
   vocals: string;
   bass: string;
@@ -35,6 +36,11 @@ export function formatPrompt(formData: FormData): string {
   // Add track length
   if (formData.trackLength) {
     parts.push(`Track Length: ${formData.trackLength}`);
+  }
+
+  // Add weirdness
+  if (formData.weirdness) {
+    parts.push(`Weirdness: ${formData.weirdness}`);
   }
 
   // Add instruments
