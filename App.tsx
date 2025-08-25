@@ -9,6 +9,7 @@ import HistoryScreen from './screens/HistoryScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
 import ModernLandingPage from './components/ModernLandingPage';
 import { ThemeProvider } from './contexts/ThemeContext';
+import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
 console.log('App render - BasicProvider project_id:', schema.project_id);
 
@@ -90,61 +91,63 @@ function AppContent() {
   const isAdmin = user?.email === 'drremotework@gmail.com';
 
   return (
-    <View style={styles.appContainer}>
-      {/* Navigation Bar */}
-      <View style={styles.navbar}>
-        <TouchableOpacity 
-          style={[styles.navButton, currentScreen === 'prompt' && styles.activeNavButton]}
-          onPress={() => setCurrentScreen('prompt')}
-        >
-          <Text style={[styles.navButtonText, currentScreen === 'prompt' && styles.activeNavButtonText]}>
-            🎵 Prompter
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.navButton, currentScreen === 'history' && styles.activeNavButton]}
-          onPress={() => setCurrentScreen('history')}
-        >
-          <Text style={[styles.navButtonText, currentScreen === 'history' && styles.activeNavButtonText]}>
-            📝 History
-          </Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={[styles.navButton, currentScreen === 'subscription' && styles.activeNavButton]}
-          onPress={() => setCurrentScreen('subscription')}
-        >
-          <Text style={[styles.navButtonText, currentScreen === 'subscription' && styles.activeNavButtonText]}>
-            💎 Pro
-          </Text>
-        </TouchableOpacity>
-        
-        {isAdmin && (
+    <PromptHistoryProvider>
+      <View style={styles.appContainer}>
+        {/* Navigation Bar */}
+        <View style={styles.navbar}>
           <TouchableOpacity 
-            style={[styles.navButton, currentScreen === 'admin' && styles.activeNavButton]}
-            onPress={() => setCurrentScreen('admin')}
+            style={[styles.navButton, currentScreen === 'prompt' && styles.activeNavButton]}
+            onPress={() => setCurrentScreen('prompt')}
           >
-            <Text style={[styles.navButtonText, currentScreen === 'admin' && styles.activeNavButtonText]}>
-              ⚙️ Admin
+            <Text style={[styles.navButtonText, currentScreen === 'prompt' && styles.activeNavButtonText]}>
+              🎵 Prompter
             </Text>
           </TouchableOpacity>
-        )}
+          
+          <TouchableOpacity 
+            style={[styles.navButton, currentScreen === 'history' && styles.activeNavButton]}
+            onPress={() => setCurrentScreen('history')}
+          >
+            <Text style={[styles.navButtonText, currentScreen === 'history' && styles.activeNavButtonText]}>
+              📝 History
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.navButton, currentScreen === 'subscription' && styles.activeNavButton]}
+            onPress={() => setCurrentScreen('subscription')}
+          >
+            <Text style={[styles.navButtonText, currentScreen === 'subscription' && styles.activeNavButtonText]}>
+              💎 Pro
+            </Text>
+          </TouchableOpacity>
+          
+          {isAdmin && (
+            <TouchableOpacity 
+              style={[styles.navButton, currentScreen === 'admin' && styles.activeNavButton]}
+              onPress={() => setCurrentScreen('admin')}
+            >
+              <Text style={[styles.navButtonText, currentScreen === 'admin' && styles.activeNavButtonText]}>
+                ⚙️ Admin
+              </Text>
+            </TouchableOpacity>
+          )}
 
-        {/* Logout Button */}
-        <TouchableOpacity 
-          style={styles.logoutButton}
-          onPress={handleLogout}
-        >
-          <Text style={styles.logoutButtonText}>🚪</Text>
-        </TouchableOpacity>
-      </View>
+          {/* Logout Button */}
+          <TouchableOpacity 
+            style={styles.logoutButton}
+            onPress={handleLogout}
+          >
+            <Text style={styles.logoutButtonText}>🚪</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Screen Content */}
-      <View style={styles.screenContainer}>
-        {renderScreen()}
+        {/* Screen Content */}
+        <View style={styles.screenContainer}>
+          {renderScreen()}
+        </View>
       </View>
-    </View>
+    </PromptHistoryProvider>
   );
 }
 
