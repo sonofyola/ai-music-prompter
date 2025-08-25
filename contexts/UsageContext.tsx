@@ -55,7 +55,7 @@ export function UsageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
-    // For now, just use local storage to avoid database issues
+    // Use only local storage to avoid database UUID issues
     loadLocalUsage().catch(error => {
       console.error('Failed to load local usage:', error);
       // Set safe defaults

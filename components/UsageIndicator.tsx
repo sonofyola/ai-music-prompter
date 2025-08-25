@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useBasic } from '@basictech/expo';
 
 interface UsageIndicatorProps {
@@ -8,33 +9,60 @@ interface UsageIndicatorProps {
 }
 
 export default function UsageIndicator({ onUpgradePress, refreshTrigger }: UsageIndicatorProps) {
-  const { user, db } = useBasic();
+  const { user } = useBasic();
   const [usageData, setUsageData] = useState({
     usageCount: 0,
     usageLimit: 10,
     subscriptionStatus: 'free'
   });
 
-  const fetchUsageData = async () => {
-    if (!user || !db) return;
+  // Admin emails - these users get unlimited access automatically
+  const ADMIN_EMAILS = ['ibeme8@gmail.com', 'drremotework@gmail.com', 'sonofyola@gmail.com'];
+  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
+
+  const fetchUsageData = React.useCallback(async () => {
+    if (!user) return;
     
+    // If user is admin, set unlimited access
+    if (isAdmin) {
+      setUsageData({
+        usageCount: 0,
+        usageLimit: -1,
+        subscriptionStatus: 'pro'
+      });
+      return;
+    }
+    
+    // For non-admin users, use local storage to avoid database UUID issues
     try {
-      const userData = await db.from('users').get(user.email || user.id);
-      if (userData) {
-        setUsageData({
-          usageCount: typeof userData.usage_count === 'number' ? userData.usage_count : 0,
-          usageLimit: typeof userData.usage_limit === 'number' ? userData.usage_limit : 10,
-          subscriptionStatus: typeof userData.subscription_status === 'string' ? userData.subscription_status : 'free'
-        });
+      const today = new Date().toDateString();
+      const lastUsageDate = await AsyncStorage.getItem('lastUsageDate');
+      const storedUsage = await AsyncStorage.getItem('dailyUsage');
+      
+      let currentUsage = 0;
+      if (lastUsageDate === today) {
+        currentUsage = parseInt(storedUsage || '0', 10);
       }
+      
+      setUsageData({
+        usageCount: currentUsage,
+        usageLimit: 10, // Default free limit
+        subscriptionStatus: 'free'
+      });
     } catch (error) {
       console.error('Error fetching usage data:', error);
+      // Set safe defaults
+      setUsageData({
+        usageCount: 0,
+        usageLimit: 10,
+        subscriptionStatus: 'free'
+      });
     }
-  };
+  }, [user, isAdmin]);
 
   useEffect(() => {
     fetchUsageData();
-  }, [user, db, refreshTrigger]);
+  }, [fetchUsageData, refreshTrigger]);
 
   const { usageCount, usageLimit, subscriptionStatus } = usageData;
   const isPro = subscriptionStatus === 'pro' || usageLimit === -1;

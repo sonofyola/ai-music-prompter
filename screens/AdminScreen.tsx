@@ -32,7 +32,7 @@ export default function AdminScreen() {
 
   const isAdmin = user?.email === 'drremotework@gmail.com';
 
-  const fetchAdminData = async () => {
+  const fetchAdminData = React.useCallback(async () => {
     if (!db || !isAdmin) return;
     
     try {
@@ -86,13 +86,13 @@ export default function AdminScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [db, isAdmin]);
 
   useEffect(() => {
     if (isAdmin) {
       fetchAdminData();
     }
-  }, [db, isAdmin]);
+  }, [fetchAdminData, isAdmin]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -224,7 +224,7 @@ export default function AdminScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Access Denied</Text>
-          <Text style={styles.errorSubtext}>You don't have admin privileges</Text>
+          <Text style={styles.errorSubtext}>You don&apos;t have admin privileges</Text>
         </View>
       </SafeAreaView>
     );
