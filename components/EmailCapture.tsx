@@ -12,6 +12,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme } from '../contexts/ThemeContext';
 import { collectEmail } from '../utils/emailService';
+import { useTheme } from '../utils/theme';
 
 interface EmailCaptureProps {
   onEmailSubmitted: (email: string) => void;

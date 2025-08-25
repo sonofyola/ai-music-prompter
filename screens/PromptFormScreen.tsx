@@ -13,7 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 
 // Components
-import ThemeToggle from '../components/ThemeToggle';
 import IconFallback from '../components/IconFallback';
 import Footer from '../components/Footer';
 import CookieConsent from '../components/CookieConsent';
@@ -324,7 +323,6 @@ export default function PromptFormScreen() {
             <TouchableOpacity onPress={handleSignOut} style={styles.headerButton}>
               <IconFallback name="logout" size={24} color={colors.text} />
             </TouchableOpacity>
-            <ThemeToggle />
           </View>
         </View>
 
