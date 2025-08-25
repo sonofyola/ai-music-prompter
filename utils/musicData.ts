@@ -28,6 +28,11 @@ export const musicData = {
     'Fast (120-140 BPM)', 'Very Fast (140+ BPM)'
   ],
   
+  trackLengths: [
+    'Short (30-60 seconds)', 'Medium (1-2 minutes)', 'Standard (2-4 minutes)', 
+    'Long (4-6 minutes)', 'Extended (6+ minutes)', 'Loop (seamless)'
+  ],
+  
   instruments: [
     'Piano', 'Guitar', 'Bass', 'Drums', 'Violin', 'Saxophone', 'Trumpet', 'Flute', 'Synthesizer',
     'Organ', 'Harmonica', 'Cello', 'Clarinet', 'Trombone', 'Harp', 'Banjo', 'Mandolin', 'Accordion'

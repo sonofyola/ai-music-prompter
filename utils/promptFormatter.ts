@@ -2,6 +2,7 @@ interface FormData {
   genre: string;
   mood: string;
   tempo: string;
+  trackLength: string;
   instruments: string[];
   vocals: string;
   bass: string;
@@ -29,6 +30,11 @@ export function formatPrompt(formData: FormData): string {
   // Add tempo
   if (formData.tempo) {
     parts.push(`Tempo: ${formData.tempo}`);
+  }
+
+  // Add track length
+  if (formData.trackLength) {
+    parts.push(`Track Length: ${formData.trackLength}`);
   }
 
   // Add instruments

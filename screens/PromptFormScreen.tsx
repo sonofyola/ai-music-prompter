@@ -28,6 +28,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
     genre: '',
     mood: '',
     tempo: '',
+    trackLength: '',
     instruments: [],
     vocals: '',
     bass: '',
@@ -139,6 +140,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
       genre: '',
       mood: '',
       tempo: '',
+      trackLength: '',
       instruments: [],
       vocals: '',
       bass: '',
@@ -218,6 +220,14 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             onValueChange={(value) => updateField('tempo', value)}
             items={musicData.tempos}
             placeholder="Select tempo..."
+          />
+
+          <PickerField
+            label="Track Length"
+            value={formData.trackLength}
+            onValueChange={(value) => updateField('trackLength', value)}
+            items={musicData.trackLengths}
+            placeholder="Select track length..."
           />
 
           <MultiSelectField
