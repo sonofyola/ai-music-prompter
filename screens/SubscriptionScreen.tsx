@@ -1,80 +1,167 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 
 export default function SubscriptionScreen() {
-  const { user, signout } = useBasic();
-  const [isPro, setIsPro] = useState(false);
-  const [debugCounter, setDebugCounter] = useState(0);
+  const { user, db } = useBasic();
+  const [userSubscription, setUserSubscription] = useState({
+    status: 'free',
+    usageCount: 0,
+    usageLimit: 10
+  });
+  const [loading, setLoading] = useState(true);
 
-  console.log('SubscriptionScreen rendering...');
-  console.log('Current isPro state:', isPro);
-  console.log('Debug counter:', debugCounter);
+  useEffect(() => {
+    fetchUserSubscription();
+  }, [user]);
 
-  const handleTestButton = () => {
-    console.log('TEST BUTTON PRESSED!');
-    Alert.alert('Success!', 'Test button works perfectly!');
+  const fetchUserSubscription = async () => {
+    if (!user || !db) {
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const userData = await db.from('users').get(user.email || user.id);
+      if (userData) {
+        setUserSubscription({
+          status: userData.subscription_status || 'free',
+          usageCount: userData.usage_count || 0,
+          usageLimit: userData.usage_limit || 10
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching user subscription:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUpgrade = () => {
-    console.log('UPGRADE BUTTON PRESSED!');
-    Alert.alert('Success!', 'Upgrade button works!');
+    Alert.alert(
+      'Upgrade to Pro',
+      'Pro features coming soon! Contact support for early access.',
+      [
+        { text: 'OK', style: 'default' }
+      ]
+    );
   };
 
-  const handleDebugUpgrade = () => {
-    console.log('DEBUG UPGRADE PRESSED!');
-    setDebugCounter(prev => prev + 1);
-    Alert.alert('Debug', `Debug counter: ${debugCounter + 1}`);
-  };
+  const isPro = userSubscription.status === 'pro' || userSubscription.usageLimit === -1;
 
-  const handleSignOut = () => {
-    console.log('SIGN OUT PRESSED!');
-    Alert.alert('Sign Out', 'Are you sure?', [
-      { text: 'Cancel' },
-      { text: 'Sign Out', onPress: signout }
-    ]);
-  };
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading subscription details...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>💎 Subscription Screen</Text>
-        
-        <Text style={styles.debugText}>
-          User: {user?.email || 'No user'}
-        </Text>
-        <Text style={styles.debugText}>
-          Status: {isPro ? 'PRO' : 'FREE'}
-        </Text>
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <Text style={styles.title}>💎 Subscription</Text>
+          <Text style={styles.subtitle}>Manage your AI Music Prompter plan</Text>
+        </View>
 
-        <View style={styles.buttonContainer}>
-          <Pressable style={styles.testButton} onPress={handleTestButton}>
-            <Text style={styles.buttonText}>🧪 TEST BUTTON</Text>
-          </Pressable>
+        {/* Current Plan */}
+        <View style={styles.currentPlanCard}>
+          <View style={styles.planHeader}>
+            <Text style={styles.planTitle}>Current Plan</Text>
+            <View style={[styles.planBadge, { backgroundColor: isPro ? '#4CAF50' : '#FF9800' }]}>
+              <Text style={styles.planBadgeText}>{isPro ? 'PRO' : 'FREE'}</Text>
+            </View>
+          </View>
+          
+          <View style={styles.usageInfo}>
+            <Text style={styles.usageText}>
+              Monthly Usage: {userSubscription.usageCount} / {isPro ? '∞' : userSubscription.usageLimit}
+            </Text>
+            <Text style={styles.remainingText}>
+              {isPro ? 'Unlimited prompts' : `${Math.max(0, userSubscription.usageLimit - userSubscription.usageCount)} prompts remaining`}
+            </Text>
+          </View>
+        </View>
 
-          <Pressable 
-            style={[styles.testButton, { backgroundColor: '#FF0000' }]} 
-            onPress={handleDebugUpgrade}
-          >
-            <Text style={styles.buttonText}>🔴 DEBUG UPGRADE</Text>
-          </Pressable>
+        {/* Free Plan Features */}
+        <View style={styles.planCard}>
+          <Text style={styles.planName}>Free Plan</Text>
+          <Text style={styles.planPrice}>$0/month</Text>
+          
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>10 prompts per month</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>Basic prompt templates</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>Random track generator</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>✅</Text>
+              <Text style={styles.featureText}>Prompt history</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* Pro Plan Features */}
+        <View style={[styles.planCard, styles.proPlanCard]}>
+          <Text style={styles.planName}>Pro Plan</Text>
+          <Text style={styles.planPrice}>Coming Soon</Text>
+          
+          <View style={styles.featuresList}>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🚀</Text>
+              <Text style={styles.featureText}>Unlimited prompts</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🚀</Text>
+              <Text style={styles.featureText}>Advanced templates</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🚀</Text>
+              <Text style={styles.featureText}>Priority support</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🚀</Text>
+              <Text style={styles.featureText}>Export to multiple formats</Text>
+            </View>
+            <View style={styles.featureItem}>
+              <Text style={styles.featureIcon}>🚀</Text>
+              <Text style={styles.featureText}>Custom prompt styles</Text>
+            </View>
+          </View>
 
           {!isPro && (
-            <Pressable style={styles.upgradeButton} onPress={handleUpgrade}>
-              <Text style={styles.buttonText}>🚀 UPGRADE TO PRO</Text>
-            </Pressable>
+            <TouchableOpacity style={styles.upgradeButton} onPress={handleUpgrade}>
+              <Text style={styles.upgradeButtonText}>Upgrade to Pro</Text>
+            </TouchableOpacity>
           )}
 
           {isPro && (
-            <Text style={styles.proText}>✅ You are PRO!</Text>
+            <View style={styles.proStatus}>
+              <Text style={styles.proStatusText}>✨ You're a Pro user!</Text>
+            </View>
           )}
-
-          <Pressable style={styles.signOutButton} onPress={handleSignOut}>
-            <Text style={styles.buttonText}>🚪 SIGN OUT</Text>
-          </Pressable>
         </View>
-      </View>
+
+        {/* Contact Info */}
+        <View style={styles.contactCard}>
+          <Text style={styles.contactTitle}>Need Help?</Text>
+          <Text style={styles.contactText}>
+            Contact us for support or questions about your subscription.
+          </Text>
+          <Text style={styles.contactEmail}>support@aimusicpromptr.com</Text>
+        </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -84,64 +171,166 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1a1a1a',
   },
-  content: {
+  scrollView: {
     flex: 1,
-    padding: 20,
+  },
+  loadingContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#ffffff',
-    marginBottom: 30,
-    textAlign: 'center',
-  },
-  debugText: {
+  loadingText: {
     fontSize: 16,
     color: '#cccccc',
-    marginBottom: 10,
+  },
+  header: {
+    padding: 20,
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#cccccc',
     textAlign: 'center',
   },
-  buttonContainer: {
-    width: '100%',
-    marginTop: 30,
-    gap: 20,
-  },
-  testButton: {
-    backgroundColor: '#FF9800',
+  currentPlanCard: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
     padding: 20,
-    borderRadius: 10,
+    margin: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  planHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    minHeight: 60,
+    marginBottom: 15,
+  },
+  planTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  planBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+  },
+  planBadgeText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  usageInfo: {
+    alignItems: 'center',
+  },
+  usageText: {
+    fontSize: 16,
+    color: '#cccccc',
+    marginBottom: 5,
+  },
+  remainingText: {
+    fontSize: 14,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+  },
+  planCard: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  proPlanCard: {
+    borderColor: '#4CAF50',
+    borderWidth: 2,
+  },
+  planName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#ffffff',
+    marginBottom: 5,
+  },
+  planPrice: {
+    fontSize: 16,
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+  featuresList: {
+    marginBottom: 20,
+  },
+  featureItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  featureIcon: {
+    fontSize: 16,
+    marginRight: 10,
+    width: 20,
+  },
+  featureText: {
+    fontSize: 14,
+    color: '#cccccc',
+    flex: 1,
   },
   upgradeButton: {
     backgroundColor: '#4CAF50',
-    padding: 20,
-    borderRadius: 10,
+    paddingVertical: 15,
+    borderRadius: 8,
     alignItems: 'center',
-    minHeight: 60,
-    zIndex: 1,
-    elevation: 1,
   },
-  signOutButton: {
-    backgroundColor: '#666666',
-    padding: 20,
-    borderRadius: 10,
-    alignItems: 'center',
-    minHeight: 60,
-  },
-  buttonText: {
+  upgradeButtonText: {
     color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  proStatus: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  proStatusText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  contactCard: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    padding: 20,
+    margin: 20,
+    borderWidth: 1,
+    borderColor: '#444444',
+    alignItems: 'center',
+  },
+  contactTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    textAlign: 'center',
+    color: '#ffffff',
+    marginBottom: 10,
   },
-  proText: {
-    fontSize: 20,
+  contactText: {
+    fontSize: 14,
+    color: '#cccccc',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  contactEmail: {
+    fontSize: 14,
     color: '#4CAF50',
     fontWeight: 'bold',
-    textAlign: 'center',
-    padding: 20,
   },
 });
