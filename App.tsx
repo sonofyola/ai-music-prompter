@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import PromptFormScreen from './screens/PromptFormScreen';
@@ -8,7 +8,7 @@ import PromptFormScreen from './screens/PromptFormScreen';
 console.log('App render - BasicProvider project_id:', schema.project_id);
 
 function AppContent() {
-  const { isLoading, isSignedIn, user, login, signout } = useBasic();
+  const { isLoading, isSignedIn, user, login } = useBasic();
   
   console.log('AppContent render:', { isLoading, isSignedIn, user });
 
@@ -65,12 +65,6 @@ const styles = StyleSheet.create({
     color: '#cccccc',
     textAlign: 'center',
     marginBottom: 30,
-  },
-  welcome: {
-    fontSize: 18,
-    color: '#4CAF50',
-    textAlign: 'center',
-    marginBottom: 10,
   },
   text: {
     fontSize: 18,
