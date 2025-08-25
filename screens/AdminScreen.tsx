@@ -127,13 +127,15 @@ export default function AdminScreen() {
       } else {
         // Create new user record
         const newUserData = {
-          id: userId,
           email: userId,
           name: '',
           usage_count: 0,
           subscription_status: 'free',
+          usage_limit: newLimit,
+          stripe_customer_id: '',
+          subscription_end_date: '',
           created_at: new Date().toISOString(),
-          ...updateData
+          last_active: new Date().toISOString()
         };
         await db.from('users').add(newUserData);
         console.log('✅ New user created with limit');
@@ -185,12 +187,8 @@ export default function AdminScreen() {
               }
               
               const upgradeData = {
-                id: userId,
-                email: userId, // Assuming userId is email
                 subscription_status: 'pro',
                 usage_limit: -1, // -1 means unlimited
-                upgraded_at: new Date().toISOString(),
-                upgraded_by: user?.email || 'admin',
                 last_active: new Date().toISOString()
               };
               
@@ -203,10 +201,15 @@ export default function AdminScreen() {
                 // Create new user record
                 console.log('🔄 Creating new user record...');
                 const newUserData = {
-                  ...upgradeData,
+                  email: userId, // Assuming userId is email
                   name: '',
                   usage_count: 0,
-                  created_at: new Date().toISOString()
+                  subscription_status: 'pro',
+                  usage_limit: -1,
+                  stripe_customer_id: '',
+                  subscription_end_date: '',
+                  created_at: new Date().toISOString(),
+                  last_active: new Date().toISOString()
                 };
                 await db.from('users').add(newUserData);
                 console.log('✅ New user created successfully');
@@ -390,12 +393,8 @@ export default function AdminScreen() {
                 }
                 
                 const upgradeData = {
-                  id: testUser.id,
-                  email: testUser.email || testUser.id,
                   subscription_status: 'pro',
                   usage_limit: -1,
-                  upgraded_at: new Date().toISOString(),
-                  upgraded_by: user?.email || 'admin',
                   last_active: new Date().toISOString()
                 };
                 
@@ -408,10 +407,15 @@ export default function AdminScreen() {
                 } else {
                   console.log('🔄 Creating new user record...');
                   const newUserData = {
-                    ...upgradeData,
+                    email: testUser.email || testUser.id,
                     name: testUser.name || '',
                     usage_count: testUser.usage_count || 0,
-                    created_at: new Date().toISOString()
+                    subscription_status: 'pro',
+                    usage_limit: -1,
+                    stripe_customer_id: '',
+                    subscription_end_date: '',
+                    created_at: new Date().toISOString(),
+                    last_active: new Date().toISOString()
                   };
                   console.log('🔄 New user data:', JSON.stringify(newUserData, null, 2));
                   const result = await db.from('users').add(newUserData);
