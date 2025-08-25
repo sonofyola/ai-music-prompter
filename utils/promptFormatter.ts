@@ -175,7 +175,7 @@ function generateInstrumentDetails(instruments: string[]): string {
     instrumentDescriptions[instrument] || `${instrument.toLowerCase()} with authentic sound characteristics and expressive performance qualities`
   );
   
-  return `Instrumentation featuring: ${details.join('; ')}.`;
+  return details.join(', ');
 }
 
 function generateVocalDescription(vocals: string): string {
@@ -223,146 +223,101 @@ function generateWeirdnessDescription(weirdness: string): string {
 }
 
 export function formatPrompt(formData: FormData): string {
-  const sections: string[] = [];
+  const promptParts: string[] = [];
   
-  // Generate comprehensive header
-  sections.push('=== COMPREHENSIVE AI MUSIC GENERATION PROMPT ===\n');
-  
-  // Core Musical Identity
-  if (formData.genre || formData.style) {
-    sections.push('🎵 CORE MUSICAL IDENTITY:');
-    
-    if (formData.genre) {
-      const genreDetails = getGenreDetails(formData.genre);
-      sections.push(`Primary Genre: ${formData.genre}`);
-      sections.push(`Genre Characteristics: ${genreDetails.characteristics.join(', ')}`);
-      sections.push(`Typical BPM Range: ${genreDetails.typicalBPM}`);
-      sections.push(`Production Notes: ${genreDetails.productionNotes.join(', ')}`);
-    }
+  // Start with genre foundation
+  if (formData.genre) {
+    const genreDetails = getGenreDetails(formData.genre);
+    promptParts.push(`Create a ${formData.genre.toLowerCase()} composition characterized by ${genreDetails.characteristics.join(', ')}`);
     
     if (formData.style) {
-      sections.push(`Musical Style: ${formData.style} with authentic stylistic elements and period-appropriate production techniques`);
+      promptParts.push(`with ${formData.style.toLowerCase()} stylistic elements and period-appropriate production techniques`);
     }
-    sections.push('');
+  } else if (formData.style) {
+    promptParts.push(`Create a musical composition in the ${formData.style.toLowerCase()} style`);
+  } else {
+    promptParts.push('Create a musical composition');
   }
   
-  // Emotional and Atmospheric Direction
-  if (formData.mood || formData.energy || formData.theme) {
-    sections.push('🎭 EMOTIONAL & ATMOSPHERIC DIRECTION:');
-    
-    if (formData.mood) {
-      const moodDetails = getMoodDetails(formData.mood);
-      sections.push(`Primary Mood: ${formData.mood}`);
-      sections.push(`Atmospheric Quality: ${moodDetails.atmosphere}`);
-      sections.push(`Emotional Tone: ${moodDetails.emotionalTone}`);
-      sections.push(`Energy Characteristics: ${moodDetails.energyLevel}`);
-      sections.push(`Musical Elements: ${moodDetails.musicalElements.join(', ')}`);
-    }
-    
-    if (formData.energy) {
-      sections.push(`Energy Level: ${formData.energy} with appropriate dynamic range and intensity progression`);
-    }
-    
-    if (formData.theme) {
-      sections.push(`Thematic Content: ${formData.theme} - ensure all musical elements support and enhance this central theme throughout the composition`);
-    }
-    sections.push('');
+  // Add mood and emotional direction
+  if (formData.mood) {
+    const moodDetails = getMoodDetails(formData.mood);
+    promptParts.push(`that embodies a ${formData.mood.toLowerCase()} mood with ${moodDetails.atmosphere} atmosphere, ${moodDetails.emotionalTone} emotional tone, and ${moodDetails.energyLevel} energy level, incorporating ${moodDetails.musicalElements.join(', ')}`);
   }
   
-  // Technical Specifications
-  sections.push('⚙️ TECHNICAL SPECIFICATIONS:');
+  // Add energy specification
+  if (formData.energy && formData.energy !== formData.mood) {
+    promptParts.push(`with ${formData.energy.toLowerCase()} energy that maintains appropriate dynamic range and intensity progression throughout`);
+  }
   
+  // Add thematic content
+  if (formData.theme) {
+    promptParts.push(`centered around the theme of ${formData.theme.toLowerCase()}, ensuring all musical elements support and enhance this central concept`);
+  }
+  
+  // Add tempo specifications
   if (formData.tempo) {
-    sections.push(`Tempo: ${formData.tempo}`);
-    sections.push(`Tempo Description: ${generateTempoDescription(formData.tempo)}`);
+    const tempoDesc = generateTempoDescription(formData.tempo);
+    promptParts.push(`at a ${formData.tempo.toLowerCase()} that provides ${tempoDesc}`);
   }
   
+  // Add track length considerations
   if (formData.trackLength) {
-    sections.push(`Track Duration: ${formData.trackLength}`);
-    sections.push(`Length Considerations: Structure the composition to fully utilize the specified duration with appropriate pacing, development, and resolution`);
+    promptParts.push(`structured for a ${formData.trackLength.toLowerCase()} duration with appropriate pacing, development, and resolution that fully utilizes the specified timeframe`);
   }
   
-  if (formData.weirdness) {
-    sections.push(`Creative Experimentation Level: ${formData.weirdness}`);
-    sections.push(`Experimental Approach: ${generateWeirdnessDescription(formData.weirdness)}`);
-  }
-  sections.push('');
-  
-  // Instrumentation and Arrangement
-  if (formData.instruments.length > 0 || formData.vocals || formData.bass) {
-    sections.push('🎼 INSTRUMENTATION & ARRANGEMENT:');
-    
-    if (formData.instruments.length > 0) {
-      sections.push(generateInstrumentDetails(formData.instruments));
-      sections.push('Arrangement Notes: Balance all instruments with careful attention to frequency separation, dynamic interaction, and musical conversation between parts.');
-    }
-    
-    if (formData.vocals) {
-      sections.push(`Vocal Approach: ${generateVocalDescription(formData.vocals)}`);
-    }
-    
-    if (formData.bass) {
-      sections.push(`Bass Characteristics: ${generateBassDescription(formData.bass)}`);
-    }
-    sections.push('');
+  // Add instrumentation details
+  if (formData.instruments.length > 0) {
+    const instrumentDetails = generateInstrumentDetails(formData.instruments);
+    promptParts.push(`featuring ${instrumentDetails}, with careful attention to frequency separation, dynamic interaction, and musical conversation between all instrumental parts`);
   }
   
-  // Song Structure and Development
+  // Add vocal specifications
+  if (formData.vocals) {
+    const vocalDesc = generateVocalDescription(formData.vocals);
+    promptParts.push(`incorporating ${vocalDesc}`);
+  }
+  
+  // Add bass characteristics
+  if (formData.bass) {
+    const bassDesc = generateBassDescription(formData.bass);
+    promptParts.push(`built upon ${bassDesc} that provides the rhythmic and harmonic foundation`);
+  }
+  
+  // Add structural framework
   if (formData.structure) {
-    sections.push('🏗️ SONG STRUCTURE & DEVELOPMENT:');
-    sections.push(`Structural Framework: ${generateStructureDescription(formData.structure)}`);
-    sections.push('Development Notes: Ensure smooth transitions between sections, maintain listener interest through variation, and create satisfying musical arc from beginning to end.');
-    sections.push('');
+    const structureDesc = generateStructureDescription(formData.structure);
+    promptParts.push(`organized with ${structureDesc}, ensuring smooth transitions between sections and maintaining listener interest through variation while creating a satisfying musical arc from beginning to end`);
   }
   
-  // Production and Sound Design
+  // Add production style
   if (formData.production) {
-    sections.push('🎚️ PRODUCTION & SOUND DESIGN:');
-    sections.push(`Production Style: ${formData.production} with attention to sonic clarity, spatial positioning, and professional polish`);
-    sections.push('Mix Considerations: Achieve balanced frequency spectrum, appropriate dynamic range, clear instrument separation, and cohesive sonic character throughout.');
-    sections.push('');
+    promptParts.push(`produced with ${formData.production.toLowerCase()} production style, emphasizing sonic clarity, spatial positioning, and professional polish with balanced frequency spectrum, appropriate dynamic range, and clear instrument separation`);
   }
   
-  // Additional Creative Instructions
+  // Add weirdness/experimentation level
+  if (formData.weirdness) {
+    const weirdnessDesc = generateWeirdnessDescription(formData.weirdness);
+    promptParts.push(`incorporating ${weirdnessDesc}`);
+  }
+  
+  // Add custom instructions
   if (formData.customPrompt) {
-    sections.push('🎨 ADDITIONAL CREATIVE INSTRUCTIONS:');
-    sections.push(formData.customPrompt);
-    sections.push('Integration Notes: Seamlessly incorporate these additional elements while maintaining overall musical coherence and artistic vision.');
-    sections.push('');
+    promptParts.push(`while seamlessly integrating the following additional creative elements: ${formData.customPrompt}`);
   }
   
-  // Quality and Performance Standards
-  sections.push('✨ QUALITY & PERFORMANCE STANDARDS:');
-  sections.push('• Maintain professional audio quality with clear, balanced mix');
-  sections.push('• Ensure musical elements work together cohesively');
-  sections.push('• Create engaging listening experience from start to finish');
-  sections.push('• Balance creativity with musical accessibility');
-  sections.push('• Deliver authentic performance characteristics for all instruments');
-  sections.push('• Achieve appropriate emotional impact and artistic expression');
-  sections.push('');
+  // Add quality standards and final direction
+  promptParts.push('The final composition should maintain professional audio quality with cohesive musical elements that work together harmoniously, creating an engaging listening experience that balances creativity with accessibility, delivers authentic performance characteristics for all instruments, and achieves appropriate emotional impact and artistic expression throughout the entire piece.');
   
-  // Final Creative Direction
-  sections.push('🎯 FINAL CREATIVE DIRECTION:');
-  sections.push('Create a complete, professional-quality musical composition that fulfills all specified parameters while maintaining artistic integrity and emotional authenticity. Pay special attention to the interplay between all elements, ensuring they support the overall musical vision and create a compelling, memorable listening experience.');
+  // Join all parts into one comprehensive paragraph
+  let finalPrompt = promptParts.join(' ');
   
-  const finalPrompt = sections.join('\n');
+  // Clean up any double spaces and ensure proper flow
+  finalPrompt = finalPrompt.replace(/\s+/g, ' ').trim();
   
   // If no meaningful content was provided, return helpful guidance
-  if (sections.length <= 3) {
-    return `=== AI MUSIC GENERATION PROMPT ===
-
-🎵 GETTING STARTED:
-To generate a detailed, professional music prompt, please fill in the form fields above. The more information you provide, the more comprehensive and articulated your prompt will become.
-
-✨ RECOMMENDED FIELDS TO COMPLETE:
-• Genre - Defines the musical foundation
-• Mood - Sets the emotional direction  
-• Tempo - Establishes the rhythmic feel
-• Instruments - Specifies the sonic palette
-• Structure - Organizes the musical flow
-
-🎯 RESULT:
-Once you complete the fields, you'll receive a highly detailed, professional-grade prompt that provides comprehensive instructions for AI music generation, including technical specifications, creative direction, and quality standards.`;
+  if (promptParts.length <= 2) {
+    return 'To generate a detailed, professional music prompt, please fill in the form fields above. The more information you provide about genre, mood, tempo, instruments, and other musical elements, the more comprehensive and articulated your prompt will become, resulting in better AI music generation results.';
   }
   
   return finalPrompt;
