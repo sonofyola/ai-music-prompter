@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
 
@@ -13,127 +13,54 @@ interface UserSubscription {
 
 export default function SubscriptionScreen() {
   const { user, db, signout } = useBasic();
-  const [userSub, setUserSub] = useState<UserSubscription>({});
-  const [loading, setLoading] = useState(true);
+  const [userSub, setUserSub] = useState<UserSubscription>({
+    subscription_status: 'free',
+    usage_count: 0,
+    usage_limit: 10
+  });
+  const [loading, setLoading] = useState(false);
 
   console.log('SubscriptionScreen rendering...', { user: !!user, db: !!db });
 
-  const fetchUserSubscription = async () => {
-    if (!user || !db) return;
-    
-    try {
-      let userData = await db.from('users').get(user.email || user.id);
-      if (userData) {
-        setUserSub({
-          subscription_status: String(userData.subscription_status) || 'free',
-          usage_count: Number(userData.usage_count) || 0,
-          usage_limit: Number(userData.usage_limit) || 10,
-          stripe_customer_id: String(userData.stripe_customer_id) || undefined,
-          subscription_end_date: String(userData.subscription_end_date) || undefined
-        });
-      } else {
-        // Create user record if it doesn't exist
-        const newUser = {
-          id: user.email || user.id,
-          email: user.email || user.id,
-          name: user.name || '',
-          usage_count: 0,
-          usage_limit: 10,
-          subscription_status: 'free',
-          created_at: new Date().toISOString(),
-          last_active: new Date().toISOString()
-        };
-        await db.from('users').add(newUser);
-        setUserSub({
-          subscription_status: 'free',
-          usage_count: 0,
-          usage_limit: 10
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching user subscription:', error);
-    } finally {
-      setLoading(false);
-    }
+  // Simple upgrade function that just shows an alert
+  const handleUpgrade = () => {
+    console.log('handleUpgrade called!');
+    Alert.alert(
+      'Upgrade to Pro',
+      'This would normally process the upgrade. For now, let\'s simulate it.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Simulate Upgrade', 
+          onPress: () => {
+            setUserSub(prev => ({
+              ...prev,
+              subscription_status: 'pro',
+              usage_limit: -1
+            }));
+            Alert.alert('Success!', 'You\'ve been upgraded to Pro (simulated)');
+          }
+        }
+      ]
+    );
   };
 
-  useEffect(() => {
-    fetchUserSubscription();
-  }, [user, db]);
-
-  const handleUpgrade = async () => {
-    Alert.alert('Button Pressed!', 'The upgrade button is working!');
-    return; // Exit early for now
-    
-    console.log('handleUpgrade function called');
-    alert('handleUpgrade function was called!');
-    
-    if (!user) {
-      alert('No user found');
-      return;
-    }
-    
-    if (!db) {
-      alert('No database connection');
-      return;
-    }
-    
-    alert('User and DB are available, attempting upgrade...');
-    
-    try {
-      console.log('About to call db.from(users).update...');
-      const result = await db.from('users').update(user.email || user.id, {
-        subscription_status: 'pro',
-        usage_limit: -1
-      });
-      
-      console.log('Update result:', result);
-      alert('Database update successful!');
-      
-      setUserSub(prev => ({
-        ...prev,
-        subscription_status: 'pro',
-        usage_limit: -1
-      }));
-      
-      alert('State updated, calling fetchUserSubscription...');
-      fetchUserSubscription();
-      
-    } catch (error) {
-      console.error('Error in handleUpgrade:', error);
-      alert('Error: ' + String(error));
-    }
-  };
-
-  const handleCancelSubscription = async () => {
+  const handleCancelSubscription = () => {
     Alert.alert(
       'Cancel Subscription',
-      'Are you sure you want to cancel your Pro subscription? You\'ll lose unlimited access.',
+      'Are you sure you want to cancel your Pro subscription?',
       [
         { text: 'Keep Pro', style: 'cancel' },
         {
           text: 'Cancel Subscription',
           style: 'destructive',
-          onPress: async () => {
-            if (!db || !user) return;
-            
-            try {
-              await db.from('users').update(user.email || user.id, {
-                subscription_status: 'free',
-                usage_limit: 10
-              });
-              
-              setUserSub(prev => ({
-                ...prev,
-                subscription_status: 'free',
-                usage_limit: 10
-              }));
-              
-              Alert.alert('Subscription Cancelled', 'You\'ve been downgraded to the free plan.');
-            } catch (error) {
-              console.error('Error cancelling subscription:', error);
-              Alert.alert('Error', 'Failed to cancel subscription');
-            }
+          onPress: () => {
+            setUserSub(prev => ({
+              ...prev,
+              subscription_status: 'free',
+              usage_limit: 10
+            }));
+            Alert.alert('Subscription Cancelled', 'You\'ve been downgraded to the free plan.');
           }
         }
       ]
@@ -144,16 +71,6 @@ export default function SubscriptionScreen() {
   const usageCount = userSub.usage_count || 0;
   const usageLimit = userSub.usage_limit || 10;
   const remainingUsage = usageLimit === -1 ? 'Unlimited' : Math.max(0, usageLimit - usageCount);
-
-  if (loading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.centerContainer}>
-          <Text style={styles.loadingText}>Loading subscription info...</Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -183,48 +100,59 @@ export default function SubscriptionScreen() {
           </View>
         </View>
 
+        {/* Debug Info */}
+        <View style={styles.debugContainer}>
+          <Text style={styles.debugText}>Debug Info:</Text>
+          <Text style={styles.debugText}>isPro: {String(isPro)}</Text>
+          <Text style={styles.debugText}>subscription_status: {userSub.subscription_status}</Text>
+          <Text style={styles.debugText}>usage_limit: {userSub.usage_limit}</Text>
+        </View>
+
         {/* Action Buttons */}
         <View style={styles.actionsContainer}>
+          {/* Test Button */}
           <Pressable 
-            style={[styles.upgradeButton, { backgroundColor: '#FF9800' }]} 
+            style={[styles.button, styles.testButton]} 
             onPress={() => {
               console.log('TEST BUTTON PRESSED!');
-              alert('Test button works!');
+              Alert.alert('Test', 'Test button works!');
             }}
           >
-            <Text style={styles.upgradeButtonText}>🧪 Test Button</Text>
+            <Text style={styles.buttonText}>🧪 Test Button</Text>
           </Pressable>
           
-          <Text style={{ color: 'white', marginBottom: 10 }}>
-            Debug: isPro = {String(isPro)}, userSub.subscription_status = {userSub.subscription_status}
-          </Text>
-          
+          {/* Upgrade/Cancel Button */}
           {!isPro ? (
             <Pressable 
-              style={styles.upgradeButton} 
+              style={[styles.button, styles.upgradeButton]} 
               onPress={() => {
                 console.log('UPGRADE BUTTON PRESSED!');
-                alert('Upgrade button works!');
                 handleUpgrade();
               }}
             >
-              <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>
+              <Text style={styles.buttonText}>🚀 Upgrade to Pro - $9.99/month</Text>
             </Pressable>
           ) : (
-            <Pressable style={styles.cancelButton} onPress={handleCancelSubscription}>
-              <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
+            <Pressable 
+              style={[styles.button, styles.cancelButton]} 
+              onPress={handleCancelSubscription}
+            >
+              <Text style={styles.buttonText}>Cancel Subscription</Text>
             </Pressable>
           )}
           
+          {/* Sign Out Button */}
           <Pressable 
-            style={styles.signOutButton} 
+            style={[styles.button, styles.signOutButton]} 
             onPress={() => {
               console.log('SIGNOUT BUTTON PRESSED!');
-              alert('Sign out button pressed!');
-              signout();
+              Alert.alert('Sign Out', 'Are you sure?', [
+                { text: 'Cancel', style: 'cancel' },
+                { text: 'Sign Out', onPress: signout }
+              ]);
             }}
           >
-            <Text style={styles.signOutButtonText}>Sign Out</Text>
+            <Text style={styles.buttonText}>Sign Out</Text>
           </Pressable>
         </View>
 
@@ -248,15 +176,6 @@ const styles = StyleSheet.create({
   },
   scrollContainer: {
     padding: 20,
-  },
-  centerContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: 18,
-    color: '#ffffff',
   },
   header: {
     alignItems: 'center',
@@ -326,70 +245,39 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#4CAF50',
   },
-  featuresContainer: {
-    backgroundColor: '#2a2a2a',
-    borderRadius: 12,
-    padding: 20,
+  debugContainer: {
+    backgroundColor: '#333333',
+    padding: 15,
+    borderRadius: 8,
     marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#444444',
   },
-  featuresTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
+  debugText: {
     color: '#ffffff',
-    marginBottom: 15,
-  },
-  featuresList: {
-    gap: 12,
-  },
-  featureItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  featureIcon: {
-    fontSize: 16,
-    marginRight: 12,
-    width: 20,
-  },
-  featureText: {
-    fontSize: 16,
-    color: '#ffffff',
-    flex: 1,
+    fontSize: 12,
+    marginBottom: 5,
   },
   actionsContainer: {
     gap: 15,
     marginBottom: 30,
   },
-  upgradeButton: {
-    backgroundColor: '#4CAF50',
+  button: {
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
-  upgradeButtonText: {
-    color: '#ffffff',
-    fontSize: 18,
-    fontWeight: 'bold',
+  testButton: {
+    backgroundColor: '#FF9800',
+  },
+  upgradeButton: {
+    backgroundColor: '#4CAF50',
   },
   cancelButton: {
     backgroundColor: '#f44336',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
   signOutButton: {
     backgroundColor: '#666666',
-    paddingVertical: 15,
-    borderRadius: 8,
-    alignItems: 'center',
   },
-  signOutButtonText: {
+  buttonText: {
     color: '#ffffff',
     fontSize: 16,
     fontWeight: 'bold',
