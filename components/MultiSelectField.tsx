@@ -1,222 +1,178 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Alert } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
-import IconFallback from './IconFallback';
+import { View, Text, TouchableOpacity, StyleSheet, Modal, FlatList } from 'react-native';
 
 interface MultiSelectFieldProps {
   label: string;
-  values: string[];
-  onValuesChange: (values: string[]) => void;
+  selectedValues: string[];
+  onSelectionChange: (values: string[]) => void;
   options: string[];
   placeholder?: string;
-  maxSelections?: number;
 }
 
-export default function MultiSelectField({ 
-  label, 
-  values, 
-  onValuesChange, 
-  options, 
-  placeholder = "Select options...",
-  maxSelections
+export default function MultiSelectField({
+  label,
+  selectedValues,
+  onSelectionChange,
+  options,
+  placeholder = "Select options..."
 }: MultiSelectFieldProps) {
-  const { colors } = useTheme();
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
 
   const toggleOption = (option: string) => {
-    if (values.includes(option)) {
-      // Remove option
-      onValuesChange(values.filter(v => v !== option));
-    } else {
-      // Add option, but check max selections
-      if (maxSelections && values.length >= maxSelections) {
-        Alert.alert(
-          'Selection Limit',
-          `You can only select up to ${maxSelections} ${label.toLowerCase()}.`,
-          [{ text: 'OK' }]
-        );
-        return;
-      }
-      onValuesChange([...values, option]);
-    }
+    const newSelection = selectedValues.includes(option)
+      ? selectedValues.filter(item => item !== option)
+      : [...selectedValues, option];
+    onSelectionChange(newSelection);
   };
 
-  const styles = createStyles(colors);
+  const displayText = selectedValues.length > 0 
+    ? selectedValues.join(', ')
+    : placeholder;
 
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      
       <TouchableOpacity 
         style={styles.selector}
-        onPress={() => setIsExpanded(!isExpanded)}
+        onPress={() => setModalVisible(true)}
       >
-        <Text style={[styles.selectorText, values.length === 0 && styles.placeholder]}>
-          {values.length === 0 
-            ? placeholder 
-            : values.length === 1 
-              ? values[0]
-              : `${values.length} selected`
-          }
+        <Text style={[styles.selectorText, selectedValues.length === 0 && styles.placeholder]}>
+          {displayText}
         </Text>
-        <IconFallback 
-          name={isExpanded ? "expand-less" : "expand-more"} 
-          size={24} 
-          color={colors.textSecondary}
-          fallback={isExpanded ? "▲" : "▼"}
-        />
       </TouchableOpacity>
 
-      {values.length > 0 && (
-        <ScrollView 
-          horizontal 
-          showsHorizontalScrollIndicator={false}
-          style={styles.selectedContainer}
-        >
-          {values.map((value, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.selectedItem}
-              onPress={() => toggleOption(value)}
-            >
-              <Text style={styles.selectedText}>{value}</Text>
-              <IconFallback name="close" size={16} color={colors.primary} />
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
-
-      {isExpanded && (
-        <ScrollView style={styles.optionsContainer} nestedScrollEnabled>
-          {options.map((option, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.option,
-                values.includes(option) && styles.selectedOption
-              ]}
-              onPress={() => toggleOption(option)}
-            >
-              <Text style={[
-                styles.optionText,
-                values.includes(option) && styles.selectedOptionText
-              ]}>
-                {option}
-              </Text>
-              {values.includes(option) && (
-                <IconFallback name="check" size={20} color={colors.primary} />
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>{label}</Text>
+              <TouchableOpacity 
+                style={styles.doneButton}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={styles.doneButtonText}>Done</Text>
+              </TouchableOpacity>
+            </View>
+            
+            <FlatList
+              data={options}
+              keyExtractor={(item) => item}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.option}
+                  onPress={() => toggleOption(item)}
+                >
+                  <Text style={styles.optionText}>{item}</Text>
+                  <View style={[
+                    styles.checkbox,
+                    selectedValues.includes(item) && styles.checkboxSelected
+                  ]}>
+                    {selectedValues.includes(item) && (
+                      <Text style={styles.checkmark}>✓</Text>
+                    )}
+                  </View>
+                </TouchableOpacity>
               )}
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      )}
+            />
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
+    color: '#ffffff',
     marginBottom: 8,
   },
   selector: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 15,
     borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
-    backgroundColor: colors.background,
+    borderColor: '#444444',
   },
   selectorText: {
-    flex: 1,
     fontSize: 16,
-    color: colors.text,
+    color: '#ffffff',
   },
   placeholder: {
-    color: colors.textTertiary,
+    color: '#666666',
   },
-  placeholderText: {
-    color: colors.textTertiary,
-  },
-  modalContainer: {
+  modalOverlay: {
     flex: 1,
-    backgroundColor: colors.background,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    width: '90%',
+    maxHeight: '70%',
+    padding: 20,
   },
   modalHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    alignItems: 'center',
+    marginBottom: 20,
   },
   modalTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: colors.text,
+    fontWeight: 'bold',
+    color: '#ffffff',
   },
-  closeButton: {
-    padding: 4,
+  doneButton: {
+    backgroundColor: '#4CAF50',
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
-  optionsList: {
-    flex: 1,
-  },
-  optionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
-  },
-  optionText: {
-    fontSize: 16,
-    color: colors.text,
-    fontWeight: '500',
-  },
-  selectedContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 8,
-  },
-  selectedItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 8,
-    marginRight: 8,
-    backgroundColor: colors.surface,
-    borderRadius: 8,
-  },
-  selectedText: {
-    fontSize: 16,
-    color: colors.text,
-    marginRight: 8,
-  },
-  selectedOption: {
-    backgroundColor: colors.background,
-  },
-  selectedOptionText: {
-    color: colors.text,
-  },
-  optionsContainer: {
-    marginTop: 8,
+  doneButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   option: {
     flexDirection: 'row',
-    alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 16,
+    alignItems: 'center',
+    paddingVertical: 12,
     borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.surface,
+    borderBottomColor: '#444444',
+  },
+  optionText: {
+    fontSize: 16,
+    color: '#ffffff',
+    flex: 1,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+    borderWidth: 2,
+    borderColor: '#666666',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkboxSelected: {
+    backgroundColor: '#4CAF50',
+    borderColor: '#4CAF50',
+  },
+  checkmark: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });

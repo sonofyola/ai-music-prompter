@@ -1,76 +1,57 @@
 import React from 'react';
-import { View, Text, TextInput, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
-import { useTheme } from '../utils/theme';
-import IconFallback from './IconFallback';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 
-interface FormFieldProps extends TextInputProps {
+interface FormFieldProps {
   label: string;
-  showRandomGenerator?: boolean;
-  onRandomPress?: () => void;
+  value: string;
+  onChangeText: (text: string) => void;
+  placeholder?: string;
+  multiline?: boolean;
+  numberOfLines?: number;
 }
 
-export default function FormField({ 
-  label, 
-  showRandomGenerator = false, 
-  onRandomPress,
-  ...props 
+export default function FormField({
+  label,
+  value,
+  onChangeText,
+  placeholder,
+  multiline = false,
+  numberOfLines = 1
 }: FormFieldProps) {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
-
   return (
     <View style={styles.container}>
-      <View style={styles.labelContainer}>
-        <Text style={styles.label}>{label}</Text>
-        {showRandomGenerator && onRandomPress && (
-          <TouchableOpacity 
-            style={styles.diceButton}
-            onPress={onRandomPress}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <IconFallback name="casino" size={20} color={colors.primary} />
-          </TouchableOpacity>
-        )}
-      </View>
+      <Text style={styles.label}>{label}</Text>
       <TextInput
-        style={[styles.input, props.multiline && styles.multilineInput]}
-        placeholderTextColor={colors.textTertiary}
-        {...props}
+        style={[styles.input, multiline && styles.multilineInput]}
+        value={value}
+        onChangeText={onChangeText}
+        placeholder={placeholder}
+        placeholderTextColor="#666666"
+        multiline={multiline}
+        numberOfLines={numberOfLines}
       />
     </View>
   );
 }
 
-const createStyles = (colors: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
+    marginBottom: 20,
   },
   label: {
     fontSize: 16,
     fontWeight: '600',
-    color: colors.text,
-  },
-  diceButton: {
-    padding: 4,
-    borderRadius: 6,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
+    color: '#ffffff',
+    marginBottom: 8,
   },
   input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 8,
+    padding: 15,
     fontSize: 16,
-    color: colors.text,
-    backgroundColor: colors.background,
+    color: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#444444',
   },
   multilineInput: {
     minHeight: 80,

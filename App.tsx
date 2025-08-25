@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
+import PromptFormScreen from './screens/PromptFormScreen';
 
 console.log('App render - BasicProvider project_id:', schema.project_id);
 
@@ -31,26 +32,14 @@ function AppContent() {
     );
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🎵 AI Music Prompter</Text>
-      <Text style={styles.welcome}>Welcome, {user?.email || 'User'}!</Text>
-      <Text style={styles.subtitle}>Ready to create amazing music prompts</Text>
-      
-      <TouchableOpacity style={styles.button} onPress={signout}>
-        <Text style={styles.buttonText}>Sign Out</Text>
-      </TouchableOpacity>
-    </View>
-  );
+  return <PromptFormScreen />;
 }
 
 export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <SafeAreaView style={styles.container}>
-          <AppContent />
-        </SafeAreaView>
+        <AppContent />
       </SafeAreaProvider>
     </BasicProvider>
   );
