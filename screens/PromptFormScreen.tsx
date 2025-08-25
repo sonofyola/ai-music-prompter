@@ -44,10 +44,27 @@ export default function PromptFormScreen() {
       // Check usage limits first
       if (user && db) {
         try {
-          const userData = await db.from('users').get(user.email || user.id);
-          const usageCount = userData?.usage_count || 0;
-          const usageLimit = userData?.usage_limit || 10;
-          const subscriptionStatus = userData?.subscription_status || 'free';
+          let userData = await db.from('users').get(user.email || user.id);
+          
+          // Create user record if it doesn't exist
+          if (!userData) {
+            const newUser = {
+              id: user.email || user.id,
+              email: user.email || user.id,
+              name: user.name || '',
+              usage_count: 0,
+              usage_limit: 10,
+              subscription_status: 'free',
+              created_at: new Date().toISOString(),
+              last_active: new Date().toISOString()
+            };
+            await db.from('users').add(newUser);
+            userData = newUser;
+          }
+          
+          const usageCount = Number(userData.usage_count) || 0;
+          const usageLimit = Number(userData.usage_limit) || 10;
+          const subscriptionStatus = String(userData.subscription_status) || 'free';
           
           // Check if user has exceeded limit (unless they're pro with unlimited)
           if (subscriptionStatus !== 'pro' && usageLimit !== -1 && usageCount >= usageLimit) {
@@ -85,7 +102,8 @@ export default function PromptFormScreen() {
           const userData = await db.from('users').get(user.email || user.id);
           const currentUsage = Number(userData?.usage_count) || 0;
           await db.from('users').update(user.email || user.id, {
-            usage_count: currentUsage + 1
+            usage_count: currentUsage + 1,
+            last_active: new Date().toISOString()
           });
         } catch (error) {
           console.error('Error saving to history:', error);

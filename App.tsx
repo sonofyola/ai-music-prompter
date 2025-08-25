@@ -53,7 +53,7 @@ function AppContent() {
     }
   };
 
-  const isAdmin = user?.email === 'admin@example.com';
+  const isAdmin = user?.email === 'drremotework@gmail.com';
 
   return (
     <View style={styles.appContainer}>

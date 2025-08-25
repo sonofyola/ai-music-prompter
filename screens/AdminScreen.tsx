@@ -30,7 +30,7 @@ export default function AdminScreen() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [newUsageLimit, setNewUsageLimit] = useState('');
 
-  const isAdmin = user?.email === 'admin@example.com' || user?.role === 'admin';
+  const isAdmin = user?.email === 'drremotework@gmail.com';
 
   const fetchAdminData = async () => {
     if (!db || !isAdmin) return;
@@ -46,31 +46,33 @@ export default function AdminScreen() {
         
         // Get unique users from history
         const userMap = new Map();
-        historyData.forEach((item: PromptHistoryItem) => {
-          if (!userMap.has(item.user_id)) {
-            userMap.set(item.user_id, {
-              id: item.user_id,
-              email: item.user_id,
+        historyData.forEach((item: any) => {
+          const historyItem = item as PromptHistoryItem;
+          if (!userMap.has(historyItem.user_id)) {
+            userMap.set(historyItem.user_id, {
+              id: historyItem.user_id,
+              email: historyItem.user_id,
               usage_count: 1,
-              last_active: item.created_at
+              last_active: historyItem.created_at
             });
           } else {
-            const existingUser = userMap.get(item.user_id);
+            const existingUser = userMap.get(historyItem.user_id);
             existingUser.usage_count += 1;
-            if (new Date(item.created_at) > new Date(existingUser.last_active)) {
-              existingUser.last_active = item.created_at;
+            if (new Date(historyItem.created_at) > new Date(existingUser.last_active)) {
+              existingUser.last_active = historyItem.created_at;
             }
           }
         });
         
         // Merge with users data if available
         if (usersData) {
-          usersData.forEach((userData: User) => {
-            if (userMap.has(userData.id)) {
-              const existingUser = userMap.get(userData.id);
-              userMap.set(userData.id, { ...existingUser, ...userData });
+          usersData.forEach((userData: any) => {
+            const user = userData as User;
+            if (userMap.has(user.id)) {
+              const existingUser = userMap.get(user.id);
+              userMap.set(user.id, { ...existingUser, ...user });
             } else {
-              userMap.set(userData.id, { ...userData, usage_count: 0 });
+              userMap.set(user.id, { ...user, usage_count: 0 });
             }
           });
         }

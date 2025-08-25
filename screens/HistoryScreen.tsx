@@ -27,11 +27,11 @@ export default function HistoryScreen() {
       if (historyData) {
         // Filter by current user and sort by date
         const userHistory = historyData
-          .filter((item: PromptHistoryItem) => item.user_id === (user.email || user.id))
-          .sort((a: PromptHistoryItem, b: PromptHistoryItem) => 
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          .filter((item: any) => (item as PromptHistoryItem).user_id === (user.email || user.id))
+          .sort((a: any, b: any) => 
+            new Date((b as PromptHistoryItem).created_at).getTime() - new Date((a as PromptHistoryItem).created_at).getTime()
           );
-        setHistory(userHistory);
+        setHistory(userHistory as unknown as PromptHistoryItem[]);
       }
     } catch (error) {
       console.error('Error fetching history:', error);

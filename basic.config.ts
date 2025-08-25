@@ -3,25 +3,41 @@ export const schema = {
     users: {
       type: 'collection' as const,
       fields: {
-        name: {
-          type: 'string' as const,
-          indexed: true
-        },
         email: {
           type: 'string' as const,
           indexed: true
         },
-        is_admin: {
-          type: 'boolean' as const,
+        name: {
+          type: 'string' as const,
+          indexed: true
+        },
+        subscription_status: {
+          type: 'string' as const,
+          indexed: true
+        },
+        usage_count: {
+          type: 'number' as const,
+          indexed: true
+        },
+        usage_limit: {
+          type: 'number' as const,
+          indexed: true
+        },
+        stripe_customer_id: {
+          type: 'string' as const,
+          indexed: true
+        },
+        subscription_end_date: {
+          type: 'string' as const,
           indexed: true
         },
         created_at: {
           type: 'string' as const,
           indexed: true
         },
-        last_login: {
+        last_active: {
           type: 'string' as const,
-          indexed: false
+          indexed: true
         }
       }
     },
@@ -57,6 +73,14 @@ export const schema = {
           type: 'string' as const,
           indexed: false
         },
+        upgraded_at: {
+          type: 'string' as const,
+          indexed: false
+        },
+        upgraded_by: {
+          type: 'string' as const,
+          indexed: false
+        },
         usage_count: {
           type: 'number' as const,
           indexed: false
@@ -72,14 +96,6 @@ export const schema = {
         subscription_status: {
           type: 'string' as const,
           indexed: true
-        },
-        upgraded_at: {
-          type: 'string' as const,
-          indexed: false
-        },
-        upgraded_by: {
-          type: 'string' as const,
-          indexed: false
         }
       }
     },
@@ -130,6 +146,6 @@ export const schema = {
       }
     }
   },
-  version: 4,
+  version: 5,
   project_id: "4e424624-5175-44ea-8548-fdf8f1f26d93"
 };

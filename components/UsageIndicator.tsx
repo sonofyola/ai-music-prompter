@@ -21,9 +21,9 @@ export default function UsageIndicator({ onUpgradePress }: UsageIndicatorProps) 
       const userData = await db.from('users').get(user.email || user.id);
       if (userData) {
         setUsageData({
-          usageCount: userData.usage_count || 0,
-          usageLimit: userData.usage_limit || 10,
-          subscriptionStatus: userData.subscription_status || 'free'
+          usageCount: typeof userData.usage_count === 'number' ? userData.usage_count : 0,
+          usageLimit: typeof userData.usage_limit === 'number' ? userData.usage_limit : 10,
+          subscriptionStatus: typeof userData.subscription_status === 'string' ? userData.subscription_status : 'free'
         });
       }
     } catch (error) {

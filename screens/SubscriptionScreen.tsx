@@ -20,20 +20,33 @@ export default function SubscriptionScreen() {
     if (!user || !db) return;
     
     try {
-      const userData = await db.from('users').get(user.email || user.id);
+      let userData = await db.from('users').get(user.email || user.id);
       if (userData) {
-        setUserSub(userData);
+        setUserSub({
+          subscription_status: String(userData.subscription_status) || 'free',
+          usage_count: Number(userData.usage_count) || 0,
+          usage_limit: Number(userData.usage_limit) || 10,
+          stripe_customer_id: String(userData.stripe_customer_id) || undefined,
+          subscription_end_date: String(userData.subscription_end_date) || undefined
+        });
       } else {
         // Create user record if it doesn't exist
         const newUser = {
           id: user.email || user.id,
           email: user.email || user.id,
+          name: user.name || '',
           usage_count: 0,
           usage_limit: 10,
-          subscription_status: 'free'
+          subscription_status: 'free',
+          created_at: new Date().toISOString(),
+          last_active: new Date().toISOString()
         };
         await db.from('users').add(newUser);
-        setUserSub(newUser);
+        setUserSub({
+          subscription_status: 'free',
+          usage_count: 0,
+          usage_limit: 10
+        });
       }
     } catch (error) {
       console.error('Error fetching user subscription:', error);
