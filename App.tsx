@@ -4,6 +4,7 @@ import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet } from 'react-native';
 import { colors } from './utils/theme';
+import { UsageProvider } from './contexts/UsageContext';
 
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
@@ -37,7 +38,9 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <AppContent />
+        <UsageProvider>
+          <AppContent />
+        </UsageProvider>
       </SafeAreaProvider>
     </BasicProvider>
   );
