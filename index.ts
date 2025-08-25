@@ -1,6 +1,3 @@
-// Load constants polyfill FIRST - before any other imports
-import './constants-polyfill.js';
-
 import "@expo/metro-runtime";
 import './polyfills';
 import { registerRootComponent } from 'expo';
