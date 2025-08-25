@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useBasic } from '@basictech/expo';
 
 interface UserSubscription {
   subscription_status?: string;
@@ -197,20 +195,17 @@ export default function SubscriptionScreen() {
           </Text>
           
           {!isPro ? (
-            <Pressable 
+            <TouchableOpacity 
               style={styles.upgradeButton} 
-              onPress={() => {
-                console.log('UPGRADE BUTTON PRESSED!');
-                alert('Upgrade button pressed!');
-                handleUpgrade();
-              }}
+              onPress={handleUpgrade}
+              activeOpacity={0.7}
             >
               <Text style={styles.upgradeButtonText}>🚀 Upgrade to Pro - $9.99/month</Text>
-            </Pressable>
+            </TouchableOpacity>
           ) : (
-            <Pressable style={styles.cancelButton} onPress={handleCancelSubscription}>
+            <TouchableOpacity style={styles.cancelButton} onPress={handleCancelSubscription}>
               <Text style={styles.cancelButtonText}>Cancel Subscription</Text>
-            </Pressable>
+            </TouchableOpacity>
           )}
           
           <Pressable 
