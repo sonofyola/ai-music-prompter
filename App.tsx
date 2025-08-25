@@ -2,43 +2,42 @@ import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
-import { View, Text, StyleSheet } from 'react-native';
-
-// Import your contexts
-import { ThemeProvider } from './contexts/ThemeContext';
-import { UsageProvider } from './contexts/UsageContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
-import { MaintenanceProvider } from './contexts/MaintenanceContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-
-// Import your screens
-import PromptFormScreen from './screens/PromptFormScreen';
-import AuthScreen from './screens/AuthScreen';
-import MaintenanceScreen from './components/MaintenanceScreen';
-
-// Import your theme
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { colors } from './utils/theme';
 
 function AppContent() {
-  const { isSignedIn, user, isLoading } = useBasic();
+  const { isSignedIn, user, isLoading, login } = useBasic();
 
   console.log('AppContent render:', { isLoading, isSignedIn, user: user?.email });
 
   if (isLoading) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.container}>
         <Text style={styles.title}>🎵 AI Music Prompter</Text>
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.text}>Loading...</Text>
       </View>
     );
   }
 
-  // Show the main app if signed in, otherwise show auth screen
-  if (isSignedIn && user) {
-    return <PromptFormScreen />;
-  } else {
-    return <AuthScreen />;
+  if (!isSignedIn) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>🎵 AI Music Prompter</Text>
+        <Text style={styles.text}>Please sign in to continue</Text>
+        <TouchableOpacity style={styles.button} onPress={login}>
+          <Text style={styles.buttonText}>Sign In</Text>
+        </TouchableOpacity>
+      </View>
+    );
   }
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>🎵 AI Music Prompter</Text>
+      <Text style={styles.text}>Welcome, {user?.email}!</Text>
+      <Text style={styles.text}>App is working! Ready to load full interface.</Text>
+    </View>
+  );
 }
 
 export default function App() {
@@ -47,24 +46,14 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <NotificationProvider>
-            <MaintenanceProvider>
-              <UsageProvider>
-                <PromptHistoryProvider>
-                  <AppContent />
-                </PromptHistoryProvider>
-              </UsageProvider>
-            </MaintenanceProvider>
-          </NotificationProvider>
-        </ThemeProvider>
+        <AppContent />
       </SafeAreaProvider>
     </BasicProvider>
   );
 }
 
 const styles = StyleSheet.create({
-  loadingContainer: {
+  container: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
@@ -77,9 +66,22 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     color: colors.text,
   },
-  loadingText: {
+  text: {
     fontSize: 16,
     color: colors.textSecondary,
     marginBottom: 8,
+    textAlign: 'center',
+  },
+  button: {
+    backgroundColor: colors.primary,
+    paddingHorizontal: 24,
+    paddingVertical: 12,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
