@@ -1,7 +1,7 @@
 export const SEO_CONFIG = {
   // Primary SEO Data
   title: 'AI Music Prompter - Professional Prompts for Suno AI, Udio, Riffusion & MusicGen',
-  description: 'Generate professional AI music prompts instantly for Suno AI, Udio, Riffusion, MusicGen & more. Advanced genre selection, mood control, tempo settings. 3 free daily generations + unlimited premium access.',
+  description: 'Generate professional AI music prompts instantly for Suno AI, Udio, Riffusion, MusicGen & more. Advanced genre selection, mood control, tempo settings, track length, weirdness levels. 3 free daily generations + unlimited premium access.',
   keywords: [
     'AI music prompter',
     'AI music prompts',
@@ -19,7 +19,13 @@ export const SEO_CONFIG = {
     'song prompt generator',
     'AI music creation',
     'text to music',
-    'music AI assistant'
+    'music AI assistant',
+    'track length control',
+    'weirdness parameter',
+    'bass styles',
+    'acapella vocals',
+    'experimental music AI',
+    'music prompt engineering'
   ],
   
   // URLs and Social
@@ -45,6 +51,10 @@ export const SEO_CONFIG = {
     'Advanced Mood and Energy Controls',
     'Instrument and Vocal Specifications',
     'Tempo and Key Selection',
+    'Track Length Control (30 seconds to 6+ minutes)',
+    'Weirdness Level Parameter (Normal to Experimental)',
+    'Bass Style Selection (Deep, Heavy, Sub, Punchy, etc.)',
+    'Acapella Vocal Options',
     'Custom Creative Direction',
     'Prompt History and Templates',
     'Export and Copy Functionality',
@@ -67,11 +77,15 @@ export const SEO_CONFIG = {
   faq: [
     {
       question: 'What is AI Music Prompter?',
-      answer: 'AI Music Prompter is a professional tool that creates detailed text descriptions to guide AI music generators like Suno AI, Udio, Riffusion, and MusicGen. It combines genre, mood, instruments, tempo, vocal styles, and other parameters into optimized prompts that produce better AI-generated music.'
+      answer: 'AI Music Prompter is a professional tool that creates detailed text descriptions to guide AI music generators like Suno AI, Udio, Riffusion, and MusicGen. It combines genre, mood, instruments, tempo, track length, weirdness levels, bass styles, acapella vocals, and other parameters into optimized prompts that produce better AI-generated music.'
     },
     {
       question: 'Which AI music tools work with AI Music Prompter?',
       answer: 'AI Music Prompter works with all major AI music generators including Suno AI, Udio, Riffusion, MusicGen, AIVA, Amper Music, Soundful, Boomy, and any other text-to-music AI platform that accepts descriptive prompts.'
+    },
+    {
+      question: 'What are the new track length and weirdness controls?',
+      answer: 'Track Length lets you specify duration from 30-60 seconds for social media clips up to 6+ minutes for extended pieces. Weirdness Level controls how experimental your music is, from Very Normal to Completely Abstract, giving you precise control over creativity and unconventional elements.'
     },
     {
       question: 'Is AI Music Prompter free to use?',
@@ -79,7 +93,7 @@ export const SEO_CONFIG = {
     },
     {
       question: 'How does AI Music Prompter improve my AI music results?',
-      answer: 'AI Music Prompter uses advanced prompt engineering techniques to create detailed, structured descriptions that AI music tools understand better. This results in more accurate genre matching, better mood control, proper instrumentation, and overall higher quality AI-generated music.'
+      answer: 'AI Music Prompter uses advanced prompt engineering techniques to create detailed, structured descriptions that AI music tools understand better. This results in more accurate genre matching, better mood control, proper instrumentation, precise track lengths, controlled experimental levels, and overall higher quality AI-generated music.'
     },
     {
       question: 'Can I save and reuse my prompts?',
@@ -90,13 +104,17 @@ export const SEO_CONFIG = {
   // Blog topics for future content
   blogTopics: [
     'Best AI Music Prompts for Electronic Music',
+    'How to Use Track Length Control for Perfect AI Music',
+    'Mastering Weirdness Levels in AI Music Generation',
+    'Bass Styles Guide for AI Music Prompts',
     'How to Write Perfect Prompts for Suno AI',
     'Udio vs Suno AI: Complete Comparison Guide',
     'Advanced Prompt Engineering for AI Music',
     'Genre-Specific Prompt Templates',
     'Mood and Energy Control in AI Music',
     'The Future of AI Music Generation',
-    'Tips for Better AI Music Results'
+    'Tips for Better AI Music Results',
+    'Acapella and Vocal Control in AI Music'
   ],
   
   // Disclaimer
