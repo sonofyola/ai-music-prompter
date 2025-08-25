@@ -8,7 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { storePaymentAttempt } from '../utils/paymentVerification';
 
 interface StripePaymentFormProps {

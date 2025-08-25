@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 
 export default function NotificationSettings() {
   const { colors } = useTheme();
