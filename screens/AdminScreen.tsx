@@ -261,6 +261,16 @@ export default function AdminScreen() {
         </View>
       </View>
 
+      {/* Test Button */}
+      <View style={{ padding: 20, alignItems: 'center' }}>
+        <TouchableOpacity 
+          style={{ backgroundColor: '#FF0000', padding: 15, borderRadius: 8 }}
+          onPress={() => console.log('TouchableOpacity pressed')}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🔴 TEST TOUCHABLE</Text>
+        </TouchableOpacity>
+      </View>
+
       {/* Users List */}
       <FlatList
         data={users}
