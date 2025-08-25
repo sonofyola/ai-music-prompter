@@ -368,13 +368,69 @@ export default function AdminScreen() {
             if (users.length > 0) {
               const testUser = users[0];
               console.log('🧪 Test upgrading user:', testUser.id);
-              await upgradeUserToPro(testUser.id);
+              console.log('🧪 User details:', JSON.stringify(testUser, null, 2));
+              
+              // Test direct upgrade without confirmation dialog
+              if (!db) {
+                console.log('❌ No database connection');
+                return;
+              }
+              
+              try {
+                console.log('🔄 Starting direct upgrade test...');
+                
+                // First, try to get the existing user
+                let existingUser;
+                try {
+                  existingUser = await db.from('users').get(testUser.id);
+                  console.log('📋 Existing user found:', JSON.stringify(existingUser, null, 2));
+                } catch (error) {
+                  console.log('❌ User not found in users table:', error);
+                  existingUser = null;
+                }
+                
+                const upgradeData = {
+                  id: testUser.id,
+                  email: testUser.email || testUser.id,
+                  subscription_status: 'pro',
+                  usage_limit: -1,
+                  upgraded_at: new Date().toISOString(),
+                  upgraded_by: user?.email || 'admin',
+                  last_active: new Date().toISOString()
+                };
+                
+                console.log('🔄 Upgrade data:', JSON.stringify(upgradeData, null, 2));
+                
+                if (existingUser) {
+                  console.log('🔄 Updating existing user...');
+                  const result = await db.from('users').update(testUser.id, upgradeData);
+                  console.log('✅ Update result:', JSON.stringify(result, null, 2));
+                } else {
+                  console.log('🔄 Creating new user record...');
+                  const newUserData = {
+                    ...upgradeData,
+                    name: testUser.name || '',
+                    usage_count: testUser.usage_count || 0,
+                    created_at: new Date().toISOString()
+                  };
+                  console.log('🔄 New user data:', JSON.stringify(newUserData, null, 2));
+                  const result = await db.from('users').add(newUserData);
+                  console.log('✅ Create result:', JSON.stringify(result, null, 2));
+                }
+                
+                Alert.alert('Test Success', 'Direct upgrade test completed - check console logs');
+                
+              } catch (error) {
+                console.error('❌ Direct upgrade test failed:', error);
+                Alert.alert('Test Error', `Direct upgrade failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+              }
+              
             } else {
               Alert.alert('No Users', 'No users available to test upgrade');
             }
           }}
         >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🧪 TEST UPGRADE</Text>
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🧪 DIRECT TEST</Text>
         </TouchableOpacity>
       </View>
 
