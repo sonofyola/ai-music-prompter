@@ -7,7 +7,7 @@ import PromptFormScreen from './screens/PromptFormScreen';
 import AdminScreen from './screens/AdminScreen';
 import HistoryScreen from './screens/HistoryScreen';
 import SubscriptionScreen from './screens/SubscriptionScreen';
-import SEOLandingPage from './components/SEOLandingPage';
+import ModernLandingPage from './components/ModernLandingPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 console.log('App render - BasicProvider project_id:', schema.project_id);
@@ -32,7 +32,7 @@ function AppContent() {
   // Show landing page if not signed in and landing page hasn't been dismissed
   if (!isSignedIn && showLandingPage) {
     return (
-      <SEOLandingPage 
+      <ModernLandingPage 
         onGetStarted={() => {
           setShowLandingPage(false);
           // Don't automatically trigger login, let user see the sign-in screen
