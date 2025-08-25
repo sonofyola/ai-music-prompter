@@ -163,83 +163,32 @@ export default function AdminScreen() {
   };
 
   const upgradeUserToPro = async (userId: string) => {
-    if (!db) return;
-    
-    Alert.alert(
-      'Upgrade User',
-      `Upgrade ${userId} to Pro (unlimited usage)?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Upgrade',
-          onPress: async () => {
-            try {
-              console.log('🔄 Starting upgrade process for user:', userId);
-              
-              // First, try to get the existing user
-              let existingUser;
-              try {
-                existingUser = await db.from('users').get(userId);
-                console.log('📋 Existing user found:', existingUser);
-              } catch (error) {
-                console.log('❌ User not found in users table, will create new record');
-                existingUser = null;
-              }
-              
-              const upgradeData = {
-                subscription_status: 'pro',
-                usage_limit: -1, // -1 means unlimited
-                last_active: new Date().toISOString()
-              };
-              
-              if (existingUser) {
-                // Update existing user
-                console.log('🔄 Updating existing user...');
-                await db.from('users').update(userId, upgradeData);
-                console.log('✅ User updated successfully');
-              } else {
-                // Create new user record
-                console.log('🔄 Creating new user record...');
-                const newUserData = {
-                  email: userId, // Assuming userId is email
-                  name: '',
-                  usage_count: 0,
-                  subscription_status: 'pro',
-                  usage_limit: -1,
-                  stripe_customer_id: '',
-                  subscription_end_date: '',
-                  created_at: new Date().toISOString(),
-                  last_active: new Date().toISOString()
-                };
-                await db.from('users').add(newUserData);
-                console.log('✅ New user created successfully');
-              }
-              
-              // Update local state
-              setUsers(prev => prev.map(u => 
-                u.id === userId ? { 
-                  ...u, 
-                  subscription_status: 'pro', 
-                  usage_limit: -1 
-                } : u
-              ));
-              
-              Alert.alert('Success', `User ${userId} upgraded to Pro!`);
-              
-              // Refresh data to show updated status
-              fetchAdminData();
-              
-            } catch (error) {
-              console.error('❌ Error upgrading user:', error);
-              Alert.alert(
-                'Error', 
-                `Failed to upgrade user: ${error instanceof Error ? error.message : 'Unknown error'}`
-              );
-            }
-          }
-        }
-      ]
-    );
+    try {
+      console.log('🔄 Starting upgrade process for user:', userId);
+      
+      // First, let's check the current user data
+      const currentUser = await db.from('users').get(userId);
+      console.log('📋 Current user data before upgrade:', JSON.stringify(currentUser, null, 2));
+      
+      const result = await db.from('users').update(userId, {
+        subscription_status: 'pro',
+        usage_limit: -1
+      });
+      
+      console.log('✅ Update result:', JSON.stringify(result, null, 2));
+      
+      // Verify the update worked
+      const updatedUser = await db.from('users').get(userId);
+      console.log('📋 User data after upgrade:', JSON.stringify(updatedUser, null, 2));
+      
+      // Refresh the users list
+      await fetchUsers();
+      
+      Alert.alert('Success', `User upgraded to Pro successfully!`);
+    } catch (error) {
+      console.error('❌ Error upgrading user:', error);
+      Alert.alert('Error', `Failed to upgrade user: ${error.message || error}`);
+    }
   };
 
   const formatDate = (dateString?: string) => {
