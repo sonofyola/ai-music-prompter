@@ -84,7 +84,6 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
                 { 
                   text: 'Upgrade to Pro', 
                   onPress: () => {
-                    console.log('Alert upgrade button pressed, navigating...');
                     onNavigateToSubscription?.();
                   }
                 }
@@ -174,10 +173,7 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
 
         {/* Usage Indicator */}
         <UsageIndicator 
-          onUpgradePress={() => {
-            console.log('UsageIndicator onUpgradePress called');
-            onNavigateToSubscription?.();
-          }}
+          onUpgradePress={onNavigateToSubscription}
           refreshTrigger={refreshTrigger}
         />
 
@@ -194,18 +190,6 @@ export default function PromptFormScreen({ onNavigateToSubscription }: PromptFor
             onPress={() => setRandomTrackVisible(true)}
           >
             <Text style={styles.actionButtonText}>🎲 Random</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, { backgroundColor: '#4CAF50' }]} 
-            onPress={() => {
-              console.log('Test navigation button pressed');
-              Alert.alert('Test', 'Navigation function available: ' + (onNavigateToSubscription ? 'YES' : 'NO'));
-              if (onNavigateToSubscription) {
-                onNavigateToSubscription();
-              }
-            }}
-          >
-            <Text style={styles.actionButtonText}>🧪 Test Nav</Text>
           </TouchableOpacity>
         </View>
 

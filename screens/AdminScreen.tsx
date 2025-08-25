@@ -36,8 +36,6 @@ export default function AdminScreen() {
     if (!db || !isAdmin) return;
     
     try {
-      // Fetch all users (this would need to be implemented in your backend)
-      // For now, we'll get unique users from prompt history
       const historyData = await db.from('prompt_history').getAll();
       const usersData = await db.from('users').getAll();
       
@@ -103,15 +101,10 @@ export default function AdminScreen() {
     if (!db) return;
     
     try {
-      console.log('🔄 Updating usage limit for user:', userId, 'to:', newLimit);
-      
-      // First, try to get the existing user
       let existingUser;
       try {
         existingUser = await db.from('users').get(userId);
-        console.log('📋 Existing user found:', existingUser);
       } catch (error) {
-        console.log('❌ User not found in users table, will create new record');
         existingUser = null;
       }
       
@@ -121,11 +114,8 @@ export default function AdminScreen() {
       };
       
       if (existingUser) {
-        // Update existing user
         await db.from('users').update(userId, updateData);
-        console.log('✅ User limit updated successfully');
       } else {
-        // Create new user record
         const newUserData = {
           email: userId,
           name: '',
@@ -138,10 +128,8 @@ export default function AdminScreen() {
           last_active: new Date().toISOString()
         };
         await db.from('users').add(newUserData);
-        console.log('✅ New user created with limit');
       }
       
-      // Update local state
       setUsers(prev => prev.map(u => 
         u.id === userId ? { ...u, usage_limit: newLimit } : u
       ));
@@ -150,11 +138,10 @@ export default function AdminScreen() {
       setSelectedUser(null);
       setNewUsageLimit('');
       
-      // Refresh data
       fetchAdminData();
       
     } catch (error) {
-      console.error('❌ Error updating user limit:', error);
+      console.error('Error updating user limit:', error);
       Alert.alert(
         'Error', 
         `Failed to update usage limit: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -164,30 +151,19 @@ export default function AdminScreen() {
 
   const upgradeUserToPro = async (userId: string) => {
     try {
-      console.log('🔄 Starting upgrade process for user:', userId);
-      
-      // First, let's check the current user data
       const currentUser = await db.from('users').get(userId);
-      console.log('📋 Current user data before upgrade:', JSON.stringify(currentUser, null, 2));
       
       const result = await db.from('users').update(userId, {
         subscription_status: 'pro',
         usage_limit: -1
       });
       
-      console.log('✅ Update result:', JSON.stringify(result, null, 2));
-      
-      // Verify the update worked
-      const updatedUser = await db.from('users').get(userId);
-      console.log('📋 User data after upgrade:', JSON.stringify(updatedUser, null, 2));
-      
-      // Refresh the users list by fetching again
       const updatedUsers = await db.from('users').getAll();
       setUsers(updatedUsers || []);
       
       Alert.alert('Success', `User upgraded to Pro successfully!`);
     } catch (error) {
-      console.error('❌ Error upgrading user:', error);
+      console.error('Error upgrading user:', error);
       Alert.alert('Error', `Failed to upgrade user: ${error.message || error}`);
     }
   };
@@ -235,7 +211,6 @@ export default function AdminScreen() {
           <Pressable 
             style={styles.actionButton}
             onPress={() => {
-              console.log('Set Limit pressed for user:', item.id);
               setSelectedUser(item);
               setNewUsageLimit(String(item.usage_limit || 10));
             }}
@@ -246,10 +221,7 @@ export default function AdminScreen() {
           {item.subscription_status !== 'pro' && item.usage_limit !== -1 && (
             <Pressable 
               style={[styles.actionButton, styles.upgradeButton]}
-              onPress={() => {
-                console.log('Upgrade Pro pressed for user:', item.id);
-                upgradeUserToPro(item.id);
-              }}
+              onPress={() => upgradeUserToPro(item.id)}
             >
               <Text style={styles.actionButtonText}>Upgrade Pro</Text>
             </Pressable>
@@ -264,7 +236,7 @@ export default function AdminScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Access Denied</Text>
-          <Text style={styles.errorSubtext}>You don&apos;t have admin privileges</Text>
+          <Text style={styles.errorSubtext}>You don't have admin privileges</Text>
         </View>
       </SafeAreaView>
     );
@@ -303,164 +275,6 @@ export default function AdminScreen() {
           </Text>
           <Text style={styles.statLabel}>Pro Users</Text>
         </View>
-      </View>
-
-      {/* Test Button */}
-      <View style={{ padding: 20, alignItems: 'center' }}>
-        <TouchableOpacity 
-          style={{ backgroundColor: '#FF0000', padding: 15, borderRadius: 8, marginBottom: 10 }}
-          onPress={() => console.log('TouchableOpacity pressed')}
-        >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🔴 TEST TOUCHABLE</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={{ backgroundColor: '#4CAF50', padding: 15, borderRadius: 8 }}
-          onPress={async () => {
-            console.log('🧪 Testing upgrade function...');
-            if (users.length > 0) {
-              const testUser = users[0];
-              console.log('🧪 Test upgrading user:', testUser.id);
-              console.log('🧪 User details:', JSON.stringify(testUser, null, 2));
-              
-              // Test direct upgrade without confirmation dialog
-              if (!db) {
-                console.log('❌ No database connection');
-                return;
-              }
-              
-              try {
-                console.log('🔄 Starting direct upgrade test...');
-                
-                // First, try to get the existing user
-                let existingUser;
-                try {
-                  existingUser = await db.from('users').get(testUser.id);
-                  console.log('📋 Existing user found:', JSON.stringify(existingUser, null, 2));
-                } catch (error) {
-                  console.log('❌ User not found in users table:', error);
-                  existingUser = null;
-                }
-                
-                const upgradeData = {
-                  subscription_status: 'pro',
-                  usage_limit: -1,
-                  last_active: new Date().toISOString()
-                };
-                
-                console.log('🔄 Upgrade data:', JSON.stringify(upgradeData, null, 2));
-                
-                if (existingUser) {
-                  console.log('🔄 Updating existing user...');
-                  const result = await db.from('users').update(testUser.id, upgradeData);
-                  console.log('✅ Update result:', JSON.stringify(result, null, 2));
-                } else {
-                  console.log('🔄 Creating new user record...');
-                  const newUserData = {
-                    email: testUser.email || testUser.id,
-                    name: testUser.name || '',
-                    usage_count: testUser.usage_count || 0,
-                    subscription_status: 'pro',
-                    usage_limit: -1,
-                    stripe_customer_id: '',
-                    subscription_end_date: '',
-                    created_at: new Date().toISOString(),
-                    last_active: new Date().toISOString()
-                  };
-                  console.log('🔄 New user data:', JSON.stringify(newUserData, null, 2));
-                  const result = await db.from('users').add(newUserData);
-                  console.log('✅ Create result:', JSON.stringify(result, null, 2));
-                }
-                
-                Alert.alert('Test Success', 'Direct upgrade test completed - check console logs');
-                
-              } catch (error) {
-                console.error('❌ Direct upgrade test failed:', error);
-                Alert.alert('Test Error', `Direct upgrade failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-              }
-              
-            } else {
-              Alert.alert('No Users', 'No users available to test upgrade');
-            }
-          }}
-        >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>🧪 DIRECT TEST</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity 
-          style={{ backgroundColor: '#FF9800', padding: 15, borderRadius: 8, marginBottom: 10 }}
-          onPress={() => {
-            console.log('🔄 Upgrade to Pro button pressed');
-            if (users.length > 0) {
-              // Create options for each user
-              const userOptions = users.map((user, index) => ({
-                text: `${user.name || user.email || user.id} (${user.subscription_status || 'free'})`,
-                onPress: () => {
-                  console.log('🔄 Selected user for upgrade:', user.id);
-                  Alert.alert(
-                    'Upgrade User',
-                    `Upgrade ${user.name || user.email || user.id} to Pro?`,
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { 
-                        text: 'Upgrade', 
-                        onPress: () => {
-                          console.log('✅ Upgrade confirmed, calling upgradeUserToPro...');
-                          upgradeUserToPro(user.id);
-                        }
-                      }
-                    ]
-                  );
-                }
-              }));
-
-              // Add cancel option
-              userOptions.push({ text: 'Cancel', onPress: () => {}, style: 'cancel' });
-
-              Alert.alert(
-                'Select User to Upgrade',
-                'Choose which user to upgrade to Pro:',
-                userOptions
-              );
-            } else {
-              Alert.alert('No Users', 'No users available to upgrade');
-            }
-          }}
-        >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade to Pro</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity 
-          style={{ backgroundColor: '#4CAF50', padding: 15, borderRadius: 8, marginBottom: 10 }}
-          onPress={() => {
-            console.log('🔄 Upgrade ALL users button pressed');
-            if (users.length > 0) {
-              Alert.alert(
-                'Upgrade All Users',
-                `Upgrade ALL ${users.length} users to Pro?`,
-                [
-                  { text: 'Cancel', style: 'cancel' },
-                  { 
-                    text: 'Upgrade All', 
-                    onPress: async () => {
-                      console.log('✅ Upgrade all confirmed');
-                      for (const user of users) {
-                        console.log(`🔄 Upgrading user: ${user.id}`);
-                        await upgradeUserToPro(user.id);
-                      }
-                      console.log('✅ All users upgraded!');
-                      Alert.alert('Success', 'All users have been upgraded to Pro!');
-                    }
-                  }
-                ]
-              );
-            } else {
-              Alert.alert('No Users', 'No users available to upgrade');
-            }
-          }}
-        >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade ALL to Pro</Text>
-        </TouchableOpacity>
       </View>
 
       {/* Users List */}

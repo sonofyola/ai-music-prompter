@@ -110,10 +110,7 @@ export default function UsageIndicator({ onUpgradePress, refreshTrigger }: Usage
       {!isPro && percentage >= 80 && (
         <TouchableOpacity 
           style={styles.upgradeButton} 
-          onPress={() => {
-            console.log('UsageIndicator upgrade button pressed!');
-            onUpgradePress?.();
-          }}
+          onPress={onUpgradePress}
         >
           <Text style={styles.upgradeButtonText}>
             {percentage >= 100 ? '🚀 Upgrade to Continue' : '💎 Upgrade to Pro'}

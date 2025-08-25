@@ -11,16 +11,12 @@ import ModernLandingPage from './components/ModernLandingPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
-console.log('App render - BasicProvider project_id:', schema.project_id);
-
 type Screen = 'prompt' | 'history' | 'admin' | 'subscription';
 
 function AppContent() {
   const { isLoading, isSignedIn, user, login, signout } = useBasic();
   const [currentScreen, setCurrentScreen] = React.useState<Screen>('prompt');
   const [showLandingPage, setShowLandingPage] = React.useState(true);
-  
-  console.log('AppContent render:', { isLoading, isSignedIn, user });
 
   if (isLoading) {
     return (
@@ -36,7 +32,6 @@ function AppContent() {
       <ModernLandingPage 
         onGetStarted={() => {
           setShowLandingPage(false);
-          // Don't automatically trigger login, let user see the sign-in screen
         }}
       />
     );
@@ -67,7 +62,7 @@ function AppContent() {
   const handleLogout = async () => {
     try {
       await signout();
-      setShowLandingPage(true); // Show landing page after logout
+      setShowLandingPage(true);
     } catch (error) {
       console.error('Error signing out:', error);
     }
