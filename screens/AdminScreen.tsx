@@ -438,22 +438,68 @@ export default function AdminScreen() {
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={{ backgroundColor: '#FF9800', padding: 15, borderRadius: 8 }}
+          style={{ backgroundColor: '#FF9800', padding: 15, borderRadius: 8, marginBottom: 10 }}
           onPress={() => {
             console.log('🔄 Upgrade to Pro button pressed');
             if (users.length > 0) {
-              const testUser = users[0];
-              console.log('🔄 Selected user for upgrade:', testUser.id);
+              // Create options for each user
+              const userOptions = users.map((user, index) => ({
+                text: `${user.name || user.email || user.id} (${user.subscription_status || 'free'})`,
+                onPress: () => {
+                  console.log('🔄 Selected user for upgrade:', user.id);
+                  Alert.alert(
+                    'Upgrade User',
+                    `Upgrade ${user.name || user.email || user.id} to Pro?`,
+                    [
+                      { text: 'Cancel', style: 'cancel' },
+                      { 
+                        text: 'Upgrade', 
+                        onPress: () => {
+                          console.log('✅ Upgrade confirmed, calling upgradeUserToPro...');
+                          upgradeUserToPro(user.id);
+                        }
+                      }
+                    ]
+                  );
+                }
+              }));
+
+              // Add cancel option
+              userOptions.push({ text: 'Cancel', onPress: () => {}, style: 'cancel' });
+
               Alert.alert(
-                'Upgrade User',
-                `Upgrade ${testUser.name || testUser.email || testUser.id} to Pro?`,
+                'Select User to Upgrade',
+                'Choose which user to upgrade to Pro:',
+                userOptions
+              );
+            } else {
+              Alert.alert('No Users', 'No users available to upgrade');
+            }
+          }}
+        >
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade to Pro</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
+          style={{ backgroundColor: '#4CAF50', padding: 15, borderRadius: 8, marginBottom: 10 }}
+          onPress={() => {
+            console.log('🔄 Upgrade ALL users button pressed');
+            if (users.length > 0) {
+              Alert.alert(
+                'Upgrade All Users',
+                `Upgrade ALL ${users.length} users to Pro?`,
                 [
                   { text: 'Cancel', style: 'cancel' },
                   { 
-                    text: 'Upgrade', 
-                    onPress: () => {
-                      console.log('✅ Upgrade confirmed, calling upgradeUserToPro...');
-                      upgradeUserToPro(testUser.id);
+                    text: 'Upgrade All', 
+                    onPress: async () => {
+                      console.log('✅ Upgrade all confirmed');
+                      for (const user of users) {
+                        console.log(`🔄 Upgrading user: ${user.id}`);
+                        await upgradeUserToPro(user.id);
+                      }
+                      console.log('✅ All users upgraded!');
+                      Alert.alert('Success', 'All users have been upgraded to Pro!');
                     }
                   }
                 ]
@@ -463,7 +509,7 @@ export default function AdminScreen() {
             }
           }}
         >
-          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade to Pro</Text>
+          <Text style={{ color: '#ffffff', fontWeight: 'bold' }}>Upgrade ALL to Pro</Text>
         </TouchableOpacity>
       </View>
 
