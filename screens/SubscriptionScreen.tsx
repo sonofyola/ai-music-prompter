@@ -54,8 +54,8 @@ export default function SubscriptionScreen() {
           </Pressable>
 
           {!isPro ? (
-            <Pressable style={styles.upgradeButton} onPress={handleUpgrade}>
-              <Text style={styles.buttonText}>🚀 UPGRADE TO PRO</Text>
+            <Pressable style={styles.testButton} onPress={handleTestButton}>
+              <Text style={styles.buttonText}>🚀 UPGRADE TO PRO (TEMP TEST)</Text>
             </Pressable>
           ) : (
             <Text style={styles.proText}>✅ You are PRO!</Text>
