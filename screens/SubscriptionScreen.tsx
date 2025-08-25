@@ -22,6 +22,12 @@ export default function SubscriptionScreen() {
     Alert.alert('Success!', 'Upgrade button works!');
   };
 
+  const handleDebugUpgrade = () => {
+    console.log('DEBUG UPGRADE PRESSED!');
+    setDebugCounter(prev => prev + 1);
+    Alert.alert('Debug', `Debug counter: ${debugCounter + 1}`);
+  };
+
   const handleSignOut = () => {
     console.log('SIGN OUT PRESSED!');
     Alert.alert('Sign Out', 'Are you sure?', [
@@ -45,6 +51,13 @@ export default function SubscriptionScreen() {
         <View style={styles.buttonContainer}>
           <Pressable style={styles.testButton} onPress={handleTestButton}>
             <Text style={styles.buttonText}>🧪 TEST BUTTON</Text>
+          </Pressable>
+
+          <Pressable 
+            style={[styles.testButton, { backgroundColor: '#FF0000' }]} 
+            onPress={handleDebugUpgrade}
+          >
+            <Text style={styles.buttonText}>🔴 DEBUG UPGRADE</Text>
           </Pressable>
 
           <Pressable style={styles.testButton} onPress={handleUpgrade}>
