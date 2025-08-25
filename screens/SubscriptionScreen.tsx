@@ -19,13 +19,7 @@ export default function SubscriptionScreen() {
 
   const handleUpgrade = () => {
     console.log('UPGRADE BUTTON PRESSED!');
-    console.log('Current isPro state before:', isPro);
-    
-    // Simplified - no Alert, just direct state change
-    console.log('About to set isPro to true...');
-    setIsPro(true);
-    setDebugCounter(prev => prev + 1);
-    console.log('State update called');
+    Alert.alert('Success!', 'Upgrade button works!');
   };
 
   const handleSignOut = () => {
@@ -54,8 +48,8 @@ export default function SubscriptionScreen() {
           </Pressable>
 
           {!isPro ? (
-            <Pressable style={styles.testButton} onPress={handleTestButton}>
-              <Text style={styles.buttonText}>🚀 UPGRADE TO PRO (TEMP TEST)</Text>
+            <Pressable style={styles.testButton} onPress={handleUpgrade}>
+              <Text style={styles.buttonText}>🚀 UPGRADE TO PRO</Text>
             </Pressable>
           ) : (
             <Text style={styles.proText}>✅ You are PRO!</Text>
