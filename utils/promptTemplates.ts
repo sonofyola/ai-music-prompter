@@ -6,8 +6,12 @@ export interface PromptTemplate {
     genre: string;
     mood: string;
     tempo: string;
+    trackLength: string;
+    weirdness: string;
     instruments: string[];
     vocals: string;
+    bass: string;
+    tone: string;
     structure: string;
     theme: string;
     style: string;
@@ -26,8 +30,12 @@ export const promptTemplates: PromptTemplate[] = [
       genre: 'Deep House',
       mood: 'Energetic',
       tempo: 'Fast (120-140 BPM)',
+      trackLength: 'Standard (2-4 minutes)',
+      weirdness: 'Very Normal',
       instruments: ['Synthesizer', 'Bass', 'Drums'],
       vocals: 'Female Lead',
+      bass: 'Deep',
+      tone: 'Warm',
       structure: 'Intro-Verse-Chorus-Outro',
       theme: 'nightlife, dancing, freedom',
       style: 'Modern',
@@ -44,8 +52,12 @@ export const promptTemplates: PromptTemplate[] = [
       genre: 'Minimal Techno',
       mood: 'Dark',
       tempo: 'Fast (120-140 BPM)',
+      trackLength: 'Long (4-6 minutes)',
+      weirdness: 'Slightly Unusual',
       instruments: ['Synthesizer', 'Drums'],
       vocals: 'Instrumental Only',
+      bass: 'Tight',
+      tone: 'Dark',
       structure: 'Free Form',
       theme: 'industrial, machinery, repetition',
       style: 'Minimalist',
@@ -62,8 +74,12 @@ export const promptTemplates: PromptTemplate[] = [
       genre: 'Ambient',
       mood: 'Calm',
       tempo: 'Very Slow (60-70 BPM)',
+      trackLength: 'Extended (6+ minutes)',
+      weirdness: 'Moderately Weird',
       instruments: ['Synthesizer', 'Piano'],
       vocals: 'Instrumental Only',
+      bass: 'Sub',
+      tone: 'Smooth',
       structure: 'Free Form',
       theme: 'nature, meditation, peace',
       style: 'Ambient',
@@ -80,8 +96,12 @@ export const promptTemplates: PromptTemplate[] = [
       genre: 'Synthwave',
       mood: 'Nostalgic',
       tempo: 'Moderate (90-120 BPM)',
+      trackLength: 'Standard (2-4 minutes)',
+      weirdness: 'Very Normal',
       instruments: ['Synthesizer', 'Drums'],
       vocals: 'Instrumental Only',
+      bass: 'Synth Bass',
+      tone: 'Vintage',
       structure: 'Verse-Chorus-Verse-Chorus-Bridge-Chorus',
       theme: 'retro, neon, cyberpunk',
       style: 'Vintage',
@@ -98,8 +118,12 @@ export const promptTemplates: PromptTemplate[] = [
       genre: 'Liquid DnB',
       mood: 'Uplifting',
       tempo: 'Very Fast (140+ BPM)',
+      trackLength: 'Standard (2-4 minutes)',
+      weirdness: 'Very Normal',
       instruments: ['Bass', 'Drums', 'Piano'],
       vocals: 'Female Lead',
+      bass: 'Warm',
+      tone: 'Bright',
       structure: 'Intro-Verse-Chorus-Outro',
       theme: 'flowing, water, movement',
       style: 'Modern',

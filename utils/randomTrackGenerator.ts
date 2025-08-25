@@ -4,8 +4,12 @@ export interface RandomTrackData {
   genre: string;
   mood: string;
   tempo: string;
+  trackLength: string;
+  weirdness: string;
   instruments: string[];
   vocals: string;
+  bass: string;
+  tone: string;
   structure: string;
   theme: string;
   style: string;
@@ -37,8 +41,12 @@ export function generateRandomTrack(): RandomTrackData {
     genre: getRandomItem(musicData.genres),
     mood: getRandomItem(musicData.moods),
     tempo: getRandomItem(musicData.tempos),
+    trackLength: getRandomItem(musicData.trackLengths),
+    weirdness: getRandomItem(musicData.weirdnessLevels),
     instruments: getRandomItems(musicData.instruments, instrumentCount),
     vocals: getRandomItem(musicData.vocals),
+    bass: getRandomItem(musicData.bassStyles),
+    tone: getRandomItem(musicData.tones),
     structure: getRandomItem(musicData.structures),
     theme: getRandomItem(themes),
     style: getRandomItem(musicData.styles),
