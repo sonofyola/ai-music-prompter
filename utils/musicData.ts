@@ -35,7 +35,7 @@ export const musicData = {
   
   vocals: [
     'Male Lead', 'Female Lead', 'Choir', 'Harmony', 'Rap', 'Spoken Word', 'Instrumental Only',
-    'Duet', 'Background Vocals', 'Auto-tuned', 'Operatic', 'Whispered'
+    'Duet', 'Background Vocals', 'Auto-tuned', 'Operatic', 'Whispered', 'Acapella'
   ],
   
   structures: [
@@ -45,7 +45,7 @@ export const musicData = {
   
   styles: [
     'Acoustic', 'Electric', 'Orchestral', 'Minimalist', 'Experimental', 'Traditional', 'Modern',
-    'Vintage', 'Ambient', 'Cinematic', 'Dance', 'Ballad'
+    'Vintage', 'Ambient', 'Cinematic', 'Dance', 'Ballad', 'Bass'
   ],
   
   energyLevels: [
