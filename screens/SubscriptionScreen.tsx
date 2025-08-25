@@ -16,13 +16,14 @@ export default function SubscriptionScreen() {
 
   const handleUpgrade = () => {
     console.log('UPGRADE BUTTON PRESSED!');
-    Alert.alert('Upgrade', 'Upgrade button works!', [
-      { text: 'Cancel' },
+    Alert.alert('Upgrade to Pro', 'Would you like to upgrade to Pro access?', [
+      { text: 'Cancel', style: 'cancel' },
       { 
         text: 'Upgrade', 
         onPress: () => {
+          console.log('User confirmed upgrade');
           setIsPro(true);
-          Alert.alert('Success!', 'You are now Pro!');
+          Alert.alert('Success!', 'You are now Pro! 🎉');
         }
       }
     ]);
