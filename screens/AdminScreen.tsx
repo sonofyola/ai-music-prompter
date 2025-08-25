@@ -181,8 +181,9 @@ export default function AdminScreen() {
       const updatedUser = await db.from('users').get(userId);
       console.log('📋 User data after upgrade:', JSON.stringify(updatedUser, null, 2));
       
-      // Refresh the users list
-      await fetchUsers();
+      // Refresh the users list by fetching again
+      const updatedUsers = await db.from('users').getAll();
+      setUsers(updatedUsers || []);
       
       Alert.alert('Success', `User upgraded to Pro successfully!`);
     } catch (error) {
