@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Alert, RefreshControl, TextInput, Pressable } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Alert, RefreshControl, TextInput, Pressable, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
+import * as Clipboard from 'expo-clipboard';
 
 interface User {
   id: string;
@@ -97,6 +98,74 @@ export default function AdminScreen() {
     fetchAdminData();
   };
 
+  const exportEmails = async () => {
+    try {
+      const allEmails = users.map(user => user.email).join('\n');
+      const proEmails = users
+        .filter(user => user.subscription_status === 'pro' || user.usage_limit === -1)
+        .map(user => user.email)
+        .join('\n');
+      const freeEmails = users
+        .filter(user => user.subscription_status !== 'pro' && user.usage_limit !== -1)
+        .map(user => user.email)
+        .join('\n');
+
+      const exportData = `AI Music Prompter - Email Export
+Generated: ${new Date().toLocaleString()}
+
+ALL USERS (${users.length} total):
+${allEmails}
+
+PRO USERS (${users.filter(u => u.subscription_status === 'pro' || u.usage_limit === -1).length} total):
+${proEmails}
+
+FREE USERS (${users.filter(u => u.subscription_status !== 'pro' && u.usage_limit !== -1).length} total):
+${freeEmails}`;
+
+      // Try to share first, fallback to clipboard
+      try {
+        await Share.share({
+          message: exportData,
+          title: 'AI Music Prompter - Email Export'
+        });
+      } catch {
+        // If sharing fails, copy to clipboard
+        await Clipboard.setStringAsync(exportData);
+        Alert.alert('Exported!', 'Email list copied to clipboard');
+      }
+    } catch {
+      Alert.alert('Error', 'Failed to export emails');
+    }
+  };
+
+  const upgradeUserToPro = async (userId: string) => {
+    try {
+      await db.from('users').update(userId, {
+        subscription_status: 'pro',
+        usage_limit: -1
+      });
+      
+      const updatedUsers = await db.from('users').getAll();
+      if (updatedUsers) {
+        setUsers(updatedUsers.map(userData => ({
+          id: String(userData.id || userData.email || ''),
+          email: String(userData.email || userData.id || ''),
+          name: String(userData.name || ''),
+          subscription_status: String(userData.subscription_status || 'free'),
+          usage_count: Number(userData.usage_count || 0),
+          usage_limit: Number(userData.usage_limit || 10),
+          created_at: String(userData.created_at || ''),
+          last_active: String(userData.last_active || '')
+        })));
+      }
+      
+      Alert.alert('Success', 'User upgraded to Pro successfully!');
+    } catch (upgradeError) {
+      console.error('Error upgrading user:', upgradeError);
+      Alert.alert('Error', `Failed to upgrade user: ${upgradeError instanceof Error ? upgradeError.message : 'Unknown error'}`);
+    }
+  };
+
   const updateUserLimit = async (userId: string, newLimit: number) => {
     if (!db) return;
     
@@ -104,7 +173,7 @@ export default function AdminScreen() {
       let existingUser;
       try {
         existingUser = await db.from('users').get(userId);
-      } catch (error) {
+      } catch {
         existingUser = null;
       }
       
@@ -140,31 +209,12 @@ export default function AdminScreen() {
       
       fetchAdminData();
       
-    } catch (error) {
-      console.error('Error updating user limit:', error);
+    } catch (updateError) {
+      console.error('Error updating user limit:', updateError);
       Alert.alert(
         'Error', 
-        `Failed to update usage limit: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update usage limit: ${updateError instanceof Error ? updateError.message : 'Unknown error'}`
       );
-    }
-  };
-
-  const upgradeUserToPro = async (userId: string) => {
-    try {
-      const currentUser = await db.from('users').get(userId);
-      
-      const result = await db.from('users').update(userId, {
-        subscription_status: 'pro',
-        usage_limit: -1
-      });
-      
-      const updatedUsers = await db.from('users').getAll();
-      setUsers(updatedUsers || []);
-      
-      Alert.alert('Success', `User upgraded to Pro successfully!`);
-    } catch (error) {
-      console.error('Error upgrading user:', error);
-      Alert.alert('Error', `Failed to upgrade user: ${error.message || error}`);
     }
   };
 
@@ -187,15 +237,17 @@ export default function AdminScreen() {
     return (
       <View style={styles.userItem}>
         <View style={styles.userHeader}>
-          <View style={styles.userInfo}>
-            <Text style={styles.userEmail}>{item.email}</Text>
+          <View style={styles.userMainInfo}>
+            <Text style={styles.userEmail} numberOfLines={1}>{item.email}</Text>
+            <Text style={styles.usageText}>
+              {item.usage_count || 0} prompts
+            </Text>
+          </View>
+          <View style={styles.badgeContainer}>
             <View style={[styles.badge, { backgroundColor: badge.color }]}>
               <Text style={styles.badgeText}>{badge.text}</Text>
             </View>
           </View>
-          <Text style={styles.usageText}>
-            {item.usage_count || 0} prompts
-          </Text>
         </View>
         
         <View style={styles.userDetails}>
@@ -236,7 +288,7 @@ export default function AdminScreen() {
       <SafeAreaView style={styles.container}>
         <View style={styles.centerContainer}>
           <Text style={styles.errorText}>Access Denied</Text>
-          <Text style={styles.errorSubtext}>You don't have admin privileges</Text>
+          <Text style={styles.errorSubtext}>You don&apos;t have admin privileges</Text>
         </View>
       </SafeAreaView>
     );
@@ -275,6 +327,13 @@ export default function AdminScreen() {
           </Text>
           <Text style={styles.statLabel}>Pro Users</Text>
         </View>
+      </View>
+
+      {/* Export Button */}
+      <View style={styles.exportContainer}>
+        <Pressable style={styles.exportButton} onPress={exportEmails}>
+          <Text style={styles.exportButtonText}>📧 Export Email List</Text>
+        </Pressable>
       </View>
 
       {/* Users List */}
@@ -399,6 +458,24 @@ const styles = StyleSheet.create({
     color: '#cccccc',
     marginTop: 5,
   },
+  exportContainer: {
+    paddingHorizontal: 20,
+    paddingBottom: 10,
+  },
+  exportButton: {
+    backgroundColor: '#2196F3',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1976D2',
+  },
+  exportButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   listContainer: {
     padding: 20,
     paddingTop: 0,
@@ -414,33 +491,38 @@ const styles = StyleSheet.create({
   userHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     marginBottom: 10,
   },
-  userInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  userMainInfo: {
     flex: 1,
+    marginRight: 10,
   },
   userEmail: {
     fontSize: 16,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginRight: 10,
+    marginBottom: 4,
+  },
+  usageText: {
+    fontSize: 14,
+    color: '#cccccc',
+  },
+  badgeContainer: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-start',
   },
   badge: {
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,
+    minWidth: 50,
+    alignItems: 'center',
   },
   badgeText: {
     fontSize: 12,
     fontWeight: 'bold',
     color: '#ffffff',
-  },
-  usageText: {
-    fontSize: 14,
-    color: '#cccccc',
   },
   userDetails: {
     flexDirection: 'row',
