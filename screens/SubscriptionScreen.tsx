@@ -60,18 +60,18 @@ export default function SubscriptionScreen() {
             <Text style={styles.buttonText}>🔴 DEBUG UPGRADE</Text>
           </Pressable>
 
-          <Pressable style={styles.testButton} onPress={handleDebugUpgrade}>
-            <Text style={styles.buttonText}>🚀 UPGRADE TO PRO (TEST)</Text>
-          </Pressable>
-
           {!isPro ? (
-            <Text style={styles.debugText}>Upgrade button should be above</Text>
+            <Text style={styles.debugText}>Upgrade button should be below</Text>
           ) : (
             <Text style={styles.proText}>✅ You are PRO!</Text>
           )}
 
           <Pressable style={styles.signOutButton} onPress={handleSignOut}>
             <Text style={styles.buttonText}>🚪 SIGN OUT</Text>
+          </Pressable>
+
+          <Pressable style={[styles.testButton, { backgroundColor: '#00FF00' }]} onPress={handleDebugUpgrade}>
+            <Text style={styles.buttonText}>🟢 UPGRADE MOVED TO BOTTOM</Text>
           </Pressable>
         </View>
       </View>
