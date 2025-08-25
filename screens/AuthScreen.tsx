@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useBasic } from '@basictech/expo';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import Logo from '../components/Logo';
 
 export default function AuthScreen() {

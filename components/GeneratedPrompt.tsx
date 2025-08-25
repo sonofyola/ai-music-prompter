@@ -1,8 +1,7 @@
-
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 
 interface GeneratedPromptProps {
   prompt: string;

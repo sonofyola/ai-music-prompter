@@ -2,7 +2,7 @@ import React from 'react';
 import { TouchableOpacity, StyleSheet, Animated, Text } from 'react-native';
 // Temporarily comment out MaterialIcons to test
 // import { MaterialIcons } from '@expo/vector-icons';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 
 export default function ThemeToggle() {
   const { theme, toggleTheme, colors } = useTheme();

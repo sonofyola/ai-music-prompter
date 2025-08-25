@@ -10,7 +10,7 @@ import {
   TextInput
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
 import IconFallback from './IconFallback';
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, StyleSheet, TextInputProps, TouchableOpacity } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import IconFallback from './IconFallback';
 
 interface FormFieldProps extends TextInputProps {

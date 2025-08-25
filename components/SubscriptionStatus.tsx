@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { useUsage } from '../contexts/UsageContext';
 import { openCustomerPortal } from '../utils/subscriptionService';
 import { useBasic } from '@basictech/expo';

@@ -30,7 +30,7 @@ import SubscriptionStatus from '../components/SubscriptionStatus';
 import UpgradeModal from '../components/UpgradeModal';
 
 // Contexts
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { useUsage } from '../contexts/UsageContext';
 import { usePromptHistory } from '../contexts/PromptHistoryContext';
 

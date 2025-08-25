@@ -9,7 +9,7 @@ import {
   FlatList 
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { PROMPT_TEMPLATES, TEMPLATE_CATEGORIES } from '../utils/promptTemplates';
 import IconFallback from './IconFallback';
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../utils/theme';
 import { useBasic } from '@basictech/expo';
 import StripePaymentForm from './StripePaymentForm';
 import IconFallback from './IconFallback';
