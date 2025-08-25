@@ -34,6 +34,11 @@ export default function ModernLandingPage({ onGetStarted }: ModernLandingPagePro
           <TouchableOpacity style={styles.ctaButton} onPress={onGetStarted}>
             <Text style={styles.ctaButtonText}>Generate My Prompt →</Text>
           </TouchableOpacity>
+          
+          {/* No Credit Card Message */}
+          <Text style={styles.noCreditCardText}>
+            No credit card required to try
+          </Text>
         </View>
 
         {/* Problem/Solution Section */}
@@ -208,6 +213,13 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  noCreditCardText: {
+    fontSize: 14,
+    color: '#888888',
+    textAlign: 'center',
+    marginTop: 12,
+    fontStyle: 'italic',
   },
   problemSection: {
     paddingHorizontal: 20,
