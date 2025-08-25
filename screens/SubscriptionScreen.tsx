@@ -21,22 +21,11 @@ export default function SubscriptionScreen() {
     console.log('UPGRADE BUTTON PRESSED!');
     console.log('Current isPro state before:', isPro);
     
-    Alert.alert('Upgrade to Pro', 'Would you like to upgrade to Pro access?', [
-      { text: 'Cancel', style: 'cancel' },
-      { 
-        text: 'Upgrade', 
-        onPress: () => {
-          console.log('User confirmed upgrade');
-          console.log('About to set isPro to true...');
-          
-          setIsPro(true);
-          setDebugCounter(prev => prev + 1);
-          
-          console.log('State update called');
-          Alert.alert('Success!', 'You are now Pro! 🎉');
-        }
-      }
-    ]);
+    // Simplified - no Alert, just direct state change
+    console.log('About to set isPro to true...');
+    setIsPro(true);
+    setDebugCounter(prev => prev + 1);
+    console.log('State update called');
   };
 
   const handleSignOut = () => {
@@ -123,6 +112,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: 'center',
     minHeight: 60,
+    zIndex: 1,
+    elevation: 1,
   },
   signOutButton: {
     backgroundColor: '#666666',
