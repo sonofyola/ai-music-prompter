@@ -4,8 +4,7 @@ import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet, AppState } from 'react-native';
 
-// Context Providers - using direct imports
-import { ThemeProvider } from './contexts/ThemeContext';
+// Context Providers - simplified without theme
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import { UsageProvider } from './contexts/UsageContext';
 
@@ -16,7 +15,6 @@ import AuthScreen from './screens/AuthScreen';
 // Utils
 import { checkPendingPayments, markPaymentCompleted } from './utils/paymentVerification';
 
-// Trigger build - Metro cache fix applied
 function AppContent() {
   const { isSignedIn, user, isLoading } = useBasic();
 
@@ -87,13 +85,11 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <UsageProvider>
-            <PromptHistoryProvider>
-              <AppContent />
-            </PromptHistoryProvider>
-          </UsageProvider>
-        </ThemeProvider>
+        <UsageProvider>
+          <PromptHistoryProvider>
+            <AppContent />
+          </PromptHistoryProvider>
+        </UsageProvider>
       </SafeAreaProvider>
     </BasicProvider>
   );
