@@ -4,11 +4,6 @@ import { BasicProvider, useBasic } from '@basictech/expo';
 import { schema } from './basic.config';
 import { View, Text, StyleSheet, AppState } from 'react-native';
 
-// Context Providers
-import { ThemeProvider } from './contexts/ThemeContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
-import { UsageProvider } from './contexts/UsageContext';
-
 // Screens
 import PromptFormScreen from './screens/PromptFormScreen';
 import AuthScreen from './screens/AuthScreen';
@@ -87,13 +82,7 @@ export default function App() {
   return (
     <BasicProvider project_id={schema.project_id} schema={schema}>
       <SafeAreaProvider>
-        <ThemeProvider>
-          <UsageProvider>
-            <PromptHistoryProvider>
-              <AppContent />
-            </PromptHistoryProvider>
-          </UsageProvider>
-        </ThemeProvider>
+        <AppContent />
       </SafeAreaProvider>
     </BasicProvider>
   );
