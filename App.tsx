@@ -1,36 +1,46 @@
 import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { BasicProvider } from '@basictech/expo';
-import { schema } from './basic.config';
+import { View, Text, StyleSheet } from 'react-native';
 
-// Contexts
-import { ThemeProvider } from './contexts/ThemeContext';
-import { UsageProvider } from './contexts/UsageContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
-import { NotificationProvider } from './contexts/NotificationContext';
-import { MaintenanceProvider } from './contexts/MaintenanceContext';
-
-// Main Screen
-import PromptFormScreen from './screens/PromptFormScreen';
+console.log('App.tsx loading...');
 
 export default function App() {
-  console.log('App render - BasicProvider project_id:', schema.project_id);
+  console.log('App component rendering...');
   
-  return (
-    <BasicProvider project_id={schema.project_id} schema={schema}>
-      <SafeAreaProvider>
-        <ThemeProvider>
-          <UsageProvider>
-            <PromptHistoryProvider>
-              <NotificationProvider>
-                <MaintenanceProvider>
-                  <PromptFormScreen />
-                </MaintenanceProvider>
-              </NotificationProvider>
-            </PromptHistoryProvider>
-          </UsageProvider>
-        </ThemeProvider>
-      </SafeAreaProvider>
-    </BasicProvider>
-  );
+  try {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>🎵 AI Music Prompter - Step 1</Text>
+        <Text style={styles.subtext}>Basic React Native working</Text>
+      </View>
+    );
+  } catch (error) {
+    console.error('Error in App render:', error);
+    return (
+      <View style={styles.container}>
+        <Text style={styles.text}>Error in App</Text>
+      </View>
+    );
+  }
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#1a1a1a',
+  },
+  text: {
+    fontSize: 24,
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+  subtext: {
+    fontSize: 16,
+    color: '#cccccc',
+    textAlign: 'center',
+  },
+});
+
+console.log('App.tsx loaded successfully');
