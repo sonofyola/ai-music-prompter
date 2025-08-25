@@ -227,97 +227,93 @@ export function formatPrompt(formData: FormData): string {
   
   // Start with genre foundation
   if (formData.genre) {
-    const genreDetails = getGenreDetails(formData.genre);
-    promptParts.push(`Create a ${formData.genre.toLowerCase()} composition characterized by ${genreDetails.characteristics.join(', ')}`);
+    promptParts.push(`Create a ${formData.genre.toLowerCase()} track`);
     
     if (formData.style) {
-      promptParts.push(`with ${formData.style.toLowerCase()} stylistic elements and period-appropriate production techniques`);
+      promptParts.push(`with ${formData.style.toLowerCase()} influences`);
     }
   } else if (formData.style) {
-    promptParts.push(`Create a musical composition in the ${formData.style.toLowerCase()} style`);
+    promptParts.push(`Create a ${formData.style.toLowerCase()} style track`);
   } else {
-    promptParts.push('Create a musical composition');
+    promptParts.push('Create a musical track');
   }
   
-  // Add mood and emotional direction
+  // Add mood and energy
   if (formData.mood) {
     const moodDetails = getMoodDetails(formData.mood);
-    promptParts.push(`that embodies a ${formData.mood.toLowerCase()} mood with ${moodDetails.atmosphere} atmosphere, ${moodDetails.emotionalTone} emotional tone, and ${moodDetails.energyLevel} energy level, incorporating ${moodDetails.musicalElements.join(', ')}`);
+    promptParts.push(`with a ${formData.mood.toLowerCase()} mood featuring ${moodDetails.musicalElements.slice(0, 2).join(' and ')}`);
   }
   
-  // Add energy specification
   if (formData.energy && formData.energy !== formData.mood) {
-    promptParts.push(`with ${formData.energy.toLowerCase()} energy that maintains appropriate dynamic range and intensity progression throughout`);
+    promptParts.push(`and ${formData.energy.toLowerCase()} energy`);
   }
   
-  // Add thematic content
-  if (formData.theme) {
-    promptParts.push(`centered around the theme of ${formData.theme.toLowerCase()}, ensuring all musical elements support and enhance this central concept`);
-  }
-  
-  // Add tempo specifications
+  // Add tempo and length
   if (formData.tempo) {
-    const tempoDesc = generateTempoDescription(formData.tempo);
-    promptParts.push(`at a ${formData.tempo.toLowerCase()} that provides ${tempoDesc}`);
+    promptParts.push(`at ${formData.tempo.toLowerCase()}`);
   }
   
-  // Add track length considerations
   if (formData.trackLength) {
-    promptParts.push(`structured for a ${formData.trackLength.toLowerCase()} duration with appropriate pacing, development, and resolution that fully utilizes the specified timeframe`);
+    promptParts.push(`lasting ${formData.trackLength.toLowerCase()}`);
   }
   
-  // Add instrumentation details
+  // Add instrumentation
   if (formData.instruments.length > 0) {
     const instrumentDetails = generateInstrumentDetails(formData.instruments);
-    promptParts.push(`featuring ${instrumentDetails}, with careful attention to frequency separation, dynamic interaction, and musical conversation between all instrumental parts`);
+    promptParts.push(`featuring ${instrumentDetails}`);
   }
   
-  // Add vocal specifications
+  // Add vocals
   if (formData.vocals) {
     const vocalDesc = generateVocalDescription(formData.vocals);
-    promptParts.push(`incorporating ${vocalDesc}`);
+    promptParts.push(`with ${vocalDesc}`);
   }
   
-  // Add bass characteristics
+  // Add bass
   if (formData.bass) {
     const bassDesc = generateBassDescription(formData.bass);
-    promptParts.push(`built upon ${bassDesc} that provides the rhythmic and harmonic foundation`);
+    promptParts.push(`built on ${bassDesc}`);
   }
   
-  // Add structural framework
+  // Add structure
   if (formData.structure) {
     const structureDesc = generateStructureDescription(formData.structure);
-    promptParts.push(`organized with ${structureDesc}, ensuring smooth transitions between sections and maintaining listener interest through variation while creating a satisfying musical arc from beginning to end`);
+    promptParts.push(`using ${structureDesc}`);
   }
   
   // Add production style
   if (formData.production) {
-    promptParts.push(`produced with ${formData.production.toLowerCase()} production style, emphasizing sonic clarity, spatial positioning, and professional polish with balanced frequency spectrum, appropriate dynamic range, and clear instrument separation`);
+    promptParts.push(`with ${formData.production.toLowerCase()} production quality`);
   }
   
-  // Add weirdness/experimentation level
+  // Add weirdness level
   if (formData.weirdness) {
     const weirdnessDesc = generateWeirdnessDescription(formData.weirdness);
     promptParts.push(`incorporating ${weirdnessDesc}`);
   }
   
-  // Add custom instructions
-  if (formData.customPrompt) {
-    promptParts.push(`while seamlessly integrating the following additional creative elements: ${formData.customPrompt}`);
+  // Add theme
+  if (formData.theme) {
+    promptParts.push(`centered around ${formData.theme.toLowerCase()}`);
   }
   
-  // Add quality standards and final direction
-  promptParts.push('The final composition should maintain professional audio quality with cohesive musical elements that work together harmoniously, creating an engaging listening experience that balances creativity with accessibility, delivers authentic performance characteristics for all instruments, and achieves appropriate emotional impact and artistic expression throughout the entire piece.');
+  // Add custom instructions
+  if (formData.customPrompt) {
+    promptParts.push(`while including ${formData.customPrompt}`);
+  }
   
-  // Join all parts into one comprehensive paragraph
+  // Add quality directive
+  promptParts.push('Ensure professional audio quality with clear mix, balanced frequencies, authentic instrument sounds, and engaging musical flow throughout.');
+  
+  // Join all parts into one paragraph
   let finalPrompt = promptParts.join(' ');
   
-  // Clean up any double spaces and ensure proper flow
+  // Clean up spacing and flow
   finalPrompt = finalPrompt.replace(/\s+/g, ' ').trim();
   
-  // If no meaningful content was provided, return helpful guidance
+  // If no meaningful content, return guidance
   if (promptParts.length <= 2) {
-    return 'To generate a detailed, professional music prompt, please fill in the form fields above. The more information you provide about genre, mood, tempo, instruments, and other musical elements, the more comprehensive and articulated your prompt will become, resulting in better AI music generation results.';
+    return 'Please fill in the form fields above to generate a detailed music prompt. The more information you provide, the better your AI music results will be.';
   }
   
   return finalPrompt;
