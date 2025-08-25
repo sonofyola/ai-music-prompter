@@ -1672,12 +1672,12 @@ export const getPostBySlug = (slug: string): BlogPost | undefined => {
 
 export const getAllCategories = (): string[] => {
   const categories = blogPosts.map(post => post.category);
-  return [...new Set(categories)];
+  return Array.from(new Set(categories));
 };
 
 export const getAllTags = (): string[] => {
   const tags = blogPosts.flatMap(post => post.tags);
-  return [...new Set(tags)];
+  return Array.from(new Set(tags));
 };
 
 export const getRelatedPosts = (currentPost: BlogPost, limit: number = 3): BlogPost[] => {

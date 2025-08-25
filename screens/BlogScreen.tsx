@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Linking, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import { blogPosts, getFeaturedPosts, getAllCategories, searchPosts, type BlogPost } from '../data/blogPosts';
@@ -83,6 +83,9 @@ export default function BlogScreen() {
             <Text style={styles.postReadTime}>{post.readTime} min read</Text>
           </View>
 
+          {/* Social Buttons */}
+          {renderSocialButtons(post)}
+
           <View style={styles.postTags}>
             {post.tags.map((tag, index) => (
               <View key={index} style={styles.tag}>
@@ -96,6 +99,12 @@ export default function BlogScreen() {
             <Text style={styles.contentText}>
               {getPlainTextPreview(post.content, 1000)}
             </Text>
+          </View>
+
+          {/* Social Buttons Bottom */}
+          <View style={styles.socialBottomSection}>
+            <Text style={styles.socialBottomTitle}>Found this helpful? Share it!</Text>
+            {renderSocialButtons(post)}
           </View>
 
           {/* Call to Action */}
@@ -129,6 +138,36 @@ export default function BlogScreen() {
         <View style={styles.header}>
           <Text style={styles.title}>📚 AI Music Blog</Text>
           <Text style={styles.subtitle}>Tips, tutorials, and insights for AI music creation</Text>
+          
+          {/* Social Follow Buttons */}
+          <View style={styles.followSection}>
+            <Text style={styles.followTitle}>Follow us for updates:</Text>
+            <View style={styles.followButtons}>
+              <TouchableOpacity 
+                style={[styles.followButton, styles.twitterButton]}
+                onPress={() => Linking.openURL('https://twitter.com/aimusicpromptr')}
+              >
+                <MaterialIcons name="share" size={16} color="#ffffff" />
+                <Text style={styles.followButtonText}>Twitter</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.followButton, styles.facebookButton]}
+                onPress={() => Linking.openURL('https://facebook.com/aimusicpromptr')}
+              >
+                <MaterialIcons name="share" size={16} color="#ffffff" />
+                <Text style={styles.followButtonText}>Facebook</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.followButton, styles.linkedinButton]}
+                onPress={() => Linking.openURL('https://linkedin.com/company/aimusicpromptr')}
+              >
+                <MaterialIcons name="business" size={16} color="#ffffff" />
+                <Text style={styles.followButtonText}>LinkedIn</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
 
         {/* Search */}
@@ -198,6 +237,17 @@ export default function BlogScreen() {
                     <Text style={styles.featuredCategory}>{post.category}</Text>
                     <Text style={styles.featuredReadTime}>{post.readTime} min</Text>
                   </View>
+                  
+                  {/* Quick Share Button */}
+                  <TouchableOpacity 
+                    style={styles.quickShareButton}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      sharePost('twitter', post);
+                    }}
+                  >
+                    <MaterialIcons name="share" size={16} color="#4CAF50" />
+                  </TouchableOpacity>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -231,9 +281,20 @@ export default function BlogScreen() {
                       <Text style={styles.postCardCategory}>{post.category}</Text>
                       <Text style={styles.postCardDate}>{formatDate(post.publishDate)}</Text>
                     </View>
-                    <View style={styles.postCardReadTime}>
-                      <MaterialIcons name="schedule" size={14} color="#888888" />
-                      <Text style={styles.postCardReadTimeText}>{post.readTime} min</Text>
+                    <View style={styles.postCardActions}>
+                      <View style={styles.postCardReadTime}>
+                        <MaterialIcons name="schedule" size={14} color="#888888" />
+                        <Text style={styles.postCardReadTimeText}>{post.readTime} min</Text>
+                      </View>
+                      <TouchableOpacity 
+                        style={styles.postCardShareButton}
+                        onPress={(e) => {
+                          e.stopPropagation();
+                          sharePost('twitter', post);
+                        }}
+                      >
+                        <MaterialIcons name="share" size={16} color="#888888" />
+                      </TouchableOpacity>
                     </View>
                   </View>
                   
@@ -261,9 +322,9 @@ export default function BlogScreen() {
           )}
         </View>
 
-        {/* Newsletter Signup */}
+        {/* Newsletter Signup with Social */}
         <View style={styles.newsletterSection}>
-          <Text style={styles.newsletterTitle}>Stay Updated</Text>
+          <Text style={styles.newsletterTitle}>Stay Connected</Text>
           <Text style={styles.newsletterDescription}>
             Get the latest AI music tips and tutorials delivered to your inbox
           </Text>
@@ -271,6 +332,40 @@ export default function BlogScreen() {
             <MaterialIcons name="email" size={20} color="#ffffff" />
             <Text style={styles.newsletterButtonText}>Subscribe to Newsletter</Text>
           </TouchableOpacity>
+          
+          {/* Social Links in Newsletter */}
+          <View style={styles.newsletterSocial}>
+            <Text style={styles.newsletterSocialTitle}>Or follow us:</Text>
+            <View style={styles.newsletterSocialButtons}>
+              <TouchableOpacity 
+                style={[styles.socialIconButton, styles.twitterButton]}
+                onPress={() => Linking.openURL('https://twitter.com/aimusicpromptr')}
+              >
+                <MaterialIcons name="share" size={20} color="#ffffff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.socialIconButton, styles.facebookButton]}
+                onPress={() => Linking.openURL('https://facebook.com/aimusicpromptr')}
+              >
+                <MaterialIcons name="share" size={20} color="#ffffff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.socialIconButton, styles.linkedinButton]}
+                onPress={() => Linking.openURL('https://linkedin.com/company/aimusicpromptr')}
+              >
+                <MaterialIcons name="business" size={20} color="#ffffff" />
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.socialIconButton, styles.redditButton]}
+                onPress={() => Linking.openURL('https://reddit.com/r/aimusicpromptr')}
+              >
+                <MaterialIcons name="forum" size={20} color="#ffffff" />
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -301,7 +396,150 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#cccccc',
     textAlign: 'center',
+    marginBottom: 20,
   },
+  
+  // Social Follow Buttons
+  followSection: {
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  followTitle: {
+    fontSize: 14,
+    color: '#cccccc',
+    marginBottom: 12,
+  },
+  followButtons: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  followButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    gap: 4,
+  },
+  followButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  
+  // Social Sharing Buttons
+  socialButtons: {
+    marginVertical: 20,
+    padding: 16,
+    backgroundColor: '#2a2a2a',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#444444',
+  },
+  socialTitle: {
+    fontSize: 14,
+    color: '#ffffff',
+    fontWeight: '600',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  socialButtonsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  socialButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+    gap: 4,
+    minWidth: 80,
+    justifyContent: 'center',
+  },
+  socialButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  twitterButton: {
+    backgroundColor: '#1DA1F2',
+  },
+  facebookButton: {
+    backgroundColor: '#4267B2',
+  },
+  linkedinButton: {
+    backgroundColor: '#0077B5',
+  },
+  redditButton: {
+    backgroundColor: '#FF4500',
+  },
+  copyButton: {
+    backgroundColor: '#666666',
+  },
+  
+  // Social Bottom Section
+  socialBottomSection: {
+    marginTop: 32,
+    marginBottom: 24,
+  },
+  socialBottomTitle: {
+    fontSize: 16,
+    color: '#ffffff',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginBottom: 16,
+  },
+  
+  // Quick Share Buttons
+  quickShareButton: {
+    position: 'absolute',
+    top: 12,
+    left: 12,
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    borderRadius: 16,
+    width: 32,
+    height: 32,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  postCardActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  postCardShareButton: {
+    padding: 4,
+    borderRadius: 4,
+  },
+  
+  // Social Icon Buttons
+  socialIconButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  
+  // Newsletter Social
+  newsletterSocial: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  newsletterSocialTitle: {
+    fontSize: 14,
+    color: '#cccccc',
+    marginBottom: 12,
+  },
+  newsletterSocialButtons: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  
+  // Search
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -321,6 +559,8 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
   },
+  
+  // Categories
   categoriesContainer: {
     marginBottom: 20,
   },
@@ -348,6 +588,8 @@ const styles = StyleSheet.create({
   activeCategoryButtonText: {
     color: '#ffffff',
   },
+  
+  // Sections
   section: {
     marginBottom: 32,
   },
@@ -358,6 +600,8 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     paddingHorizontal: 20,
   },
+  
+  // Featured Posts
   featuredContainer: {
     paddingHorizontal: 20,
     gap: 16,
@@ -412,6 +656,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888888',
   },
+  
+  // Post Cards
   postsContainer: {
     paddingHorizontal: 20,
     gap: 16,
@@ -495,6 +741,8 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888888',
   },
+  
+  // Empty State
   emptyState: {
     alignItems: 'center',
     padding: 40,
@@ -511,6 +759,8 @@ const styles = StyleSheet.create({
     color: '#888888',
     textAlign: 'center',
   },
+  
+  // Newsletter
   newsletterSection: {
     backgroundColor: '#2a2a2a',
     margin: 20,
@@ -547,7 +797,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
-  // Post view styles
+  
+  // Post View Styles
   postContainer: {
     flex: 1,
   },
@@ -667,3 +918,46 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
+
+const renderSocialButtons = (post: BlogPost) => {
+  return (
+    <View style={styles.socialButtonsRow}>
+      <TouchableOpacity 
+        style={styles.socialButton}
+        onPress={() => Linking.openURL(post.social.twitter)}
+      >
+        <MaterialIcons name="share" size={16} color="#ffffff" />
+        <Text style={styles.socialButtonText}>Twitter</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={styles.socialButton}
+        onPress={() => Linking.openURL(post.social.facebook)}
+      >
+        <MaterialIcons name="share" size={16} color="#ffffff" />
+        <Text style={styles.socialButtonText}>Facebook</Text>
+      </TouchableOpacity>
+      
+      <TouchableOpacity 
+        style={styles.socialButton}
+        onPress={() => Linking.openURL(post.social.linkedin)}
+      >
+        <MaterialIcons name="business" size={16} color="#ffffff" />
+        <Text style={styles.socialButtonText}>LinkedIn</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
+const sharePost = (platform: string, post: BlogPost) => {
+  const title = post.title;
+  const url = post.url;
+  const description = post.excerpt;
+  const image = post.image;
+
+  if (platform === 'twitter') {
+    Linking.openURL(`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}%20${encodeURIComponent(url)}%20${encodeURIComponent(description)}`);
+  } else if (platform === 'facebook') {
+    Linking.openURL(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`);
+  }
+};
