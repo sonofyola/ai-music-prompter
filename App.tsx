@@ -10,20 +10,32 @@ import SubscriptionScreen from './screens/SubscriptionScreen';
 import BlogScreen from './screens/BlogScreen';
 import ModernLandingPage from './components/ModernLandingPage';
 import CookieConsent from './components/CookieConsent';
+import AuthDebug from './components/AuthDebug';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
-type Screen = 'prompt' | 'history' | 'admin' | 'subscription' | 'blog';
+type Screen = 'prompt' | 'history' | 'admin' | 'subscription' | 'blog' | 'debug';
 
 function AppContent() {
   const { isLoading, isSignedIn, user, login, signout } = useBasic();
   const [currentScreen, setCurrentScreen] = React.useState<Screen>('prompt');
   const [showLandingPage, setShowLandingPage] = React.useState(true);
 
+  // Debug logging
+  React.useEffect(() => {
+    console.log('Auth State Debug:', {
+      isLoading,
+      isSignedIn,
+      user: user ? { email: user.email, name: user.name } : null,
+      showLandingPage
+    });
+  }, [isLoading, isSignedIn, user, showLandingPage]);
+
   if (isLoading) {
     return (
       <View style={styles.container}>
         <Text style={styles.text}>Loading...</Text>
+        <Text style={styles.subtitle}>Checking authentication...</Text>
       </View>
     );
   }
@@ -33,6 +45,7 @@ function AppContent() {
     return (
       <ModernLandingPage 
         onGetStarted={() => {
+          console.log('Landing page dismissed');
           setShowLandingPage(false);
         }}
       />
@@ -44,7 +57,13 @@ function AppContent() {
       <View style={styles.container}>
         <Text style={styles.title}>🎵 AI Music Prompter</Text>
         <Text style={styles.subtitle}>Sign in to create professional music prompts</Text>
-        <TouchableOpacity style={styles.button} onPress={login}>
+        <TouchableOpacity 
+          style={styles.button} 
+          onPress={() => {
+            console.log('Login button pressed');
+            login();
+          }}
+        >
           <Text style={styles.buttonText}>Sign In</Text>
         </TouchableOpacity>
         <TouchableOpacity 
@@ -59,16 +78,26 @@ function AppContent() {
         >
           <Text style={styles.buttonText}>📚 Read Blog</Text>
         </TouchableOpacity>
+        <TouchableOpacity 
+          style={[styles.button, { backgroundColor: '#FF9800' }]} 
+          onPress={() => setCurrentScreen('debug')}
+        >
+          <Text style={styles.buttonText}>🔍 Debug Auth</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
+  // This should show after successful login
+  console.log('Rendering authenticated app interface');
+  
   const navigateToSubscription = () => {
     setCurrentScreen('subscription');
   };
 
   const handleLogout = async () => {
     try {
+      console.log('Logging out...');
       await signout();
       setShowLandingPage(true);
     } catch (error) {
@@ -88,6 +117,8 @@ function AppContent() {
         return <SubscriptionScreen />;
       case 'blog':
         return <BlogScreen />;
+      case 'debug':
+        return <AuthDebug />;
       default:
         return <PromptFormScreen onNavigateToSubscription={navigateToSubscription} />;
     }
@@ -98,6 +129,13 @@ function AppContent() {
   return (
     <PromptHistoryProvider>
       <View style={styles.appContainer}>
+        {/* Debug Info */}
+        <View style={{ padding: 10, backgroundColor: '#333', borderBottomWidth: 1, borderBottomColor: '#555' }}>
+          <Text style={{ color: '#fff', fontSize: 12 }}>
+            Debug: User: {user?.email || 'No email'} | Signed In: {isSignedIn ? 'Yes' : 'No'}
+          </Text>
+        </View>
+
         {/* Navigation Bar */}
         <View style={styles.navbar}>
           <TouchableOpacity 
@@ -133,6 +171,15 @@ function AppContent() {
           >
             <Text style={[styles.navButtonText, currentScreen === 'subscription' && styles.activeNavButtonText]}>
               💎 Pro
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={[styles.navButton, currentScreen === 'debug' && styles.activeNavButton]}
+            onPress={() => setCurrentScreen('debug')}
+          >
+            <Text style={[styles.navButtonText, currentScreen === 'debug' && styles.activeNavButtonText]}>
+              🔍 Debug
             </Text>
           </TouchableOpacity>
           
