@@ -14,6 +14,12 @@ export interface BlogPost {
   metaDescription: string;
   keywords: string[];
   image?: string;
+  url: string;
+  social: {
+    twitter: string;
+    facebook: string;
+    linkedin: string;
+  };
 }
 
 export const blogPosts: BlogPost[] = [
@@ -167,7 +173,13 @@ Ready to start creating amazing music with Suno AI? Try our AI Music Prompter to
     featured: true,
     metaDescription: 'Master Suno AI with our complete 2024 guide to AI music prompts. Learn advanced techniques, genre-specific strategies, and optimization tips for better results.',
     keywords: ['Suno AI prompts', 'AI music generation', 'music prompt engineering', 'Suno AI tutorial', 'AI music production'],
-    image: '/blog/suno-ai-guide-2024.jpg'
+    image: '/blog/suno-ai-guide-2024.jpg',
+    url: 'https://aimusicpromptr.com/blog/complete-guide-ai-music-prompts-suno-ai-2024',
+    social: {
+      twitter: 'https://twitter.com/intent/tweet?text=Master%20Suno%20AI%20with%20this%20complete%202024%20guide%20to%20AI%20music%20prompts&url=https://aimusicpromptr.com/blog/complete-guide-ai-music-prompts-suno-ai-2024',
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=https://aimusicpromptr.com/blog/complete-guide-ai-music-prompts-suno-ai-2024',
+      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=https://aimusicpromptr.com/blog/complete-guide-ai-music-prompts-suno-ai-2024'
+    }
   },
   {
     id: '2',
@@ -485,7 +497,13 @@ Whichever platform you choose, our AI Music Prompter can help you create optimiz
     featured: true,
     metaDescription: 'Complete comparison of Udio vs Suno AI for music creators. Compare features, pricing, audio quality, and find the best AI music platform for your needs.',
     keywords: ['Udio vs Suno AI', 'AI music comparison', 'best AI music generator', 'Udio review', 'Suno AI review'],
-    image: '/blog/udio-vs-suno-comparison.jpg'
+    image: '/blog/udio-vs-suno-comparison.jpg',
+    url: 'https://aimusicpromptr.com/blog/udio-vs-suno-ai-complete-comparison-music-creators',
+    social: {
+      twitter: 'https://twitter.com/intent/tweet?text=Udio%20vs%20Suno%20AI%3A%20Complete%20comparison%20for%20music%20creators&url=https://aimusicpromptr.com/blog/udio-vs-suno-ai-complete-comparison-music-creators',
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=https://aimusicpromptr.com/blog/udio-vs-suno-ai-complete-comparison-music-creators',
+      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=https://aimusicpromptr.com/blog/udio-vs-suno-ai-complete-comparison-music-creators'
+    }
   },
   {
     id: '3',
@@ -761,7 +779,13 @@ Ready to master track length control? Use our AI Music Prompter to generate dura
     featured: false,
     metaDescription: 'Master track length control in AI music generation. Learn to create perfect durations from 30-second social clips to 6-minute extended mixes.',
     keywords: ['track length control', 'AI music duration', 'music length optimization', 'social media music', 'streaming music length'],
-    image: '/blog/track-length-control.jpg'
+    image: '/blog/track-length-control.jpg',
+    url: 'https://aimusicpromptr.com/blog/mastering-track-length-control-ai-music-generation',
+    social: {
+      twitter: 'https://twitter.com/intent/tweet?text=Master%20track%20length%20control%20in%20AI%20music%20generation&url=https://aimusicpromptr.com/blog/mastering-track-length-control-ai-music-generation',
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=https://aimusicpromptr.com/blog/mastering-track-length-control-ai-music-generation',
+      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=https://aimusicpromptr.com/blog/mastering-track-length-control-ai-music-generation'
+    }
   },
   {
     id: '4',
@@ -1118,7 +1142,13 @@ Ready to explore the full spectrum of musical creativity? Use our AI Music Promp
     featured: false,
     metaDescription: 'Master the weirdness parameter in AI music generation. Learn to control experimental elements and balance creativity with accessibility for perfect results.',
     keywords: ['weirdness parameter', 'experimental AI music', 'creativity control', 'avant-garde music', 'AI music experimentation'],
-    image: '/blog/weirdness-parameter-guide.jpg'
+    image: '/blog/weirdness-parameter-guide.jpg',
+    url: 'https://aimusicpromptr.com/blog/weirdness-parameter-controlling-creativity-ai-music',
+    social: {
+      twitter: 'https://twitter.com/intent/tweet?text=Master%20the%20weirdness%20parameter%20in%20AI%20music%20generation&url=https://aimusicpromptr.com/blog/weirdness-parameter-controlling-creativity-ai-music',
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=https://aimusicpromptr.com/blog/weirdness-parameter-controlling-creativity-ai-music',
+      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=https://aimusicpromptr.com/blog/weirdness-parameter-controlling-creativity-ai-music'
+    }
   },
   {
     id: '5',
@@ -1653,7 +1683,13 @@ Ready to master bass in your AI music? Use our AI Music Prompter to explore diff
     featured: false,
     metaDescription: 'Complete guide to bass styles in AI music generation. Learn about deep bass, 808s, funky grooves, and how to specify perfect bass for any genre.',
     keywords: ['bass styles', 'AI music bass', 'deep bass', '808 bass', 'funky bass', 'synth bass', 'bass guitar AI'],
-    image: '/blog/bass-styles-guide.jpg'
+    image: '/blog/bass-styles-guide.jpg',
+    url: 'https://aimusicpromptr.com/blog/bass-styles-guide-deep-sub-funky-grooves-ai-music',
+    social: {
+      twitter: 'https://twitter.com/intent/tweet?text=Complete%20guide%20to%20bass%20styles%20in%20AI%20music%20generation&url=https://aimusicpromptr.com/blog/bass-styles-guide-deep-sub-funky-grooves-ai-music',
+      facebook: 'https://www.facebook.com/sharer/sharer.php?u=https://aimusicpromptr.com/blog/bass-styles-guide-deep-sub-funky-grooves-ai-music',
+      linkedin: 'https://www.linkedin.com/sharing/share-offsite/?url=https://aimusicpromptr.com/blog/bass-styles-guide-deep-sub-funky-grooves-ai-music'
+    }
   }
 ];
 

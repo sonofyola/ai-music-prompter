@@ -11,6 +11,7 @@ import BlogScreen from './screens/BlogScreen';
 import ModernLandingPage from './components/ModernLandingPage';
 import CookieConsent from './components/CookieConsent';
 import AuthDebug from './components/AuthDebug';
+import SEOHead from './components/SEOHead';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 
@@ -31,9 +32,48 @@ function AppContent() {
     });
   }, [isLoading, isSignedIn, user, showLandingPage]);
 
+  // SEO title based on current screen
+  const getPageTitle = () => {
+    switch (currentScreen) {
+      case 'prompt':
+        return 'AI Music Prompter - Professional Music Prompts for Suno AI & Udio';
+      case 'history':
+        return 'Prompt History - AI Music Prompter';
+      case 'blog':
+        return 'AI Music Blog - Tips, Tutorials & Guides | AI Music Prompter';
+      case 'subscription':
+        return 'Pro Subscription - Unlimited AI Music Prompts | AI Music Prompter';
+      case 'admin':
+        return 'Admin Dashboard - AI Music Prompter';
+      case 'debug':
+        return 'Debug Panel - AI Music Prompter';
+      default:
+        return 'AI Music Prompter - Professional Music Prompts for Suno AI & Udio';
+    }
+  };
+
+  const getPageDescription = () => {
+    switch (currentScreen) {
+      case 'prompt':
+        return 'Generate professional AI music prompts for Suno AI, Udio, and other platforms. Create perfect prompts with our advanced tool featuring genre templates, mood controls, and expert optimization.';
+      case 'history':
+        return 'Access your saved AI music prompts and prompt history. Manage, edit, and reuse your best music generation prompts.';
+      case 'blog':
+        return 'Learn AI music generation with expert tutorials, tips, and guides. Master Suno AI, Udio, and other platforms with our comprehensive blog.';
+      case 'subscription':
+        return 'Upgrade to AI Music Prompter Pro for unlimited prompts, advanced features, and priority support. Perfect for professional music creators.';
+      default:
+        return 'Generate professional AI music prompts for Suno AI, Udio, and other platforms. Create perfect prompts with our advanced tool featuring genre templates, mood controls, and expert optimization.';
+    }
+  };
+
   if (isLoading) {
     return (
       <View style={styles.container}>
+        <SEOHead 
+          title="Loading - AI Music Prompter"
+          description="AI Music Prompter is loading. Please wait while we prepare your professional music prompt generator."
+        />
         <Text style={styles.text}>Loading...</Text>
         <Text style={styles.subtitle}>Checking authentication...</Text>
       </View>
@@ -43,18 +83,42 @@ function AppContent() {
   // Show landing page if not signed in and landing page hasn't been dismissed
   if (!isSignedIn && showLandingPage) {
     return (
-      <ModernLandingPage 
-        onGetStarted={() => {
-          console.log('Landing page dismissed');
-          setShowLandingPage(false);
-        }}
-      />
+      <>
+        <SEOHead 
+          title="AI Music Prompter - Professional Music Prompts for Suno AI, Udio & More"
+          description="Generate professional AI music prompts for Suno AI, Udio, and other platforms. Create perfect prompts with our advanced tool featuring genre templates, mood controls, and expert optimization."
+          keywords={[
+            'AI music prompts',
+            'Suno AI prompts',
+            'Udio prompts',
+            'AI music generation',
+            'music prompt generator',
+            'AI music tool',
+            'music production AI',
+            'prompt engineering music',
+            'AI music creator',
+            'music AI prompts',
+            'professional music prompts',
+            'AI music software'
+          ]}
+        />
+        <ModernLandingPage 
+          onGetStarted={() => {
+            console.log('Landing page dismissed');
+            setShowLandingPage(false);
+          }}
+        />
+      </>
     );
   }
 
   if (!isSignedIn) {
     return (
       <View style={styles.container}>
+        <SEOHead 
+          title="Sign In - AI Music Prompter"
+          description="Sign in to AI Music Prompter to access professional music prompt generation, save your prompts, and unlock advanced features."
+        />
         <Text style={styles.title}>🎵 AI Music Prompter</Text>
         <Text style={styles.subtitle}>Sign in to create professional music prompts</Text>
         <TouchableOpacity 
@@ -128,6 +192,20 @@ function AppContent() {
 
   return (
     <PromptHistoryProvider>
+      <SEOHead 
+        title={getPageTitle()}
+        description={getPageDescription()}
+        keywords={[
+          'AI music prompts',
+          'Suno AI prompts',
+          'Udio prompts',
+          'AI music generation',
+          'music prompt generator',
+          'AI music tool',
+          'music production AI',
+          'prompt engineering music'
+        ]}
+      />
       <View style={styles.appContainer}>
         {/* Debug Info */}
         <View style={{ padding: 10, backgroundColor: '#333', borderBottomWidth: 1, borderBottomColor: '#555' }}>

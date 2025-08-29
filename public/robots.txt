@@ -4,30 +4,28 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Sitemaps
 Sitemap: https://aimusicpromptr.com/sitemap.xml
 
-# Crawl delay (optional - helps with server load)
+# Crawl-delay for respectful crawling
 Crawl-delay: 1
 
-# Allow all major search engines
-User-agent: Googlebot
-Allow: /
+# Disallow admin areas
+Disallow: /admin/
+Disallow: /debug/
 
-User-agent: Bingbot
-Allow: /
+# Allow important pages
+Allow: /blog/
+Allow: /subscription/
+Allow: /privacy-policy/
+Allow: /terms-of-service/
 
-User-agent: Slurp
-Allow: /
-
-User-agent: DuckDuckBot
-Allow: /
-
-User-agent: Baiduspider
-Allow: /
-
-User-agent: YandexBot
-Allow: /
+# Allow all AI music related content
+Allow: /blog/complete-guide-ai-music-prompts-suno-ai-2024
+Allow: /blog/udio-vs-suno-ai-complete-comparison-music-creators
+Allow: /blog/mastering-track-length-control-ai-music-generation
+Allow: /blog/weirdness-parameter-controlling-creativity-ai-music
+Allow: /blog/bass-styles-guide-deep-sub-funky-grooves-ai-music
 
 # Block AI training crawlers (optional)
 User-agent: GPTBot
