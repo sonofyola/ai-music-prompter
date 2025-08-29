@@ -1,5 +1,5 @@
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
+import { View } from 'react-native';
 
 interface SEOHeadProps {
   title?: string;
@@ -36,93 +36,130 @@ export default function SEOHead({
   noIndex = false
 }: SEOHeadProps) {
   const fullTitle = title.includes('AI Music Prompter') ? title : `${title} | AI Music Prompter`;
-  
-  const defaultStructuredData = {
-    "@context": "https://schema.org",
-    "@type": "WebApplication",
-    "name": "AI Music Prompter",
-    "description": description,
-    "url": canonicalUrl,
-    "applicationCategory": "MultimediaApplication",
-    "operatingSystem": "Web Browser",
-    "offers": {
-      "@type": "Offer",
-      "price": "0",
-      "priceCurrency": "USD",
-      "availability": "https://schema.org/InStock"
-    },
-    "creator": {
-      "@type": "Organization",
-      "name": "AI Music Prompter Team",
-      "url": "https://aimusicpromptr.com"
-    },
-    "featureList": [
-      "AI Music Prompt Generation",
-      "Genre-Specific Templates",
-      "Mood and Energy Controls",
-      "Professional Prompt Optimization",
-      "Multi-Platform Support",
-      "Prompt History Management"
-    ]
-  };
 
-  return (
-    <Helmet>
-      {/* Basic Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={keywords.join(', ')} />
-      <link rel="canonical" href={canonicalUrl} />
+  // For React Native, we'll handle SEO through the web build process
+  // This component serves as a placeholder and data container
+  React.useEffect(() => {
+    // Set document title for web
+    if (typeof document !== 'undefined') {
+      const defaultStructuredData = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AI Music Prompter",
+        "description": description,
+        "url": canonicalUrl,
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web Browser",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "availability": "https://schema.org/InStock"
+        },
+        "creator": {
+          "@type": "Organization",
+          "name": "AI Music Prompter Team",
+          "url": "https://aimusicpromptr.com"
+        },
+        "featureList": [
+          "AI Music Prompt Generation",
+          "Genre-Specific Templates",
+          "Mood and Energy Controls",
+          "Professional Prompt Optimization",
+          "Multi-Platform Support",
+          "Prompt History Management"
+        ]
+      };
       
-      {/* Robots */}
-      {noIndex && <meta name="robots" content="noindex, nofollow" />}
+      const finalStructuredData = structuredData || defaultStructuredData;
       
-      {/* Open Graph */}
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:type" content={ogType} />
-      <meta property="og:url" content={canonicalUrl} />
-      <meta property="og:image" content={ogImage} />
-      <meta property="og:image:width" content="1200" />
-      <meta property="og:image:height" content="630" />
-      <meta property="og:site_name" content="AI Music Prompter" />
-      <meta property="og:locale" content="en_US" />
+      document.title = fullTitle;
       
-      {/* Twitter Card */}
-      <meta name="twitter:card" content={twitterCard} />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={ogImage} />
-      <meta name="twitter:site" content="@aimusicpromptr" />
-      <meta name="twitter:creator" content="@aimusicpromptr" />
+      // Set robots meta tag
+      let robotsTag = document.querySelector('meta[name="robots"]');
+      if (!robotsTag) {
+        robotsTag = document.createElement('meta');
+        robotsTag.setAttribute('name', 'robots');
+        document.head.appendChild(robotsTag);
+      }
+      robotsTag.setAttribute('content', noIndex ? 'noindex, nofollow' : 'index, follow');
       
-      {/* Additional SEO Meta Tags */}
-      <meta name="author" content="AI Music Prompter Team" />
-      <meta name="publisher" content="AI Music Prompter" />
-      <meta name="copyright" content="© 2024 AI Music Prompter" />
-      <meta name="language" content="English" />
-      <meta name="revisit-after" content="7 days" />
-      <meta name="distribution" content="global" />
-      <meta name="rating" content="general" />
+      // Set meta description
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', description);
       
-      {/* Mobile Optimization */}
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <meta name="mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+      // Set meta keywords
+      let metaKeywords = document.querySelector('meta[name="keywords"]');
+      if (!metaKeywords) {
+        metaKeywords = document.createElement('meta');
+        metaKeywords.setAttribute('name', 'keywords');
+        document.head.appendChild(metaKeywords);
+      }
+      metaKeywords.setAttribute('content', keywords.join(', '));
       
-      {/* Structured Data */}
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData || defaultStructuredData)}
-      </script>
+      // Set canonical URL
+      let canonical = document.querySelector('link[rel="canonical"]');
+      if (!canonical) {
+        canonical = document.createElement('link');
+        canonical.setAttribute('rel', 'canonical');
+        document.head.appendChild(canonical);
+      }
+      canonical.setAttribute('href', canonicalUrl);
       
-      {/* Preconnect to External Domains */}
-      <link rel="preconnect" href="https://fonts.googleapis.com" />
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      // Set Open Graph tags
+      const ogTags = [
+        { property: 'og:title', content: fullTitle },
+        { property: 'og:description', content: description },
+        { property: 'og:type', content: ogType },
+        { property: 'og:url', content: canonicalUrl },
+        { property: 'og:image', content: ogImage },
+        { property: 'og:site_name', content: 'AI Music Prompter' }
+      ];
       
-      {/* DNS Prefetch */}
-      <link rel="dns-prefetch" href="//www.google-analytics.com" />
-      <link rel="dns-prefetch" href="//www.googletagmanager.com" />
-    </Helmet>
-  );
+      ogTags.forEach(tag => {
+        let ogTag = document.querySelector(`meta[property="${tag.property}"]`);
+        if (!ogTag) {
+          ogTag = document.createElement('meta');
+          ogTag.setAttribute('property', tag.property);
+          document.head.appendChild(ogTag);
+        }
+        ogTag.setAttribute('content', tag.content);
+      });
+      
+      // Set Twitter Card tags
+      const twitterTags = [
+        { name: 'twitter:card', content: twitterCard },
+        { name: 'twitter:title', content: fullTitle },
+        { name: 'twitter:description', content: description },
+        { name: 'twitter:image', content: ogImage }
+      ];
+      
+      twitterTags.forEach(tag => {
+        let twitterTag = document.querySelector(`meta[name="${tag.name}"]`);
+        if (!twitterTag) {
+          twitterTag = document.createElement('meta');
+          twitterTag.setAttribute('name', tag.name);
+          document.head.appendChild(twitterTag);
+        }
+        twitterTag.setAttribute('content', tag.content);
+      });
+      
+      // Set structured data
+      let structuredDataScript = document.querySelector('script[type="application/ld+json"]');
+      if (!structuredDataScript) {
+        structuredDataScript = document.createElement('script');
+        structuredDataScript.setAttribute('type', 'application/ld+json');
+        document.head.appendChild(structuredDataScript);
+      }
+      structuredDataScript.textContent = JSON.stringify(finalStructuredData);
+    }
+  }, [fullTitle, description, keywords, canonicalUrl, ogImage, ogType, twitterCard, structuredData, noIndex]);
+
+  // Return empty view for React Native
+  return <View style={{ display: 'none' }} />;
 }
